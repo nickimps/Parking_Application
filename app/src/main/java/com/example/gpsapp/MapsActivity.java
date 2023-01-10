@@ -5,7 +5,6 @@ import androidx.fragment.app.FragmentActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -18,12 +17,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.w3c.dom.Text;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    private GoogleMap mMap;
-    private ActivityMapsBinding binding;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     //this is a test comment and add more stuff
@@ -34,10 +30,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
 
         String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-        binding = ActivityMapsBinding.inflate(getLayoutInflater());
+        com.example.gpsapp.databinding.ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        TextView name = (TextView)findViewById(R.id.welcomeText);
+        TextView name = findViewById(R.id.welcomeText);
         name.setText(android_id);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -46,13 +42,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
 
-        Button button = (Button) findViewById(R.id.settingsButton);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MapsActivity.this, InfoActivity.class));
-            }
-        });
+        Button button = findViewById(R.id.settingsButton);
+        button.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
     }
 
     /**
@@ -66,12 +57,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
         LatLng Lot = new LatLng(48.42101, -89.25828);
-        mMap.addMarker(new MarkerOptions().position(Lot).title("Marker at Lot"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 18));
+        googleMap.addMarker(new MarkerOptions().position(Lot).title("Marker at Lot"));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 18));
     }
 
 }
