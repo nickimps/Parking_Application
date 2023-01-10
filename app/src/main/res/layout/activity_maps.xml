@@ -20,9 +20,10 @@
         android:layout_width="275dp"
         android:layout_height="50dp"
         android:layout_marginStart="15dp"
-        android:text="Welcome @INSERTNAMEHERE"
+        android:text="Welcome INSERTNAMEHERE"
         android:textAlignment="center"
-        android:paddingTop="15dp" />
+        android:paddingTop="15dp"
+        android:textColor="@color/red"/>
 
     <Button
         android:id="@+id/settingsButton"
