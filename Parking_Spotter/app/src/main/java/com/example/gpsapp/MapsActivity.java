@@ -18,8 +18,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.w3c.dom.Text;
-
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
