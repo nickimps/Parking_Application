@@ -27,6 +27,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     //this is a test comment and add more stuff
+    //this is a test WOW
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
