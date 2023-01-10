@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GPS App</string>
+    <string name="app_name">Parking Spotter Application</string>
     <string name="title_activity_maps">Parking Spotter</string>
     <string name="title_activity_info">InfoActivity</string>
     <!-- Strings used for fragments for navigation -->
