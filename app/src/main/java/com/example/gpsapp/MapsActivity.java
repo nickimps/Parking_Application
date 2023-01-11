@@ -2,10 +2,15 @@ package com.example.gpsapp;
 
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -31,6 +36,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //View v = inflater.inflate(R.layout.activity_maps, null);
+        //this.setContentView(v);
+
+        //Filter Button
+        //Spinner spinner = (Spinner) findViewById(R.id.filterSpinner);
+        //ArrayAdapter<String> myAdapter = new ArrayAdapter<String>(MapsActivity.this, android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.filter));
+        //myAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //spinner.setAdapter(myAdapter);
+
         String android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         com.example.gpsapp.databinding.ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -39,8 +53,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         name.setText(android_id);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
 

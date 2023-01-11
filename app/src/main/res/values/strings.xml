@@ -10,4 +10,11 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+
+    <string-array name="filter">
+        <item>Unavailable</item>
+        <item>Free</item>
+        <item>Your Spot</item>
+    </string-array>
+
 </resources>

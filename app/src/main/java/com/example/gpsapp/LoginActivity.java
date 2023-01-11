@@ -5,8 +5,10 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 //import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,13 +41,13 @@ public class LoginActivity extends AppCompatActivity {
               System.out.println(password);
 
                 //Database
-                firestore = FirebaseFirestore.getInstance();
-                Map<String, Object> user = new HashMap<>();
-                user.put("username", username);
-                user.put("password", password);
+                //firestore = FirebaseFirestore.getInstance();
+                //Map<String, Object> user = new HashMap<>();
+                //user.put("username", username);
+                //user.put("password", password);
 
                 //firestore.collection("Users").add(user);
-                firestore.collection("Users").add(user);
+                //firestore.collection("Users").add(user);
 
               Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
               startActivity((intent));
