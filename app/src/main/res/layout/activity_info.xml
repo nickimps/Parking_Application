@@ -82,4 +82,15 @@
         android:layout_below="@id/permitView"
         android:textColor="@color/black"/>
 
+    <ImageView
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:id="@+id/logo"
+        android:src="@drawable/lakehead_print_logo"
+        android:layout_below="@id/permitInsertText"
+        android:layout_marginTop="150dp"
+        android:layout_centerHorizontal="true"
+        android:alpha="0.5"
+        />
+
 </android.widget.RelativeLayout>
