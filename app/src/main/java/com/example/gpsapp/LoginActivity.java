@@ -27,15 +27,6 @@ public class LoginActivity extends AppCompatActivity {
         EditText getUsername = (EditText) findViewById(R.id.usernameInsertText);
         EditText getPassword = (EditText) findViewById(R.id.passwordInsertText);
 
-        //Database
-        firestore = FirebaseFirestore.getInstance();
-        Map<String, Object> user = new HashMap<>();
-        user.put("firstName", "Mason");
-        user.put("lastName", "Tommasini");
-        user.put("Description", "AWESOME EPIC MODE HEHE");
-
-        //firestore.collection("Users").add(user);
-        firestore.collection("Users").document("Mason Info").set(user);
 
         //Add constraints
         Button button = findViewById(R.id.loginButton);
@@ -46,6 +37,16 @@ public class LoginActivity extends AppCompatActivity {
               String password = getPassword.getText().toString();
               System.out.println(username);
               System.out.println(password);
+
+                //Database
+                firestore = FirebaseFirestore.getInstance();
+                Map<String, Object> user = new HashMap<>();
+                user.put("username", username);
+                user.put("password", password);
+
+                //firestore.collection("Users").add(user);
+                firestore.collection("Users").add(user);
+
               Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
               startActivity((intent));
             }
