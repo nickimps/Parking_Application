@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MapsActivity">
+
+    <TextView
+        android:id="@+id/logoText"
+        android:layout_width="400dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="25dp"
+        android:text="Peter Parker Spotter"
+        android:textSize="30dp"
+        android:textAlignment="center"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="5dp"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/loginText"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="100dp"
+        android:text="Login"
+        android:textSize="30dp"
+        android:textAlignment="center"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="5dp"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/usernameView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter Your Username:"
+        android:textSize="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_below="@id/loginText"
+        android:textColor="@color/black"/>
+
+
+    <EditText
+        android:id="@+id/usernameInsertText"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_below="@id/usernameView"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="30dp"
+        android:background="#F4F4F4"
+        android:ems="10"
+        android:hint="Username"
+        android:inputType="textPersonName"
+        android:textSize="20dp"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/passwordView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter Your Password: "
+        android:textSize="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_below="@id/usernameInsertText"
+        android:textColor="@color/black"/>
+
+    <EditText
+        android:id="@+id/passwordInsertText"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:ems="10"
+        android:hint="Permit Number"
+        android:textSize="20dp"
+        android:background="#F4F4F4"
+        android:inputType="textPassword"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_below="@id/passwordView"
+        android:textColor="@color/black"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:id="@+id/loginButton"
+        android:textAlignment="center"
+        android:layout_centerHorizontal="true"
+        android:textSize="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/passwordInsertText"
+        android:text="Login"/>
+
+    <ImageView
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:id="@+id/logo"
+        android:src="@drawable/lakehead_print_logo"
+        android:layout_below="@id/loginButton"
+        android:layout_marginTop="55dp"
+        android:layout_centerHorizontal="true"
+        android:alpha="0.5"
+        />
+
+</android.widget.RelativeLayout>
