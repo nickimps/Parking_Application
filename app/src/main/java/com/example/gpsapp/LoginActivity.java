@@ -59,15 +59,12 @@ public class LoginActivity extends AppCompatActivity {
 //              System.out.println(username);
 //              System.out.println(password);
 
-              //check if user fills in all text fields
-              if(username.isEmpty() || password.isEmpty()){
-                  Toast.makeText(getApplicationContext(),"Both username & password must be entered!",Toast.LENGTH_SHORT).show();
-              }
-
                 //Database
                 firestore = FirebaseFirestore.getInstance();
 
                 firestore.collection("Users")
+                        .whereEqualTo("username", username)
+                        .whereEqualTo("password", password)
                         .get()
                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
@@ -76,15 +73,19 @@ public class LoginActivity extends AppCompatActivity {
                                     boolean login = false;
                                     for (QueryDocumentSnapshot document : task.getResult()) {
                                         Log.d(TAG, document.getId() + " => " + document.getData());
-                                        if(username.equals(document.getData().get("username")) && password.equals(document.getData().get("password"))){
-                                          Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
-                                          startActivity((intent));
-                                          login = true;
-                                          break;
-                                        }
+                                        login = true;
                                     }
-                                    if(!login)
+                                    if(login){
+                                        Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
+                                        startActivity((intent));
+                                    }
+                                    else if(username.isEmpty() || password.isEmpty()){
+                                        Toast.makeText(getApplicationContext(),"Both username & password must be entered!",Toast.LENGTH_SHORT).show();
+                                    }
+                                    else{
                                         Toast.makeText(getApplicationContext(),"Username or password invalid!",Toast.LENGTH_SHORT).show();
+                                    }
+
                                 } else {
                                     Log.d(TAG, "Error getting documents: ", task.getException());
                                 }
