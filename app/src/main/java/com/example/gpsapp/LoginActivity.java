@@ -46,13 +46,13 @@ public class LoginActivity extends AppCompatActivity {
 
         EditText getUsername = (EditText) findViewById(R.id.usernameInsertText);
         EditText getPassword = (EditText) findViewById(R.id.passwordInsertText);
-        TextView register = (TextView) findViewById(R.id.register);
+        //TextView register = (TextView) findViewById(R.id.register);
 
 
         //Add constraints
-        Button button = findViewById(R.id.loginButton);
+        Button logButton = findViewById(R.id.loginButton);
         //button.setOnClickListener(view -> startActivity(new Intent(LoginActivity.this, MapsActivity.class)));
-        button.setOnClickListener(new View.OnClickListener() {
+        logButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
               String username = getUsername.getText().toString();
               String password = getPassword.getText().toString();
@@ -111,6 +111,13 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        Button regButton = findViewById(R.id.goToRegisterButton);
+        regButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                startActivity((intent));
+            }
+        });
 
     }
 }
