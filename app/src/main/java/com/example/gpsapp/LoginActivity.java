@@ -1,18 +1,36 @@
 package com.example.gpsapp;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 //import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -28,6 +46,7 @@ public class LoginActivity extends AppCompatActivity {
 
         EditText getUsername = (EditText) findViewById(R.id.usernameInsertText);
         EditText getPassword = (EditText) findViewById(R.id.passwordInsertText);
+        TextView register = (TextView) findViewById(R.id.register);
 
 
         //Add constraints
@@ -37,20 +56,57 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
               String username = getUsername.getText().toString();
               String password = getPassword.getText().toString();
-              System.out.println(username);
-              System.out.println(password);
+//              System.out.println(username);
+//              System.out.println(password);
+
+              //check if user fills in all text fields
+              if(username.isEmpty() || password.isEmpty()){
+                  Toast.makeText(getApplicationContext(),"Both username & password must be entered!",Toast.LENGTH_SHORT).show();
+              }
 
                 //Database
-                //firestore = FirebaseFirestore.getInstance();
-                //Map<String, Object> user = new HashMap<>();
-                //user.put("username", username);
-                //user.put("password", password);
+                firestore = FirebaseFirestore.getInstance();
 
-                //firestore.collection("Users").add(user);
-                //firestore.collection("Users").add(user);
+                firestore.collection("Users")
+                        .get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    boolean login = false;
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        Log.d(TAG, document.getId() + " => " + document.getData());
+                                        if(username.equals(document.getData().get("username")) && password.equals(document.getData().get("password"))){
+                                          Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
+                                          startActivity((intent));
+                                          login = true;
+                                          break;
+                                        }
+                                    }
+                                    if(!login)
+                                        Toast.makeText(getApplicationContext(),"Username or password invalid!",Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Log.d(TAG, "Error getting documents: ", task.getException());
+                                }
+                            }
+                        });
 
-              Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
-              startActivity((intent));
+
+
+//              if(docRefPass.equals(password)){
+//                  Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
+//                  startActivity((intent));
+//              }
+
+//                Map<String, Object> user = new HashMap<>();
+//                user.put("username", username);
+//                user.put("password", password);
+//
+//                firestore.collection("Users").add(user);
+//                firestore.collection("Users").add(user);
+
+//              Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
+//              startActivity((intent));
             }
         });
 
