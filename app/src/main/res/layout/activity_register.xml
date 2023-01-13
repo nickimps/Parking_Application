@@ -169,11 +169,8 @@
         android:id="@+id/logo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
         android:alpha="0.1"
         android:src="@drawable/lakehead_print_logo" />
-
 
 
 </android.widget.RelativeLayout>
