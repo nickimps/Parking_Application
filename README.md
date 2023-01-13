@@ -1,6 +1,11 @@
 # Smart Parking Android Application
 A mobile application to help locate available parking spots on Lakehead University's campus parking lot.
 
+## Project Members
+- Jimmy Tsang
+- Nicholas Imperius
+- Mason Tommasini
+
 ## Features
 - Locate available parking spots closest to your destination on campus
 - Find the position of your parked car
@@ -24,7 +29,4 @@ Documents related to the development of this project are listed below:
 - [Software Project Management Plan](https://github.com/nickimps/Parking_Application/blob/master/Report%20Files/Software_Project_Management_Plan_Document.pdf)
 - [Software Specifications Document](https://github.com/nickimps/Parking_Application/tree/master/Report%20Files)
 
-## About Us
-- Jimmy Tsang - 4th year B.Eng Software Engineering
-- Nicholas Imperius - 4th year B.Eng Software Engineering
-- Mason Tommasini - 4th year B.Eng Software Engineering
+
