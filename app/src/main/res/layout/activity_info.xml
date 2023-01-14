@@ -20,12 +20,22 @@
         android:textColor="@color/black"/>
 
     <Button
-        android:id="@+id/saveButton"
+        android:id="@+id/backButton"
         android:layout_width="125dp"
         android:layout_height="50dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
-        android:text="Save" />
+        android:text="Back" />
+
+    <Button
+        android:id="@+id/updateButton"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="275dp"
+        android:text="Update"
+        android:layout_centerHorizontal="true"/>
+
 
     <TextView
         android:id="@+id/nameView"
@@ -36,7 +46,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
-        android:layout_below="@id/saveButton"
+        android:layout_below="@id/backButton"
         android:textColor="@color/black"/>
 
 
