@@ -11,8 +11,6 @@ import android.widget.EditText;
 import android.util.Log;
 import android.widget.Toast;
 import com.google.firebase.firestore.FirebaseFirestore;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class RegisterActivity extends AppCompatActivity {
@@ -45,14 +43,10 @@ public class RegisterActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         if(task.getResult().isEmpty()) {
-                            Map<String, Object> user = new HashMap<>();
-                            user.put("username", username);
-                            user.put("password", password);
-                            user.put("name", name);
-                            user.put("permit", permit);
-                            user.put("lastDeviceID", Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID));
+                            //Create new user object to add to database
+                            User user = new User(username, password, name, permit, Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID));
                             firestore.collection("Users").add(user);
-                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                            Intent intent = new Intent(RegisterActivity.this, MapsActivity.class);
                             startActivity((intent));
                             Toast.makeText(getApplicationContext(),"Account successfully created!",Toast.LENGTH_SHORT).show();
                         }

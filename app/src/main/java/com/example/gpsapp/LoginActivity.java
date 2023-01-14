@@ -4,8 +4,6 @@ import static android.content.ContentValues.TAG;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.provider.Settings;
@@ -13,14 +11,8 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
-import org.w3c.dom.Document;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -38,7 +30,7 @@ public class LoginActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        if(!task.getResult().isEmpty()) {
+                        if (!task.getResult().isEmpty()) {
                             Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
                             startActivity((intent));
                         }
@@ -66,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
                     .get()
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            if(!task.getResult().isEmpty()) {
+                            if (!task.getResult().isEmpty()) {
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     //Update the lastDeviceID
                                     firestore.collection("Users")
@@ -79,12 +71,10 @@ public class LoginActivity extends AppCompatActivity {
                                     startActivity((intent));
                                     break;
                                 }
-                            }
-                            else if(username.isEmpty() || password.isEmpty()){
-                                Toast.makeText(getApplicationContext(),"Both username & password must be entered!",Toast.LENGTH_SHORT).show();
-                            }
-                            else{
-                                Toast.makeText(getApplicationContext(),"Username or password invalid!",Toast.LENGTH_SHORT).show();
+                            } else if (username.isEmpty() || password.isEmpty()) {
+                                Toast.makeText(getApplicationContext(), "Both username & password must be entered!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Username or password invalid!", Toast.LENGTH_SHORT).show();
                             }
 
                         } else {

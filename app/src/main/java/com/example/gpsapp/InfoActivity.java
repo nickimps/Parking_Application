@@ -42,42 +42,9 @@ public class InfoActivity extends AppCompatActivity {
                 String name = getName.getText().toString();
                 String permit = getPermit.getText().toString();
 
-                firestore = FirebaseFirestore.getInstance();
-
-//                firestore.collection("Users")
-//                        .whereEqualTo("username", username)//Use device id instead
-//                        .get()
-//                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                                if (task.isSuccessful()) {
-//                                    boolean register = true;
-//                                    for (QueryDocumentSnapshot document : task.getResult()) {
-//                                        register = false;
-//                                    }
-//                                    if(register){
-//                                        Map<String, Object> user = new HashMap<>();
-//                                        user.put("username", username);
-//                                        user.put("password", password);
-//                                        user.put("name", name);
-//                                        user.put("permit", permit);
-//                                        firestore.collection("Users").add(user);
-//                                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-//                                        startActivity((intent));
-//                                        Toast.makeText(getApplicationContext(),"Account successfully created!",Toast.LENGTH_SHORT).show();
-//                                    }
-//                                    else if(username.isEmpty() || password.isEmpty() || name.isEmpty()){
-//                                        Toast.makeText(getApplicationContext(),"Username, password and name must be all be filled!",Toast.LENGTH_SHORT).show();
-//                                    }
-//                                    else{
-//                                        Toast.makeText(getApplicationContext(),"This username already exists!",Toast.LENGTH_SHORT).show();
-//                                    }
-//
-//                                } else {
-//                                    Log.d(TAG, "Error getting documents: ", task.getException());
-//                                }
-//                            }
-//                        });
+                //TODO: Make hint get information from the database.
+                // Add a exit button as well as a save (move save button below textfields and turn save into exit)
+                //  With that we may need a pop up to say 'discarding changes' (easier than a confirmation popup imo)
             }
         }
 
