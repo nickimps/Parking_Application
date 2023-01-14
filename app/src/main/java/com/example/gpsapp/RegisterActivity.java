@@ -42,7 +42,7 @@ public class RegisterActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        if(task.getResult().isEmpty()) {
+                        if(task.getResult().isEmpty() && !username.isEmpty() && !password.isEmpty() && !name.isEmpty()) {
                             //Create new user object to add to database
                             User user = new User(username, password, name, permit, Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID));
                             firestore.collection("Users").add(user);
