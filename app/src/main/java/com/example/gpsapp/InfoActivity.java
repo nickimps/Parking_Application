@@ -44,7 +44,7 @@ public class InfoActivity extends AppCompatActivity {
 
                 firestore = FirebaseFirestore.getInstance();
 
-                firestore.collection("Users")
+//                firestore.collection("Users")
 //                        .whereEqualTo("username", username)//Use device id instead
 //                        .get()
 //                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
