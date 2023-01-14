@@ -5,6 +5,7 @@ import static android.content.ContentValues.TAG;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.Button;
 import android.widget.EditText;
 import android.util.Log;
@@ -30,41 +31,42 @@ public class RegisterActivity extends AppCompatActivity {
 
         Button register = findViewById(R.id.registerButton);
         register.setOnClickListener(view -> {
-            String username = getUsername.getText().toString();
-            String password = getPassword.getText().toString();
-            String name = getName.getText().toString();
-            String permit = getPermit.getText().toString();
+        String username = getUsername.getText().toString();
+        String password = getPassword.getText().toString();
+        String name = getName.getText().toString();
+        String permit = getPermit.getText().toString();
 
-            //Database
-            firestore = FirebaseFirestore.getInstance();
+        //Database
+        firestore = FirebaseFirestore.getInstance();
 
-            firestore.collection("Users")
-                    .whereEqualTo("username", username)
-                    .get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            if(task.getResult().isEmpty()) {
-                                Map<String, Object> user = new HashMap<>();
-                                user.put("username", username);
-                                user.put("password", password);
-                                user.put("name", name);
-                                user.put("permit", permit);
-                                firestore.collection("Users").add(user);
-                                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                                startActivity((intent));
-                                Toast.makeText(getApplicationContext(),"Account successfully created!",Toast.LENGTH_SHORT).show();
-                            }
-                            else if(username.isEmpty() || password.isEmpty() || name.isEmpty()){
-                                Toast.makeText(getApplicationContext(),"Username, password and name must be all be filled!",Toast.LENGTH_SHORT).show();
-                            }
-                            else{
-                                Toast.makeText(getApplicationContext(),"This username already exists!",Toast.LENGTH_SHORT).show();
-                            }
-
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+        firestore.collection("Users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if(task.getResult().isEmpty()) {
+                            Map<String, Object> user = new HashMap<>();
+                            user.put("username", username);
+                            user.put("password", password);
+                            user.put("name", name);
+                            user.put("permit", permit);
+                            user.put("lastDeviceID", Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID));
+                            firestore.collection("Users").add(user);
+                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                            startActivity((intent));
+                            Toast.makeText(getApplicationContext(),"Account successfully created!",Toast.LENGTH_SHORT).show();
                         }
-                    });
+                        else if(username.isEmpty() || password.isEmpty() || name.isEmpty()){
+                            Toast.makeText(getApplicationContext(),"Username, password and name must be all be filled!",Toast.LENGTH_SHORT).show();
+                        }
+                        else{
+                            Toast.makeText(getApplicationContext(),"This username already exists!",Toast.LENGTH_SHORT).show();
+                        }
+
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                });
         });
 
         Button goBack = findViewById(R.id.backToLogin);
