@@ -5,7 +5,6 @@ import static android.content.ContentValues.TAG;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.widget.Button;
 import android.widget.EditText;
 import android.util.Log;
@@ -44,7 +43,7 @@ public class RegisterActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         if(task.getResult().isEmpty() && !username.isEmpty() && !password.isEmpty() && !name.isEmpty()) {
                             //Create new user object to add to database
-                            User user = new User(username, password, name, permit, Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID));
+                            User user = new User(username, password, name, permit);
                             firestore.collection("Users").add(user);
                             Intent intent = new Intent(RegisterActivity.this, MapsActivity.class);
                             startActivity((intent));
@@ -63,6 +62,7 @@ public class RegisterActivity extends AppCompatActivity {
                 });
         });
 
+        //BACK BUTTON
         Button goBack = findViewById(R.id.backToLogin);
         goBack.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);

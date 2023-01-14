@@ -1,6 +1,5 @@
 package com.example.gpsapp;
 
-import android.provider.Settings;
 
 public class User {
 
@@ -8,16 +7,12 @@ public class User {
     private String password;
     private String name;
     private String permit;
-    private String lastDeviceID;
 
-    public User() {}
-
-    public User(String username, String password, String name, String permit, String lastDeviceID) {
+    public User(String username, String password, String name, String permit) {
         this.username = username;
         this.password = password;
         this.name = name;
         this.permit = permit;
-        this.lastDeviceID = lastDeviceID;
     }
 
     public String getUsername() {
@@ -29,12 +24,7 @@ public class User {
     public String getName() {
         return name;
     }
-
     public String getPermit() {
         return permit;
-    }
-
-    public String getLastDeviceID() {
-        return lastDeviceID;
     }
 }

@@ -1,21 +1,14 @@
 package com.example.gpsapp;
 
 import static android.content.ContentValues.TAG;
-
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.provider.Settings;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -28,65 +21,89 @@ public class InfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
 
-        EditText getName = (EditText) findViewById(R.id.nameInsertText);
-        EditText getPermit = (EditText) findViewById(R.id.permitInsertText);
+        EditText getName = findViewById(R.id.nameInsertText);
+        EditText getPermit = findViewById(R.id.permitInsertText);
 
+        //Get user information
+        SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+
+        // Get username of the user
+        String username = sharedPref.getString("username", null);
+
+        firestore = FirebaseFirestore.getInstance();
+
+        //Load the hint information from the user collection in the database
+        if (username != null) {
+            firestore.collection("Users")
+                    .whereEqualTo("username", username)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                getName.setHint(document.getString("name"));
+                                getPermit.setHint(document.getString("permit"));
+                            }
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    });
+        }
+
+        //BACK BUTTON
         Button backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
+        backButton.setOnClickListener(v -> {
+            if (!getName.getText().toString().isEmpty() || !getPermit.getText().toString().isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Changes not saved!", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(InfoActivity.this, MapsActivity.class);
-                startActivity((intent));
-
-                //TODO: Make hint get information from the database.
-                // Add a exit button as well as a save (move save button below textfields and turn save into exit)
-                //  With that we may need a pop up to say 'discarding changes' (easier than a confirmation popup imo)
             }
+            Intent intent = new Intent(InfoActivity.this, MapsActivity.class);
+            startActivity((intent));
         });
 
+        //UPDATE BUTTON
         Button updateButton = findViewById(R.id.updateButton);
-        updateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String name = getName.getText().toString();
-                String permit = getPermit.getText().toString();
+        updateButton.setOnClickListener(view -> firestore.collection("Users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            //Only update if fields have information
+                            if (!getName.getText().toString().isEmpty() && !getPermit.getText().toString().isEmpty()) {
+                                //If the user has entered something in the text field then add it to the update,
+                                // otherwise just keep what was already there in the database
+                                String name, permit;
+                                if (getName.getText().toString().isEmpty()) {
+                                    name = document.getString("name");
+                                } else {
+                                    name = getName.getText().toString();
+                                }
 
-//                //Database
-//                firestore = FirebaseFirestore.getInstance();
-//                firestore.collection("Users")
-//                        .whereEqualTo("username", name)
-//                        .whereEqualTo("password", permit)
-//                        .get()
-//                        .addOnCompleteListener(task -> {
-//                            if (task.isSuccessful()) {
-//                                if (!task.getResult().isEmpty()) {
-//                                    for (QueryDocumentSnapshot document : task.getResult()) {
-//                                        //Update the lastDeviceID
-//                                        firestore.collection("Users")
-//                                                .document(document.getId())
-//                                                .update("lastDeviceID", Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID))
-//                                                .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully updated!"))
-//                                                .addOnFailureListener(e -> Log.w(TAG, "Error updating document", e));
-//
-//                                        Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
-//                                        startActivity((intent));
-//                                        break;
-//                                    }
-//                                } else if (username.isEmpty() || password.isEmpty()) {
-//                                    Toast.makeText(getApplicationContext(), "Both username & password must be entered!", Toast.LENGTH_SHORT).show();
-//                                } else {
-//                                    Toast.makeText(getApplicationContext(), "Username or password invalid!", Toast.LENGTH_SHORT).show();
-//                                }
-//
-//                            } else {
-//                                Log.d(TAG, "Error getting documents: ", task.getException());
-//                            }
-//                        });
-//
-//            }
-//        });
+                                if (getPermit.getText().toString().isEmpty()) {
+                                    permit = document.getString("permit");
+                                } else {
+                                    permit = getPermit.getText().toString();
+                                }
 
+                                //Update the database
+                                firestore.collection("Users")
+                                        .document(document.getId())
+                                        .update("name", name, "permit", permit)
+                                        .addOnSuccessListener(aVoid -> Toast.makeText(getApplicationContext(), "Profile Updated", Toast.LENGTH_SHORT).show())
+                                        .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Error Updating Profile", Toast.LENGTH_SHORT).show());
 
-
+                                //Clear fields and reset the hints
+                                getName.setText("");
+                                getPermit.setText("");
+                                getName.setHint(name);
+                                getPermit.setHint(permit);
+                            }
+                            else {
+                                Toast.makeText(getApplicationContext(), "Please enter either a name or permit number", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                }));
         }
     }
