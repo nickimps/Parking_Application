@@ -21,18 +21,20 @@ public class InfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
 
+        // Get the text fields ids
         EditText getName = findViewById(R.id.nameInsertText);
         EditText getPermit = findViewById(R.id.permitInsertText);
 
-        //Get user information
+        // Get shared preference to pull user information
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
 
-        // Get username of the user
+        // Get username of the user from the shared preference
         String username = sharedPref.getString("username", null);
 
+        // Database instance
         firestore = FirebaseFirestore.getInstance();
 
-        //Load the hint information from the user collection in the database
+        // Load the hint information from the user collection in the database
         if (username != null) {
             firestore.collection("Users")
                     .whereEqualTo("username", username)
@@ -40,6 +42,7 @@ public class InfoActivity extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
+                                // Set the hint for both the text fields
                                 getName.setHint(document.getString("name"));
                                 getPermit.setHint(document.getString("permit"));
                             }
@@ -49,17 +52,20 @@ public class InfoActivity extends AppCompatActivity {
                     });
         }
 
-        //BACK BUTTON
+        // BACK BUTTON
         Button backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> {
             if (!getName.getText().toString().isEmpty() || !getPermit.getText().toString().isEmpty()) {
+                // Notify the user that the changes have not been saved if they leave with text in the text fields
                 Toast.makeText(getApplicationContext(), "Changes not saved!", Toast.LENGTH_SHORT).show();
             }
+
+            // Send the user back to the maps activity
             Intent intent = new Intent(InfoActivity.this, MapsActivity.class);
             startActivity((intent));
         });
 
-        //UPDATE BUTTON
+        // UPDATE BUTTON
         Button updateButton = findViewById(R.id.updateButton);
         updateButton.setOnClickListener(view -> firestore.collection("Users")
                 .whereEqualTo("username", username)
@@ -67,7 +73,7 @@ public class InfoActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            //Only update if fields have information
+                            // Only update if fields have information in them, otherwise let user know there is no information there
                             if (!getName.getText().toString().isEmpty() && !getPermit.getText().toString().isEmpty()) {
                                 //If the user has entered something in the text field then add it to the update,
                                 // otherwise just keep what was already there in the database
@@ -84,14 +90,14 @@ public class InfoActivity extends AppCompatActivity {
                                     permit = getPermit.getText().toString();
                                 }
 
-                                //Update the database
+                                // Update the database for that user
                                 firestore.collection("Users")
                                         .document(document.getId())
                                         .update("name", name, "permit", permit)
                                         .addOnSuccessListener(aVoid -> Toast.makeText(getApplicationContext(), "Profile Updated", Toast.LENGTH_SHORT).show())
                                         .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Error Updating Profile", Toast.LENGTH_SHORT).show());
 
-                                //Clear fields and reset the hints
+                                // Clear fields and reset the hints
                                 getName.setText("");
                                 getPermit.setText("");
                                 getName.setHint(name);

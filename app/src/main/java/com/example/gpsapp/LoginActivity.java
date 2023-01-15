@@ -16,22 +16,26 @@ public class LoginActivity extends AppCompatActivity {
     FirebaseFirestore firestore;
     private EditText getUsername, getPassword;
 
-    //Fetch the stored information when the app is loaded
+    //Fetch the stored information when the app is loaded, this function is called when the app is opened again
     @Override
     protected void onResume() {
         super.onResume();
 
+        // Get the stored information within the shared preference
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
 
-        // Get stored username and password to log in user
+        // Get stored username and password for the logged in user
         String username = sharedPref.getString("username", null);
         String password = sharedPref.getString("password", null);
 
-        //Bypass login if login details exist
+        // Bypass login if login details exist
         if (username != null && password != null) {
             Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
 
+            // Database instance
             firestore = FirebaseFirestore.getInstance();
+
+            // Perform query to get the user that has matching username and password so that we can auto login
             firestore.collection("Users")
                     .whereEqualTo("username", username)
                     .whereEqualTo("password", password)
@@ -39,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             if (!task.getResult().isEmpty()) {
+                                // Send the user to the maps activity
                                 Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
                                 startActivity((intent));
                             }
@@ -52,41 +57,48 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    //Saves the information when the app is closed
+    // Saves the information when the app is closed, this function runs when the app is closed.
     @Override
     protected void onPause() {
         super.onPause();
 
+        // Create the shared preference to store the information
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+        // Create an editor that allows us to impute information into the shared preference
         SharedPreferences.Editor editor = sharedPref.edit();
 
-        //Only save the text fields if there is information in them.
+        // Only save the text fields if there is information in them.
         if (!getUsername.getText().toString().isEmpty() && !getPassword.getText().toString().isEmpty()) {
-            //Store information
+            // Store information from the text fields
             editor.putString("username", getUsername.getText().toString());
             editor.putString("password", getPassword.getText().toString());
+
+            // Commit the changes to the editor
             editor.apply();
         }
     }
 
-    //Runs on creation of the app
+    //Runs when the app is created
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_login);
 
+        // Store the ids of the edit text fields
         getUsername = findViewById(R.id.usernameInsertText);
         getPassword = findViewById(R.id.passwordInsertText);
 
-        //Login Button Pressed
+        // LOGIN BUTTON
         Button logButton = findViewById(R.id.loginButton);
         logButton.setOnClickListener(v -> {
+            // Get the text from the textfields
             String username = getUsername.getText().toString();
             String password = getPassword.getText().toString();
 
-            //Database
+            // Database Instance
             firestore = FirebaseFirestore.getInstance();
+
+            // Perform query to get the user that has matching username and password so that we can log in the user
             firestore.collection("Users")
                     .whereEqualTo("username", username)
                     .whereEqualTo("password", password)
@@ -94,6 +106,7 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             if (!task.getResult().isEmpty()) {
+                                // Send the user to the maps activity
                                 Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
                                 startActivity((intent));
                             } else if (username.isEmpty() || password.isEmpty()) {
@@ -108,9 +121,10 @@ public class LoginActivity extends AppCompatActivity {
                     });
         });
 
-        //Register Button Pressed
+        // REGISTER BUTTON
         Button regButton = findViewById(R.id.goToRegisterButton);
         regButton.setOnClickListener(v -> {
+            // Send the user to the register screen.
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity((intent));
         });
