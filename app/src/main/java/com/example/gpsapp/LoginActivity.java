@@ -43,6 +43,9 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             if (!task.getResult().isEmpty()) {
+                                getUsername.setText(username);
+                                getPassword.setText(password);
+
                                 // Send the user to the maps activity
                                 Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
                                 startActivity((intent));
@@ -91,7 +94,7 @@ public class LoginActivity extends AppCompatActivity {
         // LOGIN BUTTON
         Button logButton = findViewById(R.id.loginButton);
         logButton.setOnClickListener(v -> {
-            // Get the text from the textfields
+            // Get the text from the text fields
             String username = getUsername.getText().toString();
             String password = getPassword.getText().toString();
 
