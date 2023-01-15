@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity">
+    tools:context=".InfoActivity">
 
     <TextView
         android:id="@+id/settingsText"
@@ -32,7 +32,8 @@
         android:layout_width="200dp"
         android:layout_height="50dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="275dp"
+        android:layout_below="@id/permitInsertText"
+        android:layout_marginTop="20dp"
         android:text="Update"
         android:layout_centerHorizontal="true"/>
 
@@ -93,12 +94,14 @@
         android:textColor="@color/black"/>
 
     <ImageView
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="325dp"
+        android:layout_height="325dp"
         android:id="@+id/logo"
         android:src="@drawable/lakehead_print_logo"
-        android:layout_below="@id/permitInsertText"
-        android:layout_marginTop="110dp"
+        android:layout_below="@id/updateButton"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:layout_centerHorizontal="true"
         android:alpha="0.5"
         />
@@ -108,7 +111,7 @@
         android:layout_width="200dp"
         android:layout_height="50dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="30dp"
         android:layout_below="@id/logo"
         android:text="Logout"
         android:layout_centerHorizontal="true"/>
