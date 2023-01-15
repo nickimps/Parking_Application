@@ -65,6 +65,22 @@ public class InfoActivity extends AppCompatActivity {
             startActivity((intent));
         });
 
+        //Logout Button
+        Button logoutButton = findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(v -> {
+            // Send the user to the login screen.
+
+            SharedPreferences sharedPrefBack = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPrefBack.edit();
+            editor.putString("username", null);
+            editor.putString("password", null);
+            editor.apply();
+
+            Intent intent = new Intent(InfoActivity.this, LoginActivity.class);
+            startActivity((intent));
+        });
+
+
         // UPDATE BUTTON
         Button updateButton = findViewById(R.id.updateButton);
         updateButton.setOnClickListener(view -> firestore.collection("Users")
