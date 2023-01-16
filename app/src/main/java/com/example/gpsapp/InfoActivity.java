@@ -68,14 +68,14 @@ public class InfoActivity extends AppCompatActivity {
         //Logout Button
         Button logoutButton = findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(v -> {
-            // Send the user to the login screen.
-
+            //Remove user information from local shared preferences
             SharedPreferences sharedPrefBack = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPrefBack.edit();
             editor.putString("username", null);
             editor.putString("password", null);
             editor.apply();
 
+            // Send the user to the login screen.
             Intent intent = new Intent(InfoActivity.this, LoginActivity.class);
             startActivity((intent));
         });

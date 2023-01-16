@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -50,6 +51,13 @@ public class RegisterActivity extends AppCompatActivity {
                                 // Create new user object, with the user's information, then add to database
                                 User user = new User(username, password, name, permit);
                                 firestore.collection("Users").add(user);
+
+                                //Add user information to local shared preferences
+                                SharedPreferences sharedPrefBack = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPrefBack.edit();
+                                editor.putString("username", username);
+                                editor.putString("password", password);
+                                editor.apply();
 
                                 //Change the activity to the maps activity screen
                                 Intent intent = new Intent(RegisterActivity.this, MapsActivity.class);
