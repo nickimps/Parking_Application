@@ -30,8 +30,6 @@ public class LoginActivity extends AppCompatActivity {
 
         // Bypass login if login details exist
         if (username != null && password != null) {
-            Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
-
             // Database instance
             firestore = FirebaseFirestore.getInstance();
 
@@ -43,6 +41,8 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             if (!task.getResult().isEmpty()) {
+                                Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
+
                                 getUsername.setText(username);
                                 getPassword.setText(password);
 
