@@ -15,7 +15,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="25dp"
         android:paddingTop="5dp"
-        android:text="Peter Parker Spotter"
+        android:text="Smart Parking Application"
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="30dp" />
