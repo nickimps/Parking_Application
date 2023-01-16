@@ -50,9 +50,6 @@ public class LoginActivity extends AppCompatActivity {
                                 Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
                                 startActivity((intent));
                             }
-                            else {
-                                Toast.makeText(getApplicationContext(), "Failed to auto-login", Toast.LENGTH_SHORT).show();
-                            }
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
