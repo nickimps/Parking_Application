@@ -9,12 +9,33 @@ Many students and staff can attest to problematic parking at Lakehead University
 
 This application will be technologically quite different from other parking applications that exist currently. Instead of relying on sensory data or IP cameras to locate and detect empty parking locations, this application will use machine learning techniques to determine whether you have parked your car or not and then use GPS location and network information to notify other users that the parking space has been filled. Additionally, when you have left your parking spot, our model will be able to accurately detect that and mark the parking space as free. Different machine learning classification methods will need to be tested to ensure that we have chosen the most appropriate model. The machine learning model will predict based on your speed before and after a full stop; it should be able to recognize the difference between walking and driving, which allows it to determine the stopping location.
 
-
 ## Features
 - Locate available parking spots closest to your destination on campus
 - Find the position of your parked car
 - Automatic detection of parking so that other users can see the spot has been occupied, no need to specify you have parked
 - Storage of parking permits to help parking services
+
+## TODO
+- [ ] Have live location show up on the map
+- [ ] Functional Parking Spaces
+  - [ ] Use small subset of parking lot to collect and save the GPS location of the parking spaces (This small sample could be used for the demo)
+  - [ ] Parking space UI for occupied and empty spots
+  - [ ] UI for your current location, do we leave as a blue circle or do we try and make it look like a car and have custom icons that the user can choose from?
+  - [ ] Functionality to recognize when a user is within a parking space or not
+  - [ ] When you click on a parking space, it should bring that parking space to centre of screen and even zoom in/out if needed
+- [ ] Machine Learning Model
+  - [ ] Collect GPS location in admin mode (need ability to record a GPS movement)
+  - [ ] Train the model on the GPS data
+    - My idea right now is that the GPS data would provide *n* seconds of GPS movement before and after a full stop. This would be a 'clip' of data that would be fed into the model. Then there should be a column, especially for training, that would have if that was actually an act of parking or not
+- [ ] Implement Admin Mode
+  - [ ] Add field to select users within the database
+  - [ ] Add a button in the settings for admins to go to admin mode
+  - [ ] Admin mode should give capability to quickly see if device is in parking space or not and what is the ID of the parking space
+  - [ ] Ability to save a gps location to a file or something
+  - [ ] Ability to select a parking space and make it occupied or empty on demand
+- [ ] Pause button that turns of location tracking until reactivated
+- [ ] Geofencing ability, have it turn on precise location when within campus parking lot and go to approximate when it is not on campus parking lot
+
 
 ## User Interface
 <div style="display:flex">
