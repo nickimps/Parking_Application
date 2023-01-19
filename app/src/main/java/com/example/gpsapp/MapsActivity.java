@@ -1,5 +1,7 @@
 package com.example.gpsapp;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +38,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import org.checkerframework.checker.units.qual.C;
 
@@ -56,6 +60,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Location userCurrentLocation;
     private ActivityMapsBinding binding;
 
+    FirebaseFirestore firestore;
+    Boolean isAdmin;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,8 +70,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Get the username of the current logged in user
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
         String username = sharedPref.getString("username", null);
+
+        // Gets user administrator access
+        firestore = FirebaseFirestore.getInstance();
+        firestore.collection("Users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            isAdmin = document.getBoolean("isAdmin");
+                        }
+                        if (isAdmin)
+                            findViewById(R.id.adminText).setVisibility(View.VISIBLE);
+                        else
+                            findViewById(R.id.adminText).setVisibility(View.GONE);
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                });
+
 
         TextView name = findViewById(R.id.welcomeText);
         name.setText("Welcome " + username);

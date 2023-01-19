@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -15,6 +17,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 public class InfoActivity extends AppCompatActivity {
 
     FirebaseFirestore firestore;
+    Boolean isAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,25 @@ public class InfoActivity extends AppCompatActivity {
                         }
                     });
         }
+
+        // Gets user's administrator access
+        firestore = FirebaseFirestore.getInstance();
+        firestore.collection("Users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            isAdmin = document.getBoolean("isAdmin");
+                        }
+                        if (isAdmin)
+                            findViewById(R.id.adminScreenButton).setVisibility(View.VISIBLE);
+                        else
+                            findViewById(R.id.adminScreenButton).setVisibility(View.GONE);
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                });
 
         // BACK BUTTON
         Button backButton = findViewById(R.id.backButton);

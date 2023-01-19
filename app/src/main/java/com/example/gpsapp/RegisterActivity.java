@@ -48,8 +48,8 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // If the user exists and the fields were not empty, then add the user
                             if(task.getResult().isEmpty() && !username.isEmpty() && !password.isEmpty() && !name.isEmpty()) {
-                                // Create new user object, with the user's information, then add to database
-                                User user = new User(username, password, name, permit);
+                                // Create new user object, with the user's information, then add to database (default admin privileges are false)
+                                User user = new User(username, password, name, permit, false);
                                 firestore.collection("Users").add(user);
 
                                 //Add user information to local shared preferences
