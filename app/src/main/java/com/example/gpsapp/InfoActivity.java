@@ -90,7 +90,10 @@ public class InfoActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             // Only update if fields have information in them, otherwise let user know there is no information there
-                            if (!getName.getText().toString().isEmpty() && !getPermit.getText().toString().isEmpty()) {
+                            if (getName.getText().toString().isEmpty() && getPermit.getText().toString().isEmpty()) {
+                                Toast.makeText(getApplicationContext(), "Please enter either a name or permit number", Toast.LENGTH_SHORT).show();
+                            }
+                            else {
                                 //If the user has entered something in the text field then add it to the update,
                                 // otherwise just keep what was already there in the database
                                 String name, permit;
@@ -118,9 +121,6 @@ public class InfoActivity extends AppCompatActivity {
                                 getPermit.setText("");
                                 getName.setHint(name);
                                 getPermit.setHint(permit);
-                            }
-                            else {
-                                Toast.makeText(getApplicationContext(), "Please enter either a name or permit number", Toast.LENGTH_SHORT).show();
                             }
                         }
                     } else {
