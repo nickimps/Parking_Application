@@ -28,9 +28,10 @@ This application will be technologically quite different from other parking appl
   - [ ] Train the model on the GPS data
     - My idea right now is that the GPS data would provide *n* seconds of GPS movement before and after a full stop. This would be a 'clip' of data that would be fed into the model. Then there should be a column, especially for training, that would have if that was actually an act of parking or not
 - [ ] Implement Admin Mode
-  - [ ] Add field to select users within the database
-  - [ ] Add a button in the settings for admins to go to admin mode
-  - [ ] Admin mode should give capability to quickly see if device is in parking space or not and what is the ID of the parking space
+  - [X] Add field to select users within the database - NI
+  - [X] Add a button in the settings for admins to go to admin mode - NI
+  - [ ] Create admin screen to have more functionality
+  - [ ] Admin mode should give capability to quickly see if device is in parking space or not and what is the ID of the parking space in the admin screen
   - [ ] Ability to save a gps location to a file or something
   - [ ] Ability to select a parking space and make it occupied or empty on demand
 - [ ] Pause button that turns of location tracking until reactivated
@@ -38,6 +39,7 @@ This application will be technologically quite different from other parking appl
 - [ ] Update user interface, make sure the UI looks presentable
 - [ ] Change font, sizing and scaling for application to look the same on any size device
 - [ ] Add legend for types of parking spaces on the MapActivity
+- [ ] Create API for the connection to the Python model when it eventually a go
 
 
 ## User Interface
