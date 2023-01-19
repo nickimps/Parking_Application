@@ -17,7 +17,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 public class InfoActivity extends AppCompatActivity {
 
     FirebaseFirestore firestore;
-    Boolean isAdmin;
+    Boolean isAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +65,7 @@ public class InfoActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             isAdmin = document.getBoolean("isAdmin");
                         }
-                        if (isAdmin)
+                        if (Boolean.TRUE.equals(isAdmin))
                             findViewById(R.id.adminScreenButton).setVisibility(View.VISIBLE);
                         else
                             findViewById(R.id.adminScreenButton).setVisibility(View.GONE);
