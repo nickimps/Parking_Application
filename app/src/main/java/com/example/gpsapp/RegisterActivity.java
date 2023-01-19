@@ -32,10 +32,10 @@ public class RegisterActivity extends AppCompatActivity {
         Button register = findViewById(R.id.registerButton);
         register.setOnClickListener(view -> {
             //Get the information within the text fields
-            String username = getUsername.getText().toString();
-            String password = getPassword.getText().toString();
-            String name = getName.getText().toString();
-            String permit = getPermit.getText().toString();
+            String username = getUsername.getText().toString().trim();
+            String password = getPassword.getText().toString().trim();
+            String name = getName.getText().toString().trim();
+            String permit = getPermit.getText().toString().trim();
 
             //Database instance
             firestore = FirebaseFirestore.getInstance();

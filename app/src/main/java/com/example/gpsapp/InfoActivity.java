@@ -100,13 +100,13 @@ public class InfoActivity extends AppCompatActivity {
                                 if (getName.getText().toString().isEmpty()) {
                                     name = document.getString("name");
                                 } else {
-                                    name = getName.getText().toString();
+                                    name = getName.getText().toString().trim();
                                 }
 
                                 if (getPermit.getText().toString().isEmpty()) {
                                     permit = document.getString("permit");
                                 } else {
-                                    permit = getPermit.getText().toString();
+                                    permit = getPermit.getText().toString().trim();
                                 }
 
                                 // Update the database for that user
