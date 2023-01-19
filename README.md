@@ -27,9 +27,10 @@ This application will be technologically quite different from other parking appl
   - [ ] Collect GPS location in admin mode (need ability to record a GPS movement)
   - [ ] Train the model on the GPS data
     - My idea right now is that the GPS data would provide *n* seconds of GPS movement before and after a full stop. This would be a 'clip' of data that would be fed into the model. Then there should be a column, especially for training, that would have if that was actually an act of parking or not
-- [ ] Implement Admin Mode
+- [ ] Implement Admin Screen
   - [X] Add field to select users within the database - NI
   - [X] Add a button in the settings for admins to go to admin mode - NI
+  - [ ] Add function to be able to give admin privileges to a user
   - [ ] Create admin screen to have more functionality
   - [ ] Admin mode should give capability to quickly see if device is in parking space or not and what is the ID of the parking space in the admin screen
   - [ ] Ability to save a gps location to a file or something
