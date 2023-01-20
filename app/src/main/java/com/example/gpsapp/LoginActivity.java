@@ -109,6 +109,8 @@ public class LoginActivity extends AppCompatActivity {
         usernameLayout = findViewById(R.id.usernameTextInputLayout);
         passwordLayout = findViewById(R.id.passwordTextInputLayout);
 
+        findViewById(R.id.loginButton).setEnabled(false);
+
         // Create listeners to remove error message on text fields
         usernameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -119,10 +121,16 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.length() < 1)
+                if (editable.length() < 1) {
                     usernameLayout.setError("Required");
-                else
+                    if (passwordEditText.getText().toString().isEmpty())
+                        findViewById(R.id.loginButton).setEnabled(false);
+                    else
+                        findViewById(R.id.loginButton).setEnabled(true);
+                } else {
                     usernameLayout.setError(null);
+                    findViewById(R.id.loginButton).setEnabled(true);
+                }
             }
         });
 
@@ -135,10 +143,16 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.length() < 1)
+                if (editable.length() < 1) {
                     passwordLayout.setError("Required");
-                else
+                    if (usernameEditText.getText().toString().isEmpty())
+                        findViewById(R.id.loginButton).setEnabled(false);
+                    else
+                        findViewById(R.id.loginButton).setEnabled(true);
+                } else {
                     passwordLayout.setError(null);
+                    findViewById(R.id.loginButton).setEnabled(true);
+                }
             }
         });
 
@@ -172,9 +186,11 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         if (!task.getResult().isEmpty()) {
+                            findViewById(R.id.loginButton).setEnabled(true);
                             // Send the user to the maps activity
                             Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
                             startActivity((intent));
+                            findViewById(R.id.loginButton).setEnabled(false);
                         } else if (username.isEmpty() && password.isEmpty()) {
                             usernameLayout.setError("Required");
                             passwordLayout.setError("Required");
