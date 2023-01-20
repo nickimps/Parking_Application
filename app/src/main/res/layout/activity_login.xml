@@ -15,8 +15,8 @@
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="30sp"
-        android:layout_marginBottom="30sp"
+        android:layout_marginTop="20sp"
+        android:layout_marginBottom="20sp"
         android:alpha="0.25"
         android:src="@drawable/lakehead_print_logo" />
 
@@ -86,7 +86,8 @@
             android:hint="Password"
             android:inputType="textPassword"
             android:fontFamily="@font/inter"
-            android:textSize="17sp" />
+            android:textSize="17sp"
+            android:imeOptions="actionGo" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button

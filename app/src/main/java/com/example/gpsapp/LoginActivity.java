@@ -16,7 +16,9 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -141,45 +143,57 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        //Enable enter button to auto login on phone
+        passwordEditText.setOnEditorActionListener((textView, i, keyEvent) -> {
+            if (i == EditorInfo.IME_ACTION_GO) {
+                login();
+                return true;
+            }
+            return false;
+        });
+
         // LOGIN BUTTON
         Button logButton = findViewById(R.id.loginButton);
         logButton.setOnClickListener(v -> {
-            // Get the text from the text fields
-            String username = usernameEditText.getText().toString().trim();
-            String password = passwordEditText.getText().toString().trim();
-
-            // Database Instance
-            firestore = FirebaseFirestore.getInstance();
-
-            // Perform query to get the user that has matching username and password so that we can log in the user
-            firestore.collection("Users")
-                    .whereEqualTo("username", username)
-                    .whereEqualTo("password", password)
-                    .get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            if (!task.getResult().isEmpty()) {
-                                // Send the user to the maps activity
-                                Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
-                                startActivity((intent));
-                            } else if (username.isEmpty() && password.isEmpty()) {
-                                usernameLayout.setError("Required");
-                                passwordLayout.setError("Required");
-                            } else if (username.isEmpty()) {
-                                usernameLayout.setError("Required");
-                            } else if (password.isEmpty()) {
-                                passwordLayout.setError("Required");
-                            } else {
-                                Toast.makeText(getApplicationContext(), "Username or password invalid!", Toast.LENGTH_SHORT).show();
-                                usernameLayout.setError(" ");
-                                passwordLayout.setError("Username or password are incorrect");
-                            }
-
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                    });
+            login();
         });
+    }
+
+    public void login() {
+        // Get the text from the text fields
+        String username = usernameEditText.getText().toString().trim();
+        String password = passwordEditText.getText().toString().trim();
+
+        // Database Instance
+        firestore = FirebaseFirestore.getInstance();
+
+        // Perform query to get the user that has matching username and password so that we can log in the user
+        firestore.collection("Users")
+                .whereEqualTo("username", username)
+                .whereEqualTo("password", password)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (!task.getResult().isEmpty()) {
+                            // Send the user to the maps activity
+                            Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
+                            startActivity((intent));
+                        } else if (username.isEmpty() && password.isEmpty()) {
+                            usernameLayout.setError("Required");
+                            passwordLayout.setError("Required");
+                        } else if (username.isEmpty()) {
+                            usernameLayout.setError("Required");
+                        } else if (password.isEmpty()) {
+                            passwordLayout.setError("Required");
+                        } else {
+                            usernameLayout.setError(" ");
+                            passwordLayout.setError("Username or password are incorrect");
+                        }
+
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                });
     }
 
     /**
