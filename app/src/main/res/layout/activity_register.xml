@@ -14,7 +14,7 @@
         android:id="@+id/logo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.08"
+        android:alpha="0.05"
         android:src="@drawable/lakehead_print_logo"
         android:contentDescription="@string/lu_logo"/>
 
@@ -125,7 +125,8 @@
         android:text="@string/register"
         android:textAlignment="center"
         android:fontFamily="@font/inter"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:enabled="false" />
 
     <!-- Clickable Login Text -->
     <TextView

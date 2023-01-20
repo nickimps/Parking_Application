@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -19,16 +21,63 @@ public class InfoActivity extends AppCompatActivity {
     FirebaseFirestore firestore;
     Boolean isAdmin = false;
 
+    TextInputEditText nameEditText, permitEditText;
+    TextInputLayout nameLayout, permitLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
 
         // Get the text fields ids
-        TextInputEditText nameEditText = findViewById(R.id.infoNameTextInputEditText);
-        TextInputEditText permitEditText = findViewById(R.id.infoPermitTextInputEditText);
-        TextInputLayout nameLayout = findViewById(R.id.infoNameTextInputLayout);
-        TextInputLayout permitLayout = findViewById(R.id.infoPermitTextInputLayout);
+        nameEditText = findViewById(R.id.infoNameTextInputEditText);
+        permitEditText = findViewById(R.id.infoPermitTextInputEditText);
+        nameLayout = findViewById(R.id.infoNameTextInputLayout);
+        permitLayout = findViewById(R.id.infoPermitTextInputLayout);
+
+        nameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editable.length() < 1) {
+                    nameLayout.setError("Required");
+                    if (permitEditText.getText().toString().isEmpty())
+                        findViewById(R.id.updateButton).setEnabled(false);
+                    else
+                        findViewById(R.id.updateButton).setEnabled(true);
+                } else {
+                    nameLayout.setError(null);
+                        findViewById(R.id.updateButton).setEnabled(true);
+                }
+            }
+        });
+
+        permitEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editable.length() < 1) {
+                    permitLayout.setError("Required");
+                    if (nameEditText.getText().toString().isEmpty())
+                        findViewById(R.id.updateButton).setEnabled(false);
+                    else
+                        findViewById(R.id.updateButton).setEnabled(true);
+                } else {
+                    permitLayout.setError(null);
+                    findViewById(R.id.updateButton).setEnabled(true);
+                }
+            }
+        });
 
         // Get shared preference to pull user information
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
@@ -56,8 +105,6 @@ public class InfoActivity extends AppCompatActivity {
                         }
                     });
         }
-
-
 
         // Gets user's administrator access
         firestore = FirebaseFirestore.getInstance();

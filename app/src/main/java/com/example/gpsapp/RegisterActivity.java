@@ -1,7 +1,6 @@
 package com.example.gpsapp;
 
 import static android.content.ContentValues.TAG;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -19,7 +18,6 @@ import android.widget.Button;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -36,6 +34,8 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
+        findViewById(R.id.registerButton).setEnabled(false);
 
         // Save the text field and layout ids
         usernameEditText = findViewById(R.id.regUsernameTextInputEditText);
@@ -59,10 +59,16 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.length() < 1)
+                if (editable.length() < 1) {
                     usernameLayout.setError("Required");
-                else
+                    findViewById(R.id.registerButton).setEnabled(false);
+                } else {
                     usernameLayout.setError(null);
+                    if (passwordEditText.getText().toString().isEmpty() || nameEditText.getText().toString().isEmpty())
+                        findViewById(R.id.registerButton).setEnabled(false);
+                    else
+                        findViewById(R.id.registerButton).setEnabled(true);
+                }
             }
         });
 
@@ -75,10 +81,16 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.length() < 1)
+                if (editable.length() < 1) {
                     passwordLayout.setError("Required");
-                else
+                    findViewById(R.id.registerButton).setEnabled(false);
+                } else {
                     passwordLayout.setError(null);
+                    if (usernameEditText.getText().toString().isEmpty() || nameEditText.getText().toString().isEmpty())
+                        findViewById(R.id.registerButton).setEnabled(false);
+                    else
+                        findViewById(R.id.registerButton).setEnabled(true);
+                }
             }
         });
 
@@ -91,10 +103,16 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.length() < 1)
+                if (editable.length() < 1) {
                     nameLayout.setError("Required");
-                else
+                    findViewById(R.id.registerButton).setEnabled(false);
+                } else {
                     nameLayout.setError(null);
+                    if (usernameEditText.getText().toString().isEmpty() || passwordEditText.getText().toString().isEmpty())
+                        findViewById(R.id.registerButton).setEnabled(false);
+                    else
+                        findViewById(R.id.registerButton).setEnabled(true);
+                }
             }
         });
 

@@ -100,7 +100,8 @@
         android:text="@string/sign_in"
         android:textAlignment="center"
         android:fontFamily="@font/inter"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:enabled="false" />
 
     <TextView
         android:id="@+id/registerTextView"

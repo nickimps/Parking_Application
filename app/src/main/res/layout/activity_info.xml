@@ -104,7 +104,8 @@
         android:layout_below="@id/infoPermitTextInputLayout"
         android:text="@string/update"
         android:fontFamily="@font/inter"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:enabled="false" />
 
     <Button
         android:id="@+id/adminScreenButton"

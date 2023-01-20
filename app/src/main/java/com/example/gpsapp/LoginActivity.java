@@ -123,13 +123,13 @@ public class LoginActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
                 if (editable.length() < 1) {
                     usernameLayout.setError("Required");
+                    findViewById(R.id.loginButton).setEnabled(false);
+                } else {
+                    usernameLayout.setError(null);
                     if (passwordEditText.getText().toString().isEmpty())
                         findViewById(R.id.loginButton).setEnabled(false);
                     else
                         findViewById(R.id.loginButton).setEnabled(true);
-                } else {
-                    usernameLayout.setError(null);
-                    findViewById(R.id.loginButton).setEnabled(true);
                 }
             }
         });
@@ -145,13 +145,13 @@ public class LoginActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
                 if (editable.length() < 1) {
                     passwordLayout.setError("Required");
+                    findViewById(R.id.loginButton).setEnabled(false);
+                } else {
+                    passwordLayout.setError(null);
                     if (usernameEditText.getText().toString().isEmpty())
                         findViewById(R.id.loginButton).setEnabled(false);
                     else
                         findViewById(R.id.loginButton).setEnabled(true);
-                } else {
-                    passwordLayout.setError(null);
-                    findViewById(R.id.loginButton).setEnabled(true);
                 }
             }
         });
