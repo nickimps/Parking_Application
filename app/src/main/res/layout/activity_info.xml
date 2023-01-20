@@ -74,8 +74,8 @@
         android:ems="10"
         android:hint="Name"
         android:inputType="textPersonName"
-        android:textSize="20dp"
-        android:textColor="@color/black"/>
+        android:textColor="@color/black"
+        android:textSize="20dp" />
 
     <TextView
         android:id="@+id/permitView"

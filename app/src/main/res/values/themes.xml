@@ -22,4 +22,5 @@
     <style name="Theme.GPSApp.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.GPSApp.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
 </resources>

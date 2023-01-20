@@ -8,6 +8,13 @@
     tools:context=".RegisterActivity"
     tools:visibility="visible">
 
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.1"
+        android:src="@drawable/lakehead_print_logo" />
+
     <TextView
         android:id="@+id/registerLogoView"
         android:layout_width="400dp"
@@ -44,7 +51,6 @@
         android:textColor="@color/black"
         android:textSize="20dp" />
 
-
     <EditText
         android:id="@+id/registerUsernameText"
         android:layout_width="match_parent"
@@ -53,7 +59,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="30dp"
-        android:background="#F4F4F4"
+        android:background="#51F4F4F4"
         android:ems="10"
         android:hint="Username"
         android:inputType="textPersonName"
@@ -80,7 +86,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="30dp"
-        android:background="#F4F4F4"
+        android:background="#51F4F4F4"
         android:ems="10"
         android:hint="Password"
         android:inputType="textPassword"
@@ -107,7 +113,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="30dp"
-        android:background="#F4F4F4"
+        android:background="#51F4F4F4"
         android:ems="10"
         android:hint="Name"
         android:textColor="@color/black"
@@ -133,7 +139,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="30dp"
-        android:background="#F4F4F4"
+        android:background="#51F4F4F4"
         android:ems="10"
         android:hint="Permit Number"
         android:textColor="@color/black"
@@ -165,12 +171,7 @@
         android:textAlignment="center"
         android:textSize="20dp" />
 
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0.1"
-        android:src="@drawable/lakehead_print_logo" />
+
 
 
 </android.widget.RelativeLayout>
