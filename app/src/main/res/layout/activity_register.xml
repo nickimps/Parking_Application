@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingLeft="25dp"
+    android:paddingRight="25dp"
     android:visibility="visible"
     tools:context=".RegisterActivity"
     tools:visibility="visible">
@@ -12,166 +14,131 @@
         android:id="@+id/logo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.1"
+        android:alpha="0.08"
         android:src="@drawable/lakehead_print_logo" />
 
-    <TextView
-        android:id="@+id/registerLogoView"
-        android:layout_width="400dp"
-        android:layout_height="50dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"
-        android:paddingTop="5dp"
-        android:text="Smart Parking Application"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        android:textSize="30dp" />
 
     <TextView
-        android:id="@+id/registerView"
-        android:layout_width="200dp"
-        android:layout_height="50dp"
+        android:id="@+id/registerText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="135dp"
+        android:fontFamily="@font/inter_extrabold"
         android:paddingTop="5dp"
         android:text="Register"
-        android:textAlignment="center"
+        android:textAlignment="textStart"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textColor="@color/black"
-        android:textSize="30dp" />
+        android:textSize="50sp" />
 
-    <TextView
-        android:id="@+id/registerUsernameView"
+    <!-- Username Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:id="@+id/regUsernameTextInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/registerView"
-        android:layout_marginStart="30dp"
+        android:layout_below="@id/registerText"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="30dp"
-        android:text="*Enter Your Username:"
-        android:textColor="@color/black"
-        android:textSize="20dp" />
+        app:errorEnabled="true" >
 
-    <EditText
-        android:id="@+id/registerUsernameText"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_below="@id/registerUsernameView"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="30dp"
-        android:background="#51F4F4F4"
-        android:ems="10"
-        android:hint="Username"
-        android:inputType="textPersonName"
-        android:textColor="@color/black"
-        android:textSize="20dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/regUsernameTextInputEditText"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:inputType="textPersonName"
+            android:fontFamily="@font/inter"
+            android:textSize="17sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:id="@+id/registerPasswordView"
+    <!-- Password Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:id="@+id/regPasswordTextInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/registerUsernameText"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="30dp"
-        android:text="*Enter Your Password: "
-        android:textColor="@color/black"
-        android:textSize="20dp" />
+        android:layout_below="@+id/regUsernameTextInputLayout"
+        app:errorEnabled="true"
+        app:endIconMode="password_toggle" >
 
-    <EditText
-        android:id="@+id/registerPasswordText"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_below="@id/registerPasswordView"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="30dp"
-        android:background="#51F4F4F4"
-        android:ems="10"
-        android:hint="Password"
-        android:inputType="textPassword"
-        android:textColor="@color/black"
-        android:textSize="20dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:id="@+id/regPasswordTextInputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:fontFamily="@font/inter"
+            android:textSize="17sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:id="@+id/registerNameView"
+    <!-- Name Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:id="@+id/regNameTextInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/registerPasswordText"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="30dp"
-        android:text="*Enter Your Name: "
-        android:textColor="@color/black"
-        android:textSize="20dp" />
+        android:layout_below="@id/regPasswordTextInputLayout"
+        app:errorEnabled="true" >
 
-    <EditText
-        android:id="@+id/registerNameText"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_below="@id/registerNameView"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="30dp"
-        android:background="#51F4F4F4"
-        android:ems="10"
-        android:hint="Name"
-        android:textColor="@color/black"
-        android:textSize="20dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/regNameTextInputEditText"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Name"
+            android:inputType="textPersonName"
+            android:fontFamily="@font/inter"
+            android:textSize="17sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:id="@+id/registerPermitView"
+    <!-- Permit Number Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:id="@+id/regPermitTextInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/registerNameText"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="30dp"
-        android:text="Enter Your Permit Number: "
-        android:textColor="@color/black"
-        android:textSize="20dp" />
+        android:layout_below="@id/regNameTextInputLayout"
+        app:errorEnabled="true" >
 
-    <EditText
-        android:id="@+id/registerPermitText"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_below="@id/registerPermitView"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="30dp"
-        android:background="#51F4F4F4"
-        android:ems="10"
-        android:hint="Permit Number"
-        android:textColor="@color/black"
-        android:textSize="20dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/regPermitTextInputEditText"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Permit Number"
+            android:inputType="text"
+            android:fontFamily="@font/inter"
+            android:textSize="17sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Register Button -->
     <Button
         android:id="@+id/registerButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/registerPermitText"
+        android:layout_height="55sp"
+        android:layout_below="@id/regPermitTextInputLayout"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="30dp"
         android:text="Register"
         android:textAlignment="center"
+        android:fontFamily="@font/inter"
         android:textSize="20dp" />
 
-    <Button
-        android:id="@+id/backToLogin"
-        android:layout_width="match_parent"
+    <!-- Clickable Login Text -->
+    <TextView
+        android:id="@+id/registerTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/registerButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="50dp"
-        android:text="Back To Login"
+        android:layout_below="@id/registerButton"
+        android:layout_marginTop="25sp"
+        android:text="Already have an account? Login here"
+        android:textColorLink="@color/LU_blue"
         android:textAlignment="center"
-        android:textSize="20dp" />
-
-
-
+        android:textColor="@color/black"
+        android:fontFamily="@font/inter"
+        android:textSize="15dp" />
 
 </android.widget.RelativeLayout>

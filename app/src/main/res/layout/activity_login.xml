@@ -29,6 +29,7 @@
         android:text="Welcome to Easier Parking"
         android:textAlignment="textStart"
         android:textColor="@color/grey"
+        android:fontFamily="@font/inter"
         android:textSize="15dp" />
 
     <TextView
@@ -63,6 +64,7 @@
             android:layout_height="wrap_content"
             android:hint="Username"
             android:inputType="textPersonName"
+            android:fontFamily="@font/inter"
             android:textSize="17sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -83,6 +85,7 @@
             android:layout_height="wrap_content"
             android:hint="Password"
             android:inputType="textPassword"
+            android:fontFamily="@font/inter"
             android:textSize="17sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -94,6 +97,7 @@
         android:layout_centerHorizontal="true"
         android:text="Sign In"
         android:textAlignment="center"
+        android:fontFamily="@font/inter"
         android:textSize="20dp" />
 
     <TextView
@@ -102,9 +106,9 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_below="@id/loginButton"
-        android:layout_marginTop="10sp"
+        android:layout_marginTop="25sp"
         android:text="Don't have an account? Register here"
-        android:textColorLink="@color/LU_yellow"
+        android:textColorLink="@color/LU_blue"
         android:textAlignment="center"
         android:textColor="@color/black"
         android:fontFamily="@font/inter"

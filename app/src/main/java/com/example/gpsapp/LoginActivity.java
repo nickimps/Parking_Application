@@ -85,8 +85,8 @@ public class LoginActivity extends AppCompatActivity {
         // Only save the text fields if there is information in them.
         if (!usernameEditText.getText().toString().isEmpty() && !passwordEditText.getText().toString().isEmpty()) {
             // Store information from the text fields
-            editor.putString("username", usernameEditText.getText().toString());
-            editor.putString("password", passwordEditText.getText().toString());
+            editor.putString("username", usernameEditText.getText().toString().trim());
+            editor.putString("password", passwordEditText.getText().toString().trim());
 
             // Commit the changes to the editor
             editor.apply();
@@ -145,8 +145,8 @@ public class LoginActivity extends AppCompatActivity {
         Button logButton = findViewById(R.id.loginButton);
         logButton.setOnClickListener(v -> {
             // Get the text from the text fields
-            String username = usernameEditText.getText().toString();
-            String password = passwordEditText.getText().toString();
+            String username = usernameEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
 
             // Database Instance
             firestore = FirebaseFirestore.getInstance();
@@ -200,6 +200,7 @@ public class LoginActivity extends AppCompatActivity {
             public void updateDrawState(TextPaint ds) {
                 ds.setColor(ds.linkColor);
                 ds.setUnderlineText(false);
+                ds.setFakeBoldText(true);
             }
             @Override
             public void onClick(@NonNull View view) {
