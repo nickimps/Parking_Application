@@ -18,7 +18,8 @@
         android:layout_marginTop="20sp"
         android:layout_marginBottom="20sp"
         android:alpha="0.25"
-        android:src="@drawable/lakehead_print_logo" />
+        android:src="@drawable/lakehead_print_logo"
+        android:contentDescription="@string/lu_logo" />
 
     <TextView
         android:id="@+id/welcomeTextView"
@@ -26,11 +27,11 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_below="@id/logo"
-        android:text="Welcome to Easier Parking"
+        android:text="@string/welcome_to_easier_parking"
         android:textAlignment="textStart"
         android:textColor="@color/grey"
         android:fontFamily="@font/inter"
-        android:textSize="15dp" />
+        android:textSize="15sp" />
 
     <TextView
         android:id="@+id/loginText"
@@ -41,7 +42,7 @@
         android:layout_marginTop="0dp"
         android:fontFamily="@font/inter_extrabold"
         android:paddingTop="5dp"
-        android:text="Sign In"
+        android:text="@string/sign_in"
         android:textAlignment="textStart"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textColor="@color/black"
@@ -62,7 +63,7 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Username"
+            android:hint="@string/username"
             android:inputType="textPersonName"
             android:fontFamily="@font/inter"
             android:textSize="17sp" />
@@ -83,7 +84,7 @@
             android:id="@+id/passwordTextInputEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Password"
+            android:hint="@string/password"
             android:inputType="textPassword"
             android:fontFamily="@font/inter"
             android:textSize="17sp"
@@ -96,10 +97,10 @@
         android:layout_height="55sp"
         android:layout_below="@id/passwordTextInputLayout"
         android:layout_centerHorizontal="true"
-        android:text="Sign In"
+        android:text="@string/sign_in"
         android:textAlignment="center"
         android:fontFamily="@font/inter"
-        android:textSize="20dp" />
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/registerTextView"
@@ -108,27 +109,10 @@
         android:layout_centerHorizontal="true"
         android:layout_below="@id/loginButton"
         android:layout_marginTop="25sp"
-        android:text="Don't have an account? Register here"
+        android:text="@string/don_t_have_an_account_register_here"
         android:textColorLink="@color/LU_blue"
         android:textAlignment="center"
         android:textColor="@color/black"
         android:fontFamily="@font/inter"
-        android:textSize="15dp" />
-
-    <Button
-        android:id="@+id/goToRegisterButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/registerTextView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
-        android:text="Register"
-        android:textAlignment="center"
-        android:textSize="20dp"
-        android:backgroundTint="@color/LU_blue"
-        android:visibility="gone"/>
-
-
-
+        android:textSize="15sp" />
 </android.widget.RelativeLayout>

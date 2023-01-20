@@ -10,6 +10,22 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="register">Register</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="name">Name</string>
+    <string name="permit_number">Permit Number</string>
+    <string name="already_have_an_account_login_here">Already have an account? Login here</string>
+    <string name="lu_logo">LU Logo</string>
+    <string name="update">Update</string>
+    <string name="go_to_admin_screen">Go To Admin Screen</string>
+    <string name="logout">Logout</string>
+    <string name="back">Back</string>
+    <string name="settings">Settings</string>
+    <string name="welcome_to_easier_parking">Welcome to Easier Parking</string>
+    <string name="sign_in">Sign In</string>
+    <string name="don_t_have_an_account_register_here">Don\'t have an account? Register here</string>
+    <string name="tap_your_name_or_permit_number_to_change">Tap your name or permit number to change</string>
 
     <string-array name="filter">
         <item>Unavailable</item>

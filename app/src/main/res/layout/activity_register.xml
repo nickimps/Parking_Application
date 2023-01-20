@@ -15,7 +15,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.08"
-        android:src="@drawable/lakehead_print_logo" />
+        android:src="@drawable/lakehead_print_logo"
+        android:contentDescription="@string/lu_logo"/>
 
 
     <TextView
@@ -26,7 +27,7 @@
         android:layout_marginTop="135dp"
         android:fontFamily="@font/inter_extrabold"
         android:paddingTop="5dp"
-        android:text="Register"
+        android:text="@string/register"
         android:textAlignment="textStart"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textColor="@color/black"
@@ -47,7 +48,7 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Username"
+            android:hint="@string/username"
             android:inputType="textPersonName"
             android:fontFamily="@font/inter"
             android:textSize="17sp" />
@@ -68,7 +69,7 @@
             android:id="@+id/regPasswordTextInputEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Password"
+            android:hint="@string/password"
             android:inputType="textPassword"
             android:fontFamily="@font/inter"
             android:textSize="17sp" />
@@ -88,7 +89,7 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name"
+            android:hint="@string/name"
             android:inputType="textPersonName"
             android:fontFamily="@font/inter"
             android:textSize="17sp" />
@@ -108,7 +109,7 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Permit Number"
+            android:hint="@string/permit_number"
             android:inputType="text"
             android:fontFamily="@font/inter"
             android:textSize="17sp" />
@@ -121,10 +122,10 @@
         android:layout_height="55sp"
         android:layout_below="@id/regPermitTextInputLayout"
         android:layout_centerHorizontal="true"
-        android:text="Register"
+        android:text="@string/register"
         android:textAlignment="center"
         android:fontFamily="@font/inter"
-        android:textSize="20dp" />
+        android:textSize="20sp" />
 
     <!-- Clickable Login Text -->
     <TextView
@@ -134,11 +135,11 @@
         android:layout_centerHorizontal="true"
         android:layout_below="@id/registerButton"
         android:layout_marginTop="25sp"
-        android:text="Already have an account? Login here"
+        android:text="@string/already_have_an_account_login_here"
         android:textColorLink="@color/LU_blue"
         android:textAlignment="center"
         android:textColor="@color/black"
         android:fontFamily="@font/inter"
-        android:textSize="15dp" />
+        android:textSize="15sp" />
 
 </android.widget.RelativeLayout>

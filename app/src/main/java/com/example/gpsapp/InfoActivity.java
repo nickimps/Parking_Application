@@ -5,12 +5,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 import android.util.Log;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -25,8 +25,10 @@ public class InfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_info);
 
         // Get the text fields ids
-        EditText getName = findViewById(R.id.nameInsertText);
-        EditText getPermit = findViewById(R.id.permitInsertText);
+        TextInputEditText nameEditText = findViewById(R.id.infoNameTextInputEditText);
+        TextInputEditText permitEditText = findViewById(R.id.infoPermitTextInputEditText);
+        TextInputLayout nameLayout = findViewById(R.id.infoNameTextInputLayout);
+        TextInputLayout permitLayout = findViewById(R.id.infoPermitTextInputLayout);
 
         // Get shared preference to pull user information
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
@@ -46,14 +48,16 @@ public class InfoActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 // Set the hint for both the text fields
-                                getName.setHint(document.getString("name"));
-                                getPermit.setHint(document.getString("permit"));
+                                nameLayout.setHint(document.getString("name"));
+                                permitLayout.setHint(document.getString("permit"));
                             }
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     });
         }
+
+
 
         // Gets user's administrator access
         firestore = FirebaseFirestore.getInstance();
@@ -77,7 +81,7 @@ public class InfoActivity extends AppCompatActivity {
         // BACK BUTTON
         Button backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> {
-            if (!getName.getText().toString().isEmpty() || !getPermit.getText().toString().isEmpty()) {
+            if (!nameEditText.getText().toString().isEmpty() || !permitEditText.getText().toString().isEmpty()) {
                 // Notify the user that the changes have not been saved if they leave with text in the text fields
                 Toast.makeText(getApplicationContext(), "Changes not saved!", Toast.LENGTH_SHORT).show();
             }
@@ -112,23 +116,23 @@ public class InfoActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             // Only update if fields have information in them, otherwise let user know there is no information there
-                            if (getName.getText().toString().isEmpty() && getPermit.getText().toString().isEmpty()) {
+                            if (nameEditText.getText().toString().isEmpty() && permitEditText.getText().toString().isEmpty()) {
                                 Toast.makeText(getApplicationContext(), "Please enter either a name or permit number", Toast.LENGTH_SHORT).show();
                             }
                             else {
                                 //If the user has entered something in the text field then add it to the update,
                                 // otherwise just keep what was already there in the database
                                 String name, permit;
-                                if (getName.getText().toString().isEmpty()) {
+                                if (nameEditText.getText().toString().isEmpty()) {
                                     name = document.getString("name");
                                 } else {
-                                    name = getName.getText().toString().trim();
+                                    name = nameEditText.getText().toString().trim();
                                 }
 
-                                if (getPermit.getText().toString().isEmpty()) {
+                                if (permitEditText.getText().toString().isEmpty()) {
                                     permit = document.getString("permit");
                                 } else {
-                                    permit = getPermit.getText().toString().trim();
+                                    permit = permitEditText.getText().toString().trim();
                                 }
 
                                 // Update the database for that user
@@ -139,10 +143,12 @@ public class InfoActivity extends AppCompatActivity {
                                         .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Error Updating Profile", Toast.LENGTH_SHORT).show());
 
                                 // Clear fields and reset the hints
-                                getName.setText("");
-                                getPermit.setText("");
-                                getName.setHint(name);
-                                getPermit.setHint(permit);
+                                nameEditText.setText("");
+                                permitEditText.setText("");
+                                nameLayout.setHint(name);
+                                permitLayout.setHint(permit);
+                                nameEditText.clearFocus();
+                                permitEditText.clearFocus();
                             }
                         }
                     } else {

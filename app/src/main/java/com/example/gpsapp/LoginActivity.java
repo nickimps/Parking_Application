@@ -16,7 +16,6 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -154,9 +153,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // LOGIN BUTTON
         Button logButton = findViewById(R.id.loginButton);
-        logButton.setOnClickListener(v -> {
-            login();
-        });
+        logButton.setOnClickListener(v -> login());
     }
 
     public void login() {

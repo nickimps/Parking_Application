@@ -16,7 +16,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,7 +30,7 @@ public class RegisterActivity extends AppCompatActivity {
     FirebaseFirestore firestore;
 
     private TextInputEditText usernameEditText, passwordEditText, nameEditText, permitEditText;
-    private TextInputLayout usernameLayout, passwordLayout, nameLayout, permitLayout;
+    private TextInputLayout usernameLayout, passwordLayout, nameLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +45,6 @@ public class RegisterActivity extends AppCompatActivity {
         usernameLayout = findViewById(R.id.regUsernameTextInputLayout);
         passwordLayout = findViewById(R.id.regPasswordTextInputLayout);
         nameLayout = findViewById(R.id.regNameTextInputLayout);
-        permitLayout = findViewById(R.id.regPermitTextInputLayout);
 
         // LOGIN CLICKABLE TEXT
         createClickableLoginText();
