@@ -26,7 +26,7 @@ public class AdminActivity extends AppCompatActivity {
 
     private static final int REQUEST_LOCATION = 1;
     TextView locationTextView;
-    Button getLocationButton;
+    Button refreshButton;
     LocationManager locationManager;
 
     TextInputEditText filenameEditText;
@@ -39,16 +39,14 @@ public class AdminActivity extends AppCompatActivity {
         locationTextView = findViewById(R.id.locationTextView);
         filenameEditText = findViewById(R.id.filenameTextInputEditText);
 
+        // Have location auto load when loading screen
+        getLocation();
+
         // Enable location to be tracked and populate textfield with location
         ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
-        getLocationButton = findViewById(R.id.getLocationButton);
-        getLocationButton.setOnClickListener(v -> {
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                OnGPS();        // Need to ok permissions first
-            } else {
-                getLocation();  // Get Location
-            }
+        refreshButton = findViewById(R.id.refreshButton);
+        refreshButton.setOnClickListener(v -> {
+            getLocation();
         });
 
         // USER SCREEN BUTTON
@@ -88,6 +86,14 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
+    public void getLocation() {
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            OnGPS();        // Need to ok permissions first
+        } else {
+            getGPSData();  // Get Location
+        }
+    }
 
 
     /**
@@ -104,7 +110,7 @@ public class AdminActivity extends AppCompatActivity {
      * Populates the textfield with the location
      */
     @SuppressLint("SetTextI18n")
-    private void getLocation() {
+    private void getGPSData() {
         if (ActivityCompat.checkSelfPermission(AdminActivity.this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(AdminActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);

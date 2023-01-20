@@ -9,26 +9,41 @@
 
     <Button
         android:id="@+id/userScreenButton"
-        android:layout_width="250dp"
+        android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:backgroundTint="@color/orange"
         android:text="@string/go_to_user_screen"
         android:fontFamily="@font/inter"/>
 
-    <Button
-        android:id="@+id/getLocationButton"
+    <TextView
+        android:id="@+id/AdminSettingsTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/userScreenButton"
-        android:layout_marginTop="250sp"
-        android:text="@string/get_location" />
+        android:layout_marginTop="79dp"
+        android:fontFamily="@font/inter_extrabold"
+        android:text="@string/admin_mode"
+        android:textAlignment="textStart"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:textColor="@color/black"
+        android:textSize="45sp" />
+
+    <Button
+        android:id="@+id/refreshButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/locationTextView"
+        android:layout_centerHorizontal="true"
+        android:text="@string/refresh" />
 
     <TextView
         android:id="@+id/locationTextView"
         android:layout_width="match_parent"
         android:layout_height="40sp"
-        android:text=""
-        android:layout_below="@id/getLocationButton"
+        android:layout_marginTop="20sp"
+        android:text="@string/latitude_longitude"
+        android:layout_below="@id/AdminSettingsTextView"
+        android:textColor="@color/LU_blue"
         android:textAlignment="center"/>
 
     <!-- Filename Input -->
@@ -37,9 +52,8 @@
         android:id="@+id/filenameInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/locationTextView"
+        android:layout_below="@id/refreshButton"
         android:hint="@string/filename"
-        android:layout_marginTop="10sp"
         android:layout_marginBottom="10sp">
 
         <com.google.android.material.textfield.TextInputEditText
