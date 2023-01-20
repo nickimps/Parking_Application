@@ -8,25 +8,28 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextPaint;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
 
     FirebaseFirestore firestore;
-    private TextInputEditText getUsername, getPassword;
+    private TextInputEditText usernameEditText, passwordEditText;
+    private TextInputLayout usernameLayout, passwordLayout;
 
     //Fetch the stored information when the app is loaded, this function is called when the app is opened again
     @Override
@@ -55,8 +58,8 @@ public class LoginActivity extends AppCompatActivity {
                             if (!task.getResult().isEmpty()) {
                                 Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
 
-                                getUsername.setText(username);
-                                getPassword.setText(password);
+                                usernameEditText.setText(username);
+                                passwordEditText.setText(password);
 
                                 // Send the user to the maps activity
                                 Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
@@ -80,10 +83,10 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPref.edit();
 
         // Only save the text fields if there is information in them.
-        if (!getUsername.getText().toString().isEmpty() && !getPassword.getText().toString().isEmpty()) {
+        if (!usernameEditText.getText().toString().isEmpty() && !passwordEditText.getText().toString().isEmpty()) {
             // Store information from the text fields
-            editor.putString("username", getUsername.getText().toString());
-            editor.putString("password", getPassword.getText().toString());
+            editor.putString("username", usernameEditText.getText().toString());
+            editor.putString("password", passwordEditText.getText().toString());
 
             // Commit the changes to the editor
             editor.apply();
@@ -100,15 +103,50 @@ public class LoginActivity extends AppCompatActivity {
         createClickableRegisterText();
 
         // Store the ids of the edit text fields
-        getUsername = findViewById(R.id.usernameTextInputEditText);
-        getPassword = findViewById(R.id.passwordTextInputEditText);
+        usernameEditText = findViewById(R.id.usernameTextInputEditText);
+        passwordEditText = findViewById(R.id.passwordTextInputEditText);
+        usernameLayout = findViewById(R.id.usernameTextInputLayout);
+        passwordLayout = findViewById(R.id.passwordTextInputLayout);
+
+        // Create listeners to remove error message on text fields
+        usernameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editable.length() < 1)
+                    usernameLayout.setError("Required");
+                else
+                    usernameLayout.setError(null);
+            }
+        });
+
+        passwordEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editable.length() < 1)
+                    passwordLayout.setError("Required");
+                else
+                    passwordLayout.setError(null);
+            }
+        });
 
         // LOGIN BUTTON
         Button logButton = findViewById(R.id.loginButton);
         logButton.setOnClickListener(v -> {
             // Get the text from the text fields
-            String username = getUsername.getText().toString();
-            String password = getPassword.getText().toString();
+            String username = usernameEditText.getText().toString();
+            String password = passwordEditText.getText().toString();
 
             // Database Instance
             firestore = FirebaseFirestore.getInstance();
@@ -124,10 +162,17 @@ public class LoginActivity extends AppCompatActivity {
                                 // Send the user to the maps activity
                                 Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
                                 startActivity((intent));
-                            } else if (username.isEmpty() || password.isEmpty()) {
-                                Toast.makeText(getApplicationContext(), "Both username & password must be entered!", Toast.LENGTH_SHORT).show();
+                            } else if (username.isEmpty() && password.isEmpty()) {
+                                usernameLayout.setError("Required");
+                                passwordLayout.setError("Required");
+                            } else if (username.isEmpty()) {
+                                usernameLayout.setError("Required");
+                            } else if (password.isEmpty()) {
+                                passwordLayout.setError("Required");
                             } else {
                                 Toast.makeText(getApplicationContext(), "Username or password invalid!", Toast.LENGTH_SHORT).show();
+                                usernameLayout.setError(" ");
+                                passwordLayout.setError("Username or password are incorrect");
                             }
 
                         } else {

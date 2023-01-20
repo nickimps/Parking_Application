@@ -53,7 +53,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/loginText"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="20dp"
+        app:errorEnabled="true" >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/usernameTextInputEditText"
@@ -72,7 +73,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/usernameTextInputLayout"
-        android:layout_marginTop="20dp"
+        app:errorEnabled="true"
         app:endIconMode="password_toggle" >
 
         <com.google.android.material.textfield.TextInputEditText
@@ -91,7 +92,6 @@
         android:layout_height="55sp"
         android:layout_below="@id/passwordTextInputLayout"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
         android:text="Sign In"
         android:textAlignment="center"
         android:textSize="20dp" />
