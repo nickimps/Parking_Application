@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="25sp"
+    tools:context=".AdminActivity">
+
+    <Button
+        android:id="@+id/userScreenButton"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:backgroundTint="@color/orange"
+        android:text="@string/go_to_user_screen"
+        android:fontFamily="@font/inter"/>
+
+    <Button
+        android:id="@+id/getLocationButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/userScreenButton"
+        android:layout_marginTop="250sp"
+        android:text="@string/get_location" />
+
+    <TextView
+        android:id="@+id/locationTextView"
+        android:layout_width="match_parent"
+        android:layout_height="40sp"
+        android:text=""
+        android:layout_below="@id/getLocationButton"
+        android:textAlignment="center"/>
+
+    <!-- Filename Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:id="@+id/filenameInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/locationTextView"
+        android:hint="@string/filename"
+        android:layout_marginTop="10sp"
+        android:layout_marginBottom="10sp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/filenameTextInputEditText"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:fontFamily="@font/inter"
+            android:textSize="17sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/filenameInputLayout"
+        android:layout_centerHorizontal="true"
+        android:backgroundTint="@color/honey_yellow"
+        android:text="@string/save"
+        android:enabled="false" />
+
+</android.widget.RelativeLayout>

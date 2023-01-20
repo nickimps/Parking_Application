@@ -14,11 +14,13 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="name">Name</string>
+    <string name="filename">Filename</string>
     <string name="permit_number">Permit Number</string>
     <string name="already_have_an_account_login_here">Already have an account? Login here</string>
     <string name="lu_logo">LU Logo</string>
     <string name="update">Update</string>
     <string name="go_to_admin_screen">Go To Admin Screen</string>
+    <string name="go_to_user_screen">Go To User Screen</string>
     <string name="logout">Logout</string>
     <string name="back">Back</string>
     <string name="settings">Settings</string>
@@ -26,11 +28,14 @@
     <string name="sign_in">Sign In</string>
     <string name="don_t_have_an_account_register_here">Don\'t have an account? Register here</string>
     <string name="tap_your_name_or_permit_number_to_change">Tap your name or permit number to change</string>
+    <string name="save">Save Location To File</string>
 
     <string-array name="filter">
         <item>Unavailable</item>
         <item>Free</item>
         <item>Your Spot</item>
     </string-array>
+    <string name="title_activity_admin">AdminActivity</string>
+    <string name="get_location">Get Location</string>
 
 </resources>

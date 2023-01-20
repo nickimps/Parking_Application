@@ -202,5 +202,13 @@ public class InfoActivity extends AppCompatActivity {
                         Log.d(TAG, "Error getting documents: ", task.getException());
                     }
                 }));
+
+        // ADMIN BUTTON
+        Button adminButton = findViewById(R.id.adminScreenButton);
+        adminButton.setOnClickListener(v -> {
+            // Send the user to admin screen
+            Intent intent = new Intent(InfoActivity.this, AdminActivity.class);
+            startActivity((intent));
+        });
         }
     }
