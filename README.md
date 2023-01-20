@@ -15,6 +15,10 @@ This application will be technologically quite different from other parking appl
 - Automatic detection of parking so that other users can see the spot has been occupied, no need to specify you have parked
 - Storage of parking permits to help parking services
 
+## Current Bugs
+- [ ] When user logs out, it brings them to login screen, if they click the back button on the phone it brings them back to infoActivity under null user
+- [ ] The app rotates but only one direction, need to turn off rotatablility
+
 ## TODO
 - [ ] Have live location show up on the map
 - [ ] Functional Parking Spaces
