@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="18dp"
                 android:layout_marginTop="20dp"
-                android:fontFamily="@font/inter_extrabold"
+                android:fontFamily="@font/dm_sans_bold"
                 android:text="@string/register2"
                 android:textColor="@color/grey_fromImage"
                 android:textSize="50sp" />
@@ -52,7 +52,7 @@
                 android:layout_below="@id/registerText"
                 android:layout_marginBottom="20dp"
                 android:layout_marginHorizontal="18dp"
-                android:fontFamily="@font/inter"
+                android:fontFamily="@font/dm_sans"
                 android:text="@string/create_an_account_to_continue"
                 android:textAlignment="textStart"
                 android:textColor="@color/grey"
@@ -76,7 +76,7 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter"
+                    android:fontFamily="@font/dm_sans"
                     android:hint="@string/username"
                     android:inputType="textPersonName"
                     android:textSize="17sp" />
@@ -100,7 +100,7 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/inter"
+                    android:fontFamily="@font/dm_sans"
                     android:hint="@string/password"
                     android:inputType="textPassword"
                     android:textSize="17sp" />
@@ -125,7 +125,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/name"
                     android:inputType="textPersonName"
-                    android:fontFamily="@font/inter"
+                    android:fontFamily="@font/dm_sans"
                     android:textSize="17sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -148,7 +148,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/permit_number"
                     android:inputType="text"
-                    android:fontFamily="@font/inter"
+                    android:fontFamily="@font/dm_sans"
                     android:textSize="17sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -160,7 +160,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginHorizontal="18dp"
                 android:enabled="false"
-                android:fontFamily="@font/inter"
+                android:fontFamily="@font/dm_sans"
                 android:text="@string/create_account"
                 android:textSize="20sp"
                 android:layout_gravity="top"/>
@@ -173,7 +173,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="25dp"
                 android:layout_marginBottom="20dp"
-                android:fontFamily="@font/inter"
+                android:fontFamily="@font/dm_sans"
                 android:text="@string/already_have_an_account_login_here"
                 android:textAlignment="center"
                 android:textColor="@color/grey_fromImage"

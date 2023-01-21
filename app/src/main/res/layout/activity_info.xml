@@ -26,7 +26,7 @@
         android:layout_width="125dp"
         android:layout_height="50dp"
         android:layout_marginTop="20sp"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/dm_sans"
         android:text="@string/back" />
 
     <TextView
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/backButton"
         android:layout_marginTop="20dp"
-        android:fontFamily="@font/inter_extrabold"
+        android:fontFamily="@font/dm_sans_bold"
         android:text="@string/settings"
         android:textAlignment="textStart"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
@@ -51,7 +51,7 @@
         android:text="@string/tap_your_name_or_permit_number_to_change"
         android:textAlignment="textStart"
         android:textColor="@color/grey"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/dm_sans"
         android:textSize="15sp" />
 
     <!-- Name Input -->
@@ -72,7 +72,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPersonName"
-            android:fontFamily="@font/inter"
+            android:fontFamily="@font/dm_sans"
             android:textSize="17sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -93,7 +93,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:fontFamily="@font/inter"
+            android:fontFamily="@font/dm_sans"
             android:textSize="17sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -103,7 +103,7 @@
         android:layout_height="55dp"
         android:layout_below="@id/infoPermitTextInputLayout"
         android:text="@string/update"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/dm_sans"
         android:layout_centerHorizontal="true"
         android:enabled="false" />
 
@@ -115,7 +115,7 @@
         android:layout_marginTop="15dp"
         android:backgroundTint="@color/orange"
         android:text="@string/go_to_admin_screen"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/dm_sans"
         android:layout_centerHorizontal="true"/>
 
     <Button
@@ -125,7 +125,7 @@
         android:layout_marginTop="15dp"
         android:layout_below="@id/adminScreenButton"
         android:text="@string/logout"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/dm_sans"
         android:layout_centerHorizontal="true"
         android:backgroundTint="@color/red" />
 

@@ -13,15 +13,15 @@
         android:layout_height="50dp"
         android:backgroundTint="@color/orange"
         android:text="@string/go_to_user_screen"
-        android:fontFamily="@font/inter"/>
+        android:fontFamily="@font/dm_sans"/>
 
     <TextView
         android:id="@+id/AdminSettingsTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/userScreenButton"
-        android:layout_marginTop="79dp"
-        android:fontFamily="@font/inter_extrabold"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/dm_sans_bold"
         android:text="@string/admin_mode"
         android:textAlignment="textStart"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
@@ -40,8 +40,9 @@
         android:id="@+id/locationTextView"
         android:layout_width="match_parent"
         android:layout_height="40sp"
-        android:layout_marginTop="20sp"
+        android:layout_marginTop="100sp"
         android:text="@string/latitude_longitude"
+        android:fontFamily="@font/dm_sans"
         android:layout_below="@id/AdminSettingsTextView"
         android:textColor="@color/LU_blue"
         android:textAlignment="center"/>
@@ -62,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:fontFamily="@font/inter"
+            android:fontFamily="@font/dm_sans"
             android:textSize="17sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,6 +75,7 @@
         android:layout_centerHorizontal="true"
         android:backgroundTint="@color/honey_yellow"
         android:text="@string/save"
+        android:fontFamily="@font/dm_sans"
         android:enabled="false" />
 
 </android.widget.RelativeLayout>
