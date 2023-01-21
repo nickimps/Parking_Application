@@ -68,7 +68,8 @@
                 android:layout_below="@id/messageLoginTextView"
                 android:layout_gravity="top"
                 android:layout_marginHorizontal="18dp"
-                app:errorEnabled="true">
+                app:errorEnabled="true"
+                app:startIconDrawable="@drawable/baseline_person_outline_24">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/regUsernameTextInputEditText"
@@ -91,7 +92,8 @@
                 android:layout_gravity="top"
                 android:layout_marginHorizontal="18dp"
                 app:endIconMode="password_toggle"
-                app:errorEnabled="true">
+                app:errorEnabled="true"
+                app:startIconDrawable="@android:drawable/ic_secure">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/regPasswordTextInputEditText"
@@ -113,7 +115,8 @@
                 android:layout_below="@id/regPasswordTextInputLayout"
                 android:layout_gravity="top"
                 android:layout_marginHorizontal="18dp"
-                app:errorEnabled="true" >
+                app:errorEnabled="true"
+                app:startIconDrawable="@drawable/baseline_account_circle_24">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/regNameTextInputEditText"
@@ -135,7 +138,8 @@
                 android:layout_below="@id/regNameTextInputLayout"
                 android:layout_gravity="top"
                 android:layout_marginHorizontal="18dp"
-                app:errorEnabled="true" >
+                app:errorEnabled="true"
+                app:startIconDrawable="@drawable/baseline_directions_car_24">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/regPermitTextInputEditText"

@@ -16,6 +16,7 @@
     <string name="name">Display Name</string>
     <string name="filename">Filename</string>
     <string name="permit_number">Permit Number (Optional)</string>
+    <string name="permitNumber">Permit Number</string>
     <string name="already_have_an_account_login_here">Already have an account? Login here</string>
     <string name="lu_logo">LU Logo</string>
     <string name="update">Update</string>
