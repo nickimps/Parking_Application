@@ -13,9 +13,9 @@
     <string name="register">REGISTER</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
-    <string name="name">Name</string>
+    <string name="name">Display Name</string>
     <string name="filename">Filename</string>
-    <string name="permit_number">Permit Number</string>
+    <string name="permit_number">Permit Number (Optional)</string>
     <string name="already_have_an_account_login_here">Already have an account? Login here</string>
     <string name="lu_logo">LU Logo</string>
     <string name="update">Update</string>
@@ -39,5 +39,10 @@
     <string name="refresh">Refresh Location</string>
     <string name="latitude_longitude">Latitude: \nLongitude:</string>
     <string name="admin_mode">ADMIN PANEL</string>
+    <string name="login">Login</string>
+    <string name="please_login_to_continue">Please login to continue</string>
+    <string name="create_account">Create Account</string>
+    <string name="register2">Register</string>
+    <string name="create_an_account_to_continue">Create an account to continue</string>
 
 </resources>

@@ -15,4 +15,5 @@
     <color name="orange">#AF3800</color>
     <color name="grey">#94969B</color>
     <color name="honey_yellow">#FFB20F</color>
+    <color name="grey_fromImage">#393939</color>
 </resources>
