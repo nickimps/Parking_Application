@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -40,7 +41,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int COLOR_LIGHT_GREEN_ARGB = 0xff81C784;
     private static final int COLOR_BLACK_ARGB = 0xff000000;
     private static final int POLYGON_STROKE_WIDTH_PX = 4;
-
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
     private FusedLocationProviderClient fusedLocationClient;
@@ -107,9 +107,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            return;
-        else
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // do not show your position
+        } else
             mMap.setMyLocationEnabled(true);
 
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
@@ -135,18 +135,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         r9.setStrokeWidth(5);
         r9.setFillColor(0x33746AB0);
 
-        Polygon spot1 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot2 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot3 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot4 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot5 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot6 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot7 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot8 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot9 = googleMap.addPolygon(new PolygonOptions());
-        Polygon spot10 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot1 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot2 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot3 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot4 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot5 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot6 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot7 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot8 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot9 = googleMap.addPolygon(new PolygonOptions());
+//        Polygon spot10 = googleMap.addPolygon(new PolygonOptions());
 
-        // Add a marker in Sydney and move the camera
+        // move the camera
         LatLng Lot = new LatLng(48.42101, -89.25828);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 18));
     }

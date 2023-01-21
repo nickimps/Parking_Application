@@ -4,6 +4,8 @@ import static android.content.ContentValues.TAG;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,6 +30,8 @@ public class InfoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
+
+        getSupportActionBar().setTitle("Settings");
 
         // Get the text fields ids
         nameEditText = findViewById(R.id.infoNameTextInputEditText);
@@ -134,6 +138,7 @@ public class InfoActivity extends AppCompatActivity {
             Intent intent = new Intent(InfoActivity.this, MapsActivity.class);
             startActivity((intent));
         });
+
 
         //Logout Button
         Button logoutButton = findViewById(R.id.logoutButton);

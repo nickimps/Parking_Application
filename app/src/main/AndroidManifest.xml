@@ -28,7 +28,7 @@
             android:name=".AdminActivity"
             android:exported="false"
             android:parentActivityName=".InfoActivity"
-            android:theme="@style/Theme.GPSApp.NoActionBar" />
+            android:theme="@style/Theme.GPSApp" />
         <activity
             android:name=".RegisterActivity"
             android:exported="false"
@@ -58,7 +58,7 @@
             android:exported="false"
             android:label="@string/title_activity_info"
             android:parentActivityName=".MapsActivity"
-            android:theme="@style/Theme.GPSApp.NoActionBar">
+            android:theme="@style/Theme.GPSApp">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />

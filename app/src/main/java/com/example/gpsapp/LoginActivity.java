@@ -1,12 +1,16 @@
 package com.example.gpsapp;
 
 import static android.content.ContentValues.TAG;
+
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import android.text.Editable;
 import android.text.SpannableString;
@@ -33,46 +37,53 @@ public class LoginActivity extends AppCompatActivity {
     FirebaseFirestore firestore;
     private TextInputEditText usernameEditText, passwordEditText;
     private TextInputLayout usernameLayout, passwordLayout;
-
+    private static final int REQUEST_LOCATION = 1;
     //Fetch the stored information when the app is loaded, this function is called when the app is opened again
     @Override
     protected void onResume() {
         super.onResume();
 
-        // Get the stored information within the shared preference
-        SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // do not auto login right away
+            // need to figure out some option for the user, should we allow access or no? can they use the app if they cant support the system?
+        } else {
+            // Get the stored information within the shared preference
+            SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
 
-        // Get stored username and password for the logged in user
-        String username = sharedPref.getString("username", null);
-        String password = sharedPref.getString("password", null);
+            // Get stored username and password for the logged in user
+            String username = sharedPref.getString("username", null);
+            String password = sharedPref.getString("password", null);
 
-        // Bypass login if login details exist
-        if (username != null && password != null) {
-            // Database instance
-            firestore = FirebaseFirestore.getInstance();
+            // Bypass login if login details exist
+            if (username != null && password != null) {
+                // Database instance
+                firestore = FirebaseFirestore.getInstance();
 
-            // Perform query to get the user that has matching username and password so that we can auto login
-            firestore.collection("Users")
-                    .whereEqualTo("username", username)
-                    .whereEqualTo("password", password)
-                    .get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            if (!task.getResult().isEmpty()) {
-                                Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
+                // Perform query to get the user that has matching username and password so that we can auto login
+                firestore.collection("Users")
+                        .whereEqualTo("username", username)
+                        .whereEqualTo("password", password)
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                if (!task.getResult().isEmpty()) {
+                                    Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
 
-                                usernameEditText.setText(username);
-                                passwordEditText.setText(password);
+                                    usernameEditText.setText(username);
+                                    passwordEditText.setText(password);
 
-                                // Send the user to the maps activity
-                                Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
-                                startActivity((intent));
+                                    // Send the user to the maps activity
+                                    Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
+                                    startActivity((intent));
+                                }
+                            } else {
+                                Log.d(TAG, "Error getting documents: ", task.getException());
                             }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                    });
+                        });
+            }
         }
+
+
     }
 
     // Saves the information when the app is closed, this function runs when the app is closed.
@@ -101,6 +112,9 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
 
         // REGISTER CLICKABLE TEXT
         createClickableRegisterText();
