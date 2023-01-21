@@ -19,7 +19,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 public class InfoActivity extends AppCompatActivity {
 
     FirebaseFirestore firestore;
-    Boolean isAdmin = false;
+    Boolean isAdmin = false, permitChanged = false;
 
     TextInputEditText nameEditText, permitEditText;
     TextInputLayout nameLayout, permitLayout;
@@ -45,13 +45,11 @@ public class InfoActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 if (editable.length() < 1) {
-                    nameLayout.setError("Required");
                     if (permitEditText.getText().toString().isEmpty())
                         findViewById(R.id.updateButton).setEnabled(false);
                     else
                         findViewById(R.id.updateButton).setEnabled(true);
                 } else {
-                    nameLayout.setError(null);
                         findViewById(R.id.updateButton).setEnabled(true);
                 }
             }
@@ -62,20 +60,23 @@ public class InfoActivity extends AppCompatActivity {
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                findViewById(R.id.updateButton).setEnabled(true);
+                permitChanged = true;
+            }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.length() < 1) {
-                    permitLayout.setError("Required");
-                    if (nameEditText.getText().toString().isEmpty())
-                        findViewById(R.id.updateButton).setEnabled(false);
-                    else
-                        findViewById(R.id.updateButton).setEnabled(true);
-                } else {
-                    permitLayout.setError(null);
-                    findViewById(R.id.updateButton).setEnabled(true);
-                }
+                findViewById(R.id.updateButton).setEnabled(true);
+                permitChanged = true;
+//                if (editable.length() < 1) {
+//                    if (nameEditText.getText().toString().isEmpty())
+//                        findViewById(R.id.updateButton).setEnabled(false);
+//                    else
+//                        findViewById(R.id.updateButton).setEnabled(true);
+//                } else {
+//                    findViewById(R.id.updateButton).setEnabled(true);
+//                }
             }
         });
 
@@ -98,7 +99,11 @@ public class InfoActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 // Set the hint for both the text fields
                                 nameLayout.setHint(document.getString("name"));
-                                permitLayout.setHint(document.getString("permit"));
+                                String permitNum = document.getString("permit");
+                                if (permitNum.isEmpty())
+                                    permitLayout.setHint("Permit Number (Optional)");
+                                else
+                                    permitLayout.setHint(document.getString("permit"));
                             }
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
@@ -162,41 +167,41 @@ public class InfoActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            // Only update if fields have information in them, otherwise let user know there is no information there
-                            if (nameEditText.getText().toString().isEmpty() && permitEditText.getText().toString().isEmpty()) {
-                                Toast.makeText(getApplicationContext(), "Please enter either a name or permit number", Toast.LENGTH_SHORT).show();
+                            //If the user has entered something in the text field then add it to the update,
+                            // otherwise just keep what was already there in the database
+                            String name, permit;
+                            if (nameEditText.getText().toString().isEmpty()) {
+                                name = document.getString("name");
+                            } else {
+                                name = nameEditText.getText().toString().trim();
                             }
-                            else {
-                                //If the user has entered something in the text field then add it to the update,
-                                // otherwise just keep what was already there in the database
-                                String name, permit;
-                                if (nameEditText.getText().toString().isEmpty()) {
-                                    name = document.getString("name");
-                                } else {
-                                    name = nameEditText.getText().toString().trim();
-                                }
 
-                                if (permitEditText.getText().toString().isEmpty()) {
-                                    permit = document.getString("permit");
-                                } else {
-                                    permit = permitEditText.getText().toString().trim();
-                                }
-
-                                // Update the database for that user
-                                firestore.collection("Users")
-                                        .document(document.getId())
-                                        .update("name", name, "permit", permit)
-                                        .addOnSuccessListener(aVoid -> Toast.makeText(getApplicationContext(), "Profile Updated", Toast.LENGTH_SHORT).show())
-                                        .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Error Updating Profile", Toast.LENGTH_SHORT).show());
-
-                                // Clear fields and reset the hints
-                                nameEditText.setText("");
-                                permitEditText.setText("");
-                                nameLayout.setHint(name);
-                                permitLayout.setHint(permit);
-                                nameEditText.clearFocus();
-                                permitEditText.clearFocus();
+                            if (permitEditText.getText().toString().isEmpty()) {
+                                String savedPermitNumber = document.getString("permit");
+                                if (permitChanged) {
+                                    permit = "Permit Number (Optional)";
+                                    permitChanged = false;
+                                } else
+                                    permit = savedPermitNumber;
+                            } else {
+                                permit = permitEditText.getText().toString().trim();
                             }
+
+                            // Update the database for that user
+                            firestore.collection("Users")
+                                    .document(document.getId())
+                                    .update("name", name, "permit", permit)
+                                    .addOnSuccessListener(aVoid -> Toast.makeText(getApplicationContext(), "Profile Updated", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Error Updating Profile", Toast.LENGTH_SHORT).show());
+
+                            // Clear fields and reset the hints
+                            nameEditText.setText("");
+                            permitEditText.setText("");
+                            nameLayout.setHint(name);
+                            permitLayout.setHint(permit);
+                            nameEditText.clearFocus();
+                            permitEditText.clearFocus();
+                            updateButton.setEnabled(false);
                         }
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());

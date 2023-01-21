@@ -70,7 +70,8 @@
                 android:layout_gravity="top"
                 android:layout_marginHorizontal="18dp"
                 app:errorEnabled="true"
-                app:startIconDrawable="@drawable/baseline_person_outline_24">
+                app:startIconDrawable="@drawable/baseline_person_outline_24"
+                app:endIconMode="clear_text">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/usernameTextInputEditText"

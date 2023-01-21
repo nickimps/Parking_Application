@@ -64,7 +64,8 @@
         android:hint="@string/name"
         android:layout_marginTop="20sp"
         app:errorEnabled="true"
-        app:startIconDrawable="@drawable/baseline_account_circle_24">
+        app:startIconDrawable="@drawable/baseline_account_circle_24"
+        app:endIconMode="clear_text" >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/infoNameTextInputEditText"
@@ -82,10 +83,11 @@
         android:id="@+id/infoPermitTextInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/permitNumber"
+        android:hint="@string/permit_number"
         android:layout_below="@id/infoNameTextInputLayout"
         app:errorEnabled="true"
-        app:startIconDrawable="@drawable/baseline_directions_car_24">
+        app:startIconDrawable="@drawable/baseline_directions_car_24"
+        app:endIconMode="clear_text" >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/infoPermitTextInputEditText"
