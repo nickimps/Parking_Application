@@ -9,7 +9,9 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,8 +19,11 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.core.app.ActivityCompat;
+
 import com.google.android.material.textfield.TextInputEditText;
+
 import java.io.File;
 import java.io.FileWriter;
 
@@ -28,7 +33,6 @@ public class AdminActivity extends AppCompatActivity {
     TextView locationTextView;
     Button refreshButton;
     LocationManager locationManager;
-
     TextInputEditText filenameEditText;
 
     @Override
@@ -39,11 +43,13 @@ public class AdminActivity extends AppCompatActivity {
         locationTextView = findViewById(R.id.locationTextView);
         filenameEditText = findViewById(R.id.filenameTextInputEditText);
 
+
+
         // Have location auto load when loading screen
         getLocation();
 
         // Enable location to be tracked and populate textfield with location
-        ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         refreshButton = findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(v -> {
             getLocation();
@@ -68,10 +74,12 @@ public class AdminActivity extends AppCompatActivity {
 
         filenameEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
 
             @Override
             public void afterTextChanged(Editable editable) {

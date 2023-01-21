@@ -1,9 +1,14 @@
 package com.example.gpsapp;
 
 import static android.content.ContentValues.TAG;
+
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
+
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,6 +17,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -20,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -32,11 +42,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int POLYGON_STROKE_WIDTH_PX = 4;
 
     private GoogleMap mMap;
-    private LocationManager locationManager;
-    private LocationListener locationListener;
-    private Location userCurrentLocation;
     private ActivityMapsBinding binding;
-
+    private FusedLocationProviderClient fusedLocationClient;
+    private TextView name;
     FirebaseFirestore firestore;
     Boolean isAdmin;
 
@@ -46,6 +54,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Get the username of the current logged in user
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
@@ -71,7 +81,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
 
 
-        TextView name = findViewById(R.id.welcomeText);
+        name = findViewById(R.id.welcomeText);
         name.setText("Welcome " + username);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -96,6 +106,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            return;
+        else
+            mMap.setMyLocationEnabled(true);
+
+        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+                    // Got last known location. In some rare situations this can be null.
+                    if (location != null) {
+                        //name.setText((int) location.getLatitude());
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+                        String locationString = "Latitude: " + latitude + "\nLongitude: " + longitude;
+                        //Toast.makeText(getApplicationContext(),locationString,Toast.LENGTH_SHORT).show();
+                    }
+                });
 
         Polygon parkingLot = googleMap.addPolygon(new PolygonOptions()
                 .clickable(true)

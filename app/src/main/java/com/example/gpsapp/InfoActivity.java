@@ -69,14 +69,6 @@ public class InfoActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
                 findViewById(R.id.updateButton).setEnabled(true);
                 permitChanged = true;
-//                if (editable.length() < 1) {
-//                    if (nameEditText.getText().toString().isEmpty())
-//                        findViewById(R.id.updateButton).setEnabled(false);
-//                    else
-//                        findViewById(R.id.updateButton).setEnabled(true);
-//                } else {
-//                    findViewById(R.id.updateButton).setEnabled(true);
-//                }
             }
         });
 

@@ -26,6 +26,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+
+
 public class LoginActivity extends AppCompatActivity {
 
     FirebaseFirestore firestore;
