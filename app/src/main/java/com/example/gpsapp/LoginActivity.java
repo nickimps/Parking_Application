@@ -190,8 +190,8 @@ public class LoginActivity extends AppCompatActivity {
                         if (!task.getResult().isEmpty()) {
                             findViewById(R.id.loginButton).setEnabled(true);
                             // Send the user to the maps activity
-                            Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
-                            startActivity((intent));
+                            Intent intentToMap = new Intent(LoginActivity.this, MapsActivity.class);
+                            startActivity((intentToMap));
                             findViewById(R.id.loginButton).setEnabled(false);
                         } else if (username.isEmpty() && password.isEmpty()) {
                             usernameLayout.setError("Required");

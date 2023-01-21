@@ -42,4 +42,95 @@
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="15dp"
         android:layout_marginTop="1dp"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        app:cardElevation="10dp"
+        app:cardCornerRadius="15dp"
+        android:layout_margin="10dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentBottom="true"
+        app:cardBackgroundColor="@color/white"
+        app:cardMaxElevation="10dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/redSpot"
+                android:layout_centerVertical="true"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="10dp"
+                android:background="@color/red"
+                />
+
+            <TextView
+                android:id="@+id/takenView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/dm_sans_bold"
+                android:layout_centerVertical="true"
+                android:text="Taken Spot"
+                android:textColor="@color/grey_fromImage"
+                android:textSize="13dp"
+                android:layout_toEndOf="@id/redSpot"
+                android:paddingStart="5dp"
+                />
+
+            <TextView
+                android:id="@+id/greenSpot"
+                android:layout_centerVertical="true"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="10dp"
+                android:background="@color/green"
+                android:layout_toEndOf="@id/takenView"
+                android:paddingStart="5dp"
+                />
+
+            <TextView
+                android:id="@+id/availableView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/dm_sans_bold"
+                android:layout_centerVertical="true"
+                android:text="Available Spot"
+                android:textColor="@color/grey_fromImage"
+                android:textSize="13dp"
+                android:layout_toEndOf="@id/greenSpot"
+                android:paddingStart="5dp"
+                />
+
+            <TextView
+                android:id="@+id/blueSpot"
+                android:layout_centerVertical="true"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="10dp"
+                android:background="@color/LU_blue"
+                android:layout_toEndOf="@id/availableView"
+                android:paddingStart="5dp"
+                />
+
+            <TextView
+                android:id="@+id/yourView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/dm_sans_bold"
+                android:layout_centerVertical="true"
+                android:text="Your Spot"
+                android:textColor="@color/grey_fromImage"
+                android:textSize="13dp"
+                android:layout_toEndOf="@id/blueSpot"
+                android:paddingStart="5dp"
+                />
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
 </android.widget.RelativeLayout>
