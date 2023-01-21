@@ -135,6 +135,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         r9.setStrokeWidth(5);
         r9.setFillColor(0x33746AB0);
 
+        Polygon spot1 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot2 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot3 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot4 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot5 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot6 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot7 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot8 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot9 = googleMap.addPolygon(new PolygonOptions());
+        Polygon spot10 = googleMap.addPolygon(new PolygonOptions());
+
         // Add a marker in Sydney and move the camera
         LatLng Lot = new LatLng(48.42101, -89.25828);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 18));
