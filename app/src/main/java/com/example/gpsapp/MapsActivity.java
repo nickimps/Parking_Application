@@ -105,7 +105,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     return;
                 }
                 for (Location location: locationResult.getLocations()) {
-
+                    //update position of marker
                 }
             }
         };
