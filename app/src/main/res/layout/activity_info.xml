@@ -10,44 +10,12 @@
     android:focusableInTouchMode="true"
     tools:context=".InfoActivity">
 
-<!--    <ImageView-->
-<!--        android:id="@+id/logo"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:layout_below="@id/updateButton"-->
-<!--        android:layout_centerHorizontal="true"-->
-<!--        android:layout_marginBottom="20sp"-->
-<!--        android:alpha="0.15"-->
-<!--        android:src="@drawable/lakehead_print_logo"-->
-<!--        android:contentDescription="@string/lu_logo" />-->
-
-    <Button
-        android:id="@+id/backButton"
-        android:layout_width="125dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="20sp"
-        android:fontFamily="@font/dm_sans"
-        android:text="@string/back" />
-
-    <TextView
-        android:id="@+id/settingsTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/backButton"
-        android:layout_marginTop="20dp"
-        android:fontFamily="@font/dm_sans_bold"
-        android:text="@string/settings"
-        android:textAlignment="textStart"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-        android:textColor="@color/black"
-        android:textSize="50sp" />
-
     <TextView
         android:id="@+id/messageTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/settingsTextView"
+        android:layout_marginTop="25sp"
         android:text="@string/tap_your_name_or_permit_number_to_change"
         android:textAlignment="textStart"
         android:textColor="@color/grey"

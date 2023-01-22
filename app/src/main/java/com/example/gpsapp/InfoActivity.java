@@ -126,20 +126,6 @@ public class InfoActivity extends AppCompatActivity {
                     }
                 });
 
-        // BACK BUTTON
-        Button backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> {
-            if (!nameEditText.getText().toString().isEmpty() || !permitEditText.getText().toString().isEmpty()) {
-                // Notify the user that the changes have not been saved if they leave with text in the text fields
-                Toast.makeText(getApplicationContext(), "Changes not saved!", Toast.LENGTH_SHORT).show();
-            }
-
-            // Send the user back to the maps activity
-            Intent intent = new Intent(InfoActivity.this, MapsActivity.class);
-            startActivity((intent));
-        });
-
-
         //Logout Button
         Button logoutButton = findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(v -> {
