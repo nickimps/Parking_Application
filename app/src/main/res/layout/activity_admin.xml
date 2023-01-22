@@ -7,26 +7,15 @@
     android:padding="25sp"
     tools:context=".AdminActivity">
 
-    <Button
-        android:id="@+id/userScreenButton"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:backgroundTint="@color/orange"
-        android:text="@string/go_to_user_screen"
-        android:fontFamily="@font/dm_sans"/>
-
     <TextView
-        android:id="@+id/AdminSettingsTextView"
+        android:id="@+id/locationTextView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/userScreenButton"
-        android:layout_marginTop="20dp"
-        android:fontFamily="@font/dm_sans_bold"
-        android:text="@string/admin_mode"
-        android:textAlignment="textStart"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-        android:textColor="@color/black"
-        android:textSize="45sp" />
+        android:layout_height="40sp"
+        android:layout_marginTop="150sp"
+        android:text="@string/latitude_longitude"
+        android:fontFamily="@font/dm_sans"
+        android:textColor="@color/LU_blue"
+        android:textAlignment="center"/>
 
     <Button
         android:id="@+id/refreshButton"
@@ -36,16 +25,7 @@
         android:layout_centerHorizontal="true"
         android:text="@string/refresh" />
 
-    <TextView
-        android:id="@+id/locationTextView"
-        android:layout_width="match_parent"
-        android:layout_height="40sp"
-        android:layout_marginTop="100sp"
-        android:text="@string/latitude_longitude"
-        android:fontFamily="@font/dm_sans"
-        android:layout_below="@id/AdminSettingsTextView"
-        android:textColor="@color/LU_blue"
-        android:textAlignment="center"/>
+
 
     <!-- Filename Input -->
     <com.google.android.material.textfield.TextInputLayout

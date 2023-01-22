@@ -57,14 +57,6 @@ public class AdminActivity extends AppCompatActivity {
             getLocation();
         });
 
-        // USER SCREEN BUTTON
-        Button adminButton = findViewById(R.id.userScreenButton);
-        adminButton.setOnClickListener(v -> {
-            // Send the user to admin screen
-            Intent intent = new Intent(AdminActivity.this, InfoActivity.class);
-            startActivity((intent));
-        });
-
         // SAVE BUTTON
         Button saveButton = findViewById(R.id.saveButton);
         saveButton.setOnClickListener(v -> {
