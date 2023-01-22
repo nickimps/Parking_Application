@@ -51,6 +51,10 @@ This application will be technologically quite different from other parking appl
 - [ ] Add legend for types of parking spaces on the MapActivity
 - [ ] Create API for the connection to the Python model when it eventually a go
 
+## TODO If Time Left
+- [ ] Dark mode
+- [ ] Transitions (especially on login and register screen)
+
 
 ## User Interface
 <div style="display:flex">
