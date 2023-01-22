@@ -30,8 +30,8 @@
     <string name="save">Save Location</string>
 
     <string-array name="filter">
-        <item>Unavailable</item>
-        <item>Free</item>
+        <item>Unavailable Spot</item>
+        <item>Available Spot</item>
         <item>Your Spot</item>
     </string-array>
     <string name="title_activity_admin">AdminActivity</string>
