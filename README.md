@@ -20,7 +20,7 @@ This application will be technologically quite different from other parking appl
 - [ ] The app rotates but only one direction, need to turn off rotatablility
 
 ## TODO
-- [ ] Have live location show up on the map
+- [X] Have live location show up on the map
 - [ ] Functional Parking Spaces
   - [ ] Use small subset of parking lot to collect and save the GPS location of the parking spaces (This small sample could be used for the demo)
   - [ ] Parking space UI for occupied and empty spots
@@ -32,8 +32,8 @@ This application will be technologically quite different from other parking appl
   - [ ] Train the model on the GPS data
     - My idea right now is that the GPS data would provide *n* seconds of GPS movement before and after a full stop. This would be a 'clip' of data that would be fed into the model. Then there should be a column, especially for training, that would have if that was actually an act of parking or not
 - [ ] Implement Admin Screen
-  - [X] Add field to select users within the database - NI
-  - [X] Add a button in the settings for admins to go to admin mode - NI
+  - [X] Add field to select users within the database
+  - [X] Add a button in the settings for admins to go to admin mode
   - [ ] Add function to be able to give admin privileges to a user
   - [ ] Create admin screen to have more functionality
   - [ ] Admin mode should give capability to quickly see if device is in parking space or not and what is the ID of the parking space in the admin screen
@@ -42,10 +42,10 @@ This application will be technologically quite different from other parking appl
 - [ ] Pause button that turns of location tracking until reactivated
 - [ ] Geofencing ability, have it turn on precise location when within campus parking lot and go to approximate when it is not on campus parking lot
 - [ ] Update user interface, make sure the UI looks presentable
-  - [X] LoginActivity - NI
-  - [X] RegisterActivity - NI
-  - [X] InfoActivity - NI
-  - [ ] MapsActivity
+  - [X] LoginActivity
+  - [X] RegisterActivity
+  - [X] InfoActivity
+  - [X] MapsActivity
   - [ ] AdminActivity
 - [ ] Change font, sizing and scaling for application to look the same on any size device
 - [ ] Add legend for types of parking spaces on the MapActivity
