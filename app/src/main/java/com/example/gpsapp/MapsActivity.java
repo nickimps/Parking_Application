@@ -2,6 +2,7 @@ package com.example.gpsapp;
 
 import static android.content.ContentValues.TAG;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -11,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,20 +24,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.gpsapp.databinding.ActivityMapsBinding;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.collection.LLRBNode;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
     // Default colours
     private static final int COLOR_LIGHT_GREEN_ARGB = 0xff81C784;
@@ -48,9 +54,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FirebaseFirestore firestore;
     Boolean isAdmin;
 
+    //geofence
+    private GeofencingClient geofenceingClient;
+    private float GEOFENCE_RADIUS = 200;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Geofencing Code --------------------------------------------------------
+        geofenceingClient = LocationServices.getGeofencingClient(this);
+        // -----------------------------------------------------------------------
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -148,7 +163,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // move the camera
         LatLng Lot = new LatLng(48.42101, -89.25828);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 18));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 15));
+
+        //Geofencing Code --------------------------------------------------------
+        mMap.setOnMapLongClickListener(this);
+        // -----------------------------------------------------------------------
     }
 
     /**
@@ -159,5 +178,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         polygon.setStrokeWidth(POLYGON_STROKE_WIDTH_PX);
         polygon.setStrokeColor(COLOR_BLACK_ARGB);
         polygon.setFillColor(COLOR_LIGHT_GREEN_ARGB);
+    }
+
+    @Override //Geofence
+    public void onMapLongClick(@NonNull LatLng latLng) {
+        addMarker(latLng);
+        addCicle(latLng, GEOFENCE_RADIUS);
+    }
+
+    //adds a marker for geofence
+    private void addMarker(LatLng latLng){
+        MarkerOptions markerOptions = new MarkerOptions().position(latLng);
+        mMap.addMarker(markerOptions);
+    }
+
+    //adds radius for geofence
+    private void addCicle(LatLng latLng, float radius){
+        CircleOptions circleOptions = new CircleOptions();
+        circleOptions.center(latLng);
+        circleOptions.radius(radius);
+        circleOptions.strokeColor(Color.argb(255,  255, 0, 0));
+        circleOptions.fillColor(Color.argb(64,  255, 0, 0));
+        circleOptions.strokeWidth(4);
+        mMap.addCircle(circleOptions);
     }
 }
