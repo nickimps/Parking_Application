@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,7 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,6 +39,7 @@ import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.collection.LLRBNode;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -54,9 +58,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FirebaseFirestore firestore;
     Boolean isAdmin;
 
-    //geofence
+    //GEOFENCE -----------------------------------------------------------------------------
     private GeofencingClient geofenceingClient;
+    private GeofenceHelper geofenceHelper;
     private float GEOFENCE_RADIUS = 200;
+    private String GEOFENCE_ID = "SOME_GEOFENCE_ID"; //each geofence has a unique id
+    private static final String TAG = "MapsActivity";
+    //GEOFENCE -----------------------------------------------------------------------------
 
 
     @Override
@@ -65,6 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Geofencing Code --------------------------------------------------------
         geofenceingClient = LocationServices.getGeofencingClient(this);
+        geofenceHelper = new GeofenceHelper(this);
         // -----------------------------------------------------------------------
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
@@ -122,7 +131,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // do not show your position
         } else
             mMap.setMyLocationEnabled(true);
@@ -180,10 +189,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         polygon.setFillColor(COLOR_LIGHT_GREEN_ARGB);
     }
 
-    @Override //Geofence
+    //GEOFENCE -----------------------------------------------------------------------------
+    @Override //Geofence - can put inside on create i think
     public void onMapLongClick(@NonNull LatLng latLng) {
         addMarker(latLng);
         addCicle(latLng, GEOFENCE_RADIUS);
+        addGeofence(latLng, GEOFENCE_RADIUS);
+    }
+
+    private void addGeofence(LatLng latLng, float radius){
+        //trigger geofence when entering dwelling or exiting (maybe change)
+        Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
+        GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
+        PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
+
+        geofenceingClient.addGeofences(geofencingRequest, pendingIntent)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Log.d(TAG, "onSuccess: Geofence Added...");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        String errorMessage = geofenceHelper.getErrorString(e);
+                        Log.d(TAG, "onFailure: " + errorMessage);
+                    }
+                });
     }
 
     //adds a marker for geofence
@@ -202,4 +235,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         circleOptions.strokeWidth(4);
         mMap.addCircle(circleOptions);
     }
+    //GEOFENCE -----------------------------------------------------------------------------
 }
