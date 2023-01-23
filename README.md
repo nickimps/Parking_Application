@@ -41,14 +41,14 @@ This application will be technologically quite different from other parking appl
   - [ ] Ability to select a parking space and make it occupied or empty on demand
 - [ ] Pause button that turns of location tracking until reactivated
 - [ ] Geofencing ability, have it turn on precise location when within campus parking lot and go to approximate when it is not on campus parking lot
-- [ ] Update user interface, make sure the UI looks presentable
+- [X] Update user interface, make sure the UI looks presentable
   - [X] LoginActivity
   - [X] RegisterActivity
   - [X] InfoActivity
   - [X] MapsActivity
   - [ ] AdminActivity
 - [ ] Change font, sizing and scaling for application to look the same on any size device
-- [ ] Add legend for types of parking spaces on the MapActivity
+- [X] Add legend for types of parking spaces on the MapActivity
 - [ ] Create API for the connection to the Python model when it eventually a go
 
 ## TODO If Time Left
