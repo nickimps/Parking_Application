@@ -19,7 +19,7 @@
         app:cardElevation="10dp"
         app:cardCornerRadius="10dp"
         app:cardBackgroundColor="@color/white"
-        app:cardMaxElevation="10dp"
+        app:cardMaxElevation="12dp"
         app:cardPreventCornerOverlap="true"
         android:layout_alignParentTop="true"
         app:cardUseCompatPadding="true">
@@ -55,34 +55,37 @@
 
             <Button
                 android:id="@+id/settingsButton"
-                android:layout_width="110dp"
+                android:layout_width="wrap_content"
                 android:text="Settings"
-                android:layout_height="45dp"
+                android:textAllCaps="false"
+                android:layout_height="37dp"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="10dp"
                 android:textColor="@color/LU_yellow"
-                android:backgroundTint="@color/LU_blue"
+                android:background="@drawable/settings_button_background"
                 android:fontFamily="@font/dm_sans"
                 android:layout_centerInParent="true"/>
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="80dp"
         app:cardElevation="10dp"
         app:cardCornerRadius="15dp"
         android:layout_margin="10dp"
         android:layout_centerVertical="true"
+        android:layout_centerInParent="true"
         android:layout_alignParentBottom="true"
         app:cardBackgroundColor="@color/white"
-        app:cardMaxElevation="10dp"
+        app:cardMaxElevation="12dp"
         app:cardPreventCornerOverlap="true"
         app:cardUseCompatPadding="true">
 
         <RelativeLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:paddingHorizontal="5dp"
             android:gravity="center">
 
             <TextView
@@ -91,7 +94,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginStart="10dp"
-                android:background="@color/red"
+                android:background="@drawable/red_rounded_rectangle"
                 />
 
             <TextView
@@ -100,11 +103,12 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
-                android:text="Taken Spot"
+                android:text="Occupied"
                 android:textColor="@color/grey_fromImage"
                 android:textSize="13dp"
                 android:layout_toEndOf="@id/redSpot"
                 android:paddingStart="5dp"
+                android:layout_marginEnd="5dp"
                 />
 
             <TextView
@@ -113,7 +117,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginStart="10dp"
-                android:background="@color/green"
+                android:background="@drawable/green_rounded_rectangle"
                 android:layout_toEndOf="@id/takenView"
                 android:paddingStart="5dp"
                 />
@@ -124,11 +128,12 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
-                android:text="Available Spot"
+                android:text="Available"
                 android:textColor="@color/grey_fromImage"
                 android:textSize="13dp"
                 android:layout_toEndOf="@id/greenSpot"
                 android:paddingStart="5dp"
+                android:layout_marginEnd="5dp"
                 />
 
             <TextView
@@ -137,7 +142,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginStart="10dp"
-                android:background="@color/LU_blue"
+                android:background="@drawable/blue_rounded_rectangle"
                 android:layout_toEndOf="@id/availableView"
                 android:paddingStart="5dp"
                 />
@@ -148,7 +153,8 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
-                android:text="Your Spot"
+                android:layout_marginEnd="10dp"
+                android:text="Your Car"
                 android:textColor="@color/grey_fromImage"
                 android:textSize="13dp"
                 android:layout_toEndOf="@id/blueSpot"
