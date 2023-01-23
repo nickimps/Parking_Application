@@ -23,8 +23,8 @@ This application will be technologically quite different from other parking appl
 - [X] Have live location show up on the map
 - [ ] Functional Parking Spaces
   - [ ] Use small subset of parking lot to collect and save the GPS location of the parking spaces (This small sample could be used for the demo)
-  - [ ] Parking space UI for occupied and empty spots
-  - [ ] UI for your current location, do we leave as a blue circle or do we try and make it look like a car and have custom icons that the user can choose from?
+  - [X] Parking space UI for occupied and empty spots
+  - [X] UI for your current location, do we leave as a blue circle or do we try and make it look like a car and have custom icons that the user can choose from?
   - [ ] Functionality to recognize when a user is within a parking space or not
   - [ ] When you click on a parking space, it should bring that parking space to centre of screen and even zoom in/out if needed
 - [ ] Machine Learning Model
@@ -39,7 +39,6 @@ This application will be technologically quite different from other parking appl
   - [ ] Admin mode should give capability to quickly see if device is in parking space or not and what is the ID of the parking space in the admin screen
   - [ ] Ability to save a gps location to a file or something
   - [ ] Ability to select a parking space and make it occupied or empty on demand
-- [ ] Pause button that turns of location tracking until reactivated
 - [ ] Geofencing ability, have it turn on precise location when within campus parking lot and go to approximate when it is not on campus parking lot
 - [X] Update user interface, make sure the UI looks presentable
   - [X] LoginActivity
@@ -54,6 +53,7 @@ This application will be technologically quite different from other parking appl
 ## TODO If Time Left
 - [ ] Dark mode
 - [ ] Transitions (especially on login and register screen)
+- [ ] Pause button that turns of location tracking until reactivated
 
 
 ## User Interface
