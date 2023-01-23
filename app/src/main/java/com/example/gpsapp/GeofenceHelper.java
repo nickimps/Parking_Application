@@ -1,5 +1,6 @@
 package com.example.gpsapp;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -17,7 +18,7 @@ import java.lang.reflect.Executable;
 public class GeofenceHelper extends ContextWrapper {
 
     private static final String TAG = "GeofenceHelper";
-    PendingIntent pendingIntent;
+    PendingIntent pendingIntent = null;
 
     public GeofenceHelper(Context base) {
         super(base);
@@ -42,13 +43,18 @@ public class GeofenceHelper extends ContextWrapper {
                 .build();
     }
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     public PendingIntent getPendingIntent() {
         if (pendingIntent != null){
             return pendingIntent;
         }
 
         Intent intent = new Intent(this, GeofenceBroadcastReceiver.class);
-        pendingIntent = PendingIntent.getBroadcast(this,0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
+            pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE);
+        else
+            pendingIntent = PendingIntent.getBroadcast(this,0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         return pendingIntent;
     }
