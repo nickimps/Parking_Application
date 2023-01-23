@@ -20,6 +20,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,6 +32,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -80,8 +82,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private LocationRequest locationRequest;
     private LocationManager locationManager;
-
-    private LocationCallback locationCallBack;
+    LocationCallback locationCallBack = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            if (locationResult == null) {
+                return;
+            }
+            for (Location location: locationResult.getLocations()) {
+                Log.d(TAG, "onLocationResult: " + location.toString());
+            }
+        }
+    };
 
     protected static final int REQUEST_CHECK_SETTINGS = 9001;
     public boolean requestingLocationUpdates;
@@ -102,45 +113,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        //Trying some stuff - Jimmy
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> taskM = client.checkLocationSettings(builder.build());
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallBack, null);
 
-        locationCallBack = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    return;
-                }
-                for (Location location: locationResult.getLocations()) {
-
-                }
-            }
-        };
-
-        updateValuesFromBundle(savedInstanceState);
-
-        taskM.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-
-            }
-        });
-
-        taskM.addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                if (e instanceof ResolvableApiException) {
-                    try {
-                        ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(MapsActivity.this, REQUEST_CHECK_SETTINGS);
-                    } catch (IntentSender.SendIntentException sendEx) {
-
-                    }
-                }
-            }
-        });
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(100);
+        locationRequest.setFastestInterval(100);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         // Get the username of the current logged in user
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
@@ -196,16 +184,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else
             mMap.setMyLocationEnabled(true);
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-            // Got last known location. In some rare situations this can be null.
-            if (location != null) {
-                //name.setText((int) location.getLatitude());
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                String locationString = "Latitude: " + latitude + "\nLongitude: " + longitude;
-                //Toast.makeText(getApplicationContext(),locationString,Toast.LENGTH_SHORT).show();
-            }
-        });
+//        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+//            // Got last known location. In some rare situations this can be null.
+//            if (location != null) {
+//                //name.setText((int) location.getLatitude());
+//                double latitude = location.getLatitude();
+//                double longitude = location.getLongitude();
+//                String locationString = "Latitude: " + latitude + "\nLongitude: " + longitude;
+//                //Toast.makeText(getApplicationContext(),locationString,Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
         Polygon r9 = googleMap.addPolygon(new PolygonOptions()
                 .clickable(true)
@@ -215,7 +203,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         new LatLng(48.422527, -89.257643),
                         new LatLng(48.422590, -89.257864),
                         new LatLng(48.422444, -89.258527)
-        ));
+                ));
         r9.setStrokeWidth(5);
         r9.setFillColor(0x33746AB0);
 
@@ -355,12 +343,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         addGeofence(latLng, GEOFENCE_RADIUS);
     }
 
-    private void addGeofence(LatLng latLng, float radius){
+    private void addGeofence(LatLng latLng, float radius) {
         //trigger geofence when entering dwelling or exiting (maybe change)
         Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         geofenceingClient.addGeofences(geofencingRequest, pendingIntent)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -394,19 +392,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addCircle(circleOptions);
     }
 
-    //Trying to implement live tracking will update depreciated methods
-    protected void createLocationRequest() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
+    private void checkSettings() {
+        LocationSettingsRequest request = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest).build();
+        SettingsClient client = LocationServices.getSettingsClient(this);
 
-    public void onResume() {
-        super.onResume();
-        if (requestingLocationUpdates) {
-            startLocationUpdates();
-        }
+        Task<LocationSettingsResponse> locationSettingsResponseTask = client.checkLocationSettings(request);
+        locationSettingsResponseTask.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                //If settings allowed
+                startLocationUpdates();
+            }
+        });
+        locationSettingsResponseTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
     }
 
     private void startLocationUpdates() {
@@ -423,32 +427,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallBack, Looper.getMainLooper());
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        stopLocationUpdates();
-    }
-
     private void stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(locationCallBack);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, requestingLocationUpdates);
-
-        super.onSaveInstanceState(outState);
-    }
-
-    private void updateValuesFromBundle(Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            return;
-        }
-
-        if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
-            requestingLocationUpdates = savedInstanceState.getBoolean(
-                    REQUESTING_LOCATION_UPDATES_KEY);
-        }
-        //updateUI();
     }
 }
