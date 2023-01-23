@@ -94,6 +94,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             isAdmin = document.getBoolean("isAdmin");
+                            name = findViewById(R.id.welcomeText);
+                            name.setText("Welcome " + document.getString("name"));
                         }
                         if (Boolean.TRUE.equals(isAdmin))
                             findViewById(R.id.adminText).setVisibility(View.VISIBLE);
@@ -104,9 +106,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
 
-
-        name = findViewById(R.id.welcomeText);
-        name.setText("Welcome " + username);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -137,15 +136,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.setMyLocationEnabled(true);
 
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-                    // Got last known location. In some rare situations this can be null.
-                    if (location != null) {
-                        //name.setText((int) location.getLatitude());
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-                        String locationString = "Latitude: " + latitude + "\nLongitude: " + longitude;
-                        //Toast.makeText(getApplicationContext(),locationString,Toast.LENGTH_SHORT).show();
-                    }
-                });
+            // Got last known location. In some rare situations this can be null.
+            if (location != null) {
+                //name.setText((int) location.getLatitude());
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                String locationString = "Latitude: " + latitude + "\nLongitude: " + longitude;
+                //Toast.makeText(getApplicationContext(),locationString,Toast.LENGTH_SHORT).show();
+            }
+        });
 
         Polygon r9 = googleMap.addPolygon(new PolygonOptions()
                 .clickable(true)
@@ -155,7 +154,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         new LatLng(48.422527, -89.257643),
                         new LatLng(48.422590, -89.257864),
                         new LatLng(48.422444, -89.258527)
-        ));
+                ));
         r9.setStrokeWidth(5);
         r9.setFillColor(0x33746AB0);
 
@@ -197,7 +196,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         addGeofence(latLng, GEOFENCE_RADIUS);
     }
 
-    private void addGeofence(LatLng latLng, float radius){
+    private void addGeofence(LatLng latLng, float radius) {
         //trigger geofence when entering dwelling or exiting (maybe change)
         Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
