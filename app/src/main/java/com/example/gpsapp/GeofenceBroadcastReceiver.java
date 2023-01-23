@@ -13,5 +13,8 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         // an Intent broadcast.
         Toast.makeText(context,"Geofence Triggered...",Toast.LENGTH_SHORT).show();
         //System.out.println("TEST3");
+
+        // Add if to see what kinda of event actually happened
+        // to location permissions from precise to approximate.
     }
 }
