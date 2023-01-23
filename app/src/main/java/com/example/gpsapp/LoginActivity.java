@@ -3,14 +3,19 @@ package com.example.gpsapp;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.text.Editable;
 import android.text.SpannableString;
@@ -34,10 +39,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final int REQUEST_LOCATION = 1;
+    private static final int LOCATION_PERMISSION_CODE = 0;
+    private static final int BACKGROUND_LOCATION_PERMISSION_CODE = 2;
     FirebaseFirestore firestore;
     private TextInputEditText usernameEditText, passwordEditText;
     private TextInputLayout usernameLayout, passwordLayout;
-    private static final int REQUEST_LOCATION = 1;
     //Fetch the stored information when the app is loaded, this function is called when the app is opened again
     @Override
     protected void onResume() {
@@ -67,14 +74,8 @@ public class LoginActivity extends AppCompatActivity {
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 if (!task.getResult().isEmpty()) {
-                                    Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
-
                                     usernameEditText.setText(username);
                                     passwordEditText.setText(password);
-
-                                    // Send the user to the maps activity
-                                    Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
-                                    startActivity((intent));
                                 }
                             } else {
                                 Log.d(TAG, "Error getting documents: ", task.getException());
@@ -82,8 +83,6 @@ public class LoginActivity extends AppCompatActivity {
                         });
             }
         }
-
-
     }
 
     // Saves the information when the app is closed, this function runs when the app is closed.
@@ -108,14 +107,16 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     //Runs when the app is created
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, REQUEST_LOCATION);
+        getAllPermissions();
+//        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+//        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION);
+//        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, REQUEST_LOCATION);
 
         // REGISTER CLICKABLE TEXT
         createClickableRegisterText();
@@ -185,6 +186,105 @@ public class LoginActivity extends AppCompatActivity {
         // LOGIN BUTTON
         Button logButton = findViewById(R.id.loginButton);
         logButton.setOnClickListener(v -> login());
+    }
+
+    private void getAllPermissions() {
+        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // Fine location has been accepted by user
+
+            // Need this for certain versions of android apparently
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    // Background Location Permission is granted so do your work here
+                } else {
+                    // Ask for Background Location Permission
+                    askForBackgroundPermission();
+                }
+            }
+        }
+        else {
+            // Fine Location Permission is not granted so ask for permission
+            tellWhyWeNeedIt();
+        }
+    }
+
+    private void tellWhyWeNeedIt() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Permission Needed!")
+                    .setMessage("Location Permission Needed!")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(LoginActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
+                        }
+                    })
+                    .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Permission is denied by the user
+                        }
+                    })
+                    .create().show();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // User granted location permission
+                // Now check if android version >= 11, if >= 11 check for Background Location Permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        // Background Location Permission is granted so do your work here
+                    } else {
+                        // Ask for Background Location Permission
+                        askForBackgroundPermission();
+                    }
+                }
+            } else {
+                // User denied location permission
+            }
+        } else if (requestCode == BACKGROUND_LOCATION_PERMISSION_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // User granted for Background Location Permission.
+            } else {
+                // User declined for Background Location Permission.
+            }
+        }
+
+    }
+
+    private void askForBackgroundPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Permission Needed!")
+                    .setMessage("Background Location Permission Needed!, please tap \"Allow all time in the next screen\"")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(LoginActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_PERMISSION_CODE);
+                        }
+                    })
+                    .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // User declined for Background Location Permission.
+                        }
+                    })
+                    .create().show();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_PERMISSION_CODE);
+        }
     }
 
     public void login() {

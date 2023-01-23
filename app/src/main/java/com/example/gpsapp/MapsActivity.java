@@ -5,11 +5,14 @@ import static android.content.ContentValues.TAG;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -18,6 +21,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
@@ -97,7 +101,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected static final int REQUEST_CHECK_SETTINGS = 9001;
     public boolean requestingLocationUpdates;
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -338,8 +341,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override //Geofence
     public void onMapLongClick(@NonNull LatLng latLng) {
-//        addMarker(latLng);
-//        addCircle(latLng, GEOFENCE_RADIUS);
+        addMarker(latLng);
+        addCircle(latLng, GEOFENCE_RADIUS);
         addGeofence(latLng, GEOFENCE_RADIUS);
     }
 
