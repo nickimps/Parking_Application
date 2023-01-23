@@ -70,8 +70,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Boolean isAdmin;
 
     //geofence
+    //GEOFENCE -----------------------------------------------------------------------------
     private GeofencingClient geofenceingClient;
+    private GeofenceHelper geofenceHelper;
     private float GEOFENCE_RADIUS = 200;
+    private String GEOFENCE_ID = "SOME_GEOFENCE_ID"; //each geofence has a unique id
+    private static final String TAG = "MapsActivity";
+    //GEOFENCE -----------------------------------------------------------------------------
 
     private LocationRequest locationRequest;
     private LocationManager locationManager;
@@ -89,6 +94,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Geofencing Code --------------------------------------------------------
         geofenceingClient = LocationServices.getGeofencingClient(this);
+        geofenceHelper = new GeofenceHelper(this);
         // -----------------------------------------------------------------------
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
