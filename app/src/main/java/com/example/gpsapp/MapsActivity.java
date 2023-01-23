@@ -350,8 +350,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override //Geofence
     public void onMapLongClick(@NonNull LatLng latLng) {
-        addMarker(latLng);
-        addCicle(latLng, GEOFENCE_RADIUS);
+//        addMarker(latLng);
+//        addCircle(latLng, GEOFENCE_RADIUS);
         addGeofence(latLng, GEOFENCE_RADIUS);
     }
 
@@ -384,7 +384,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     //adds radius for geofence
-    private void addCicle(LatLng latLng, float radius) {
+    private void addCircle(LatLng latLng, float radius) {
         CircleOptions circleOptions = new CircleOptions();
         circleOptions.center(latLng);
         circleOptions.radius(radius);
