@@ -54,6 +54,7 @@ This application will be technologically quite different from other parking appl
 - [ ] Dark mode
 - [ ] Transitions (especially on login and register screen)
 - [ ] Pause button that turns of location tracking until reactivated
+- [ ] Recenter button to bring user back to good view of the parking lot map
 
 
 ## User Interface
