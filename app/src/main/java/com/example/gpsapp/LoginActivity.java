@@ -46,6 +46,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText usernameEditText, passwordEditText;
     private TextInputLayout usernameLayout, passwordLayout;
     //Fetch the stored information when the app is loaded, this function is called when the app is opened again
+
     @Override
     protected void onResume() {
         super.onResume();

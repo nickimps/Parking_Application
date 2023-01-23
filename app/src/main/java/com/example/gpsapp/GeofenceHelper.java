@@ -7,6 +7,8 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.widget.Switch;
 
+import androidx.fragment.app.FragmentActivity;
+
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
@@ -38,23 +40,28 @@ public class GeofenceHelper extends ContextWrapper {
                 .setCircularRegion(latLng.latitude, latLng.longitude, radius)
                 .setRequestId(ID) //each geofence has unique id
                 .setTransitionTypes(transitionTypes)
-                .setLoiteringDelay(0) //set 0 so no delay when entering
+                .setLoiteringDelay(10) //set 0 so no delay when entering
                 .setExpirationDuration(Geofence.NEVER_EXPIRE) //dont want it to expire
                 .build();
     }
 
     @SuppressLint("UnspecifiedImmutableFlag")
     public PendingIntent getPendingIntent() {
+
         if (pendingIntent != null){
             return pendingIntent;
         }
 
         Intent intent = new Intent(this, GeofenceBroadcastReceiver.class);
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
-            pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE);
-        else
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S){
+            pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE);
+            System.out.println("TEST1");
+        }
+        else{
             pendingIntent = PendingIntent.getBroadcast(this,0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            System.out.println("TEST2");
+        }
 
         return pendingIntent;
     }
