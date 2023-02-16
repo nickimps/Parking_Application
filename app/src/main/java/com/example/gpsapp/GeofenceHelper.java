@@ -56,11 +56,9 @@ public class GeofenceHelper extends ContextWrapper {
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S){
             pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE);
-            System.out.println("TEST1");
         }
         else{
             pendingIntent = PendingIntent.getBroadcast(this,0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            System.out.println("TEST2");
         }
 
         return pendingIntent;
@@ -70,14 +68,11 @@ public class GeofenceHelper extends ContextWrapper {
         if(e instanceof ApiException){
             ApiException apiException = (ApiException) e;
             switch (apiException.getStatusCode()){
-                case GeofenceStatusCodes
-                        .GEOFENCE_NOT_AVAILABLE:
+                case GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE:
                     return"GEOFENCE_NOT_AVAILABLE";
-                case GeofenceStatusCodes
-                        .GEOFENCE_TOO_MANY_GEOFENCES:
+                case GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES:
                     return"GEOFENCE_TOO_MANY_GEOFENCES";
-                case GeofenceStatusCodes
-                        .GEOFENCE_TOO_MANY_PENDING_INTENTS:
+                case GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS:
                     return"GEOFENCE_TOO_MANY_PENDING_INTENTS";
             }
         }

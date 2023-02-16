@@ -1,49 +1,35 @@
 package com.example.gpsapp;
 
-import static android.content.ContentValues.TAG;
-
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
-import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.Priority;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -58,7 +44,6 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.collection.LLRBNode;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -77,7 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //geofence
     //GEOFENCE -----------------------------------------------------------------------------
-    private GeofencingClient geofenceingClient;
+    private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
     private float GEOFENCE_RADIUS = 200;
     private String GEOFENCE_ID = "SOME_GEOFENCE_ID"; //each geofence has a unique id
@@ -107,7 +92,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
 
         //Geofencing Code --------------------------------------------------------
-        geofenceingClient = LocationServices.getGeofencingClient(this);
+        geofencingClient = LocationServices.getGeofencingClient(this);
         geofenceHelper = new GeofenceHelper(this);
         // -----------------------------------------------------------------------
 
@@ -187,18 +172,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else
             mMap.setMyLocationEnabled(true);
 
-//        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-//            // Got last known location. In some rare situations this can be null.
-//            if (location != null) {
-//                //name.setText((int) location.getLatitude());
-//                double latitude = location.getLatitude();
-//                double longitude = location.getLongitude();
-//                String locationString = "Latitude: " + latitude + "\nLongitude: " + longitude;
-//                //Toast.makeText(getApplicationContext(),locationString,Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
-        Polygon r9 = googleMap.addPolygon(new PolygonOptions()
+        // Create sub lot R9
+        Polygon r9 = googleMap.addPolygon(new PolygonOptions()  // could possibly store this in the DB too I think but we need to figure out how to check for different number of vertices
                 .clickable(true)
                 .add(
                         new LatLng(48.422224, -89.259120),
@@ -207,136 +182,83 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         new LatLng(48.422590, -89.257864),
                         new LatLng(48.422444, -89.258527)
                 ));
-        r9.setStrokeWidth(5);
-        r9.setFillColor(0x33746AB0);
+        // Set the tag for clicking
+        r9.setTag("R9");
+        // Style it as a parking sub lot
+        styleParkingSubLot(r9);
 
-        Polygon spot1 = googleMap.addPolygon(new PolygonOptions()
+        // Create sub lot R9
+        Polygon r10 = googleMap.addPolygon(new PolygonOptions()  // could possibly store this in the DB too I think but we need to figure out how to check for different number of vertices
                 .clickable(true)
                 .add(
-                        new LatLng(48.422477, -89.258081),
-                        new LatLng(48.422503, -89.258144),
-                        new LatLng(48.422478, -89.258165),
-                        new LatLng(48.422453, -89.258100)));
-        spot1.setStrokeWidth(3);
-        spot1.setFillColor(0x66746AB0);
+                        new LatLng(48.42177096009731, -89.25813853884138),
+                        new LatLng(48.42152531583647, -89.25747603324294),
+                        new LatLng(48.420697592740154, -89.2582163228995),
+                        new LatLng(48.42093434072241, -89.25888687512463)
+                ));
+        // Set the tag for clicking
+        r10.setTag("R10");
+        // Style it as a parking sub lot
+        styleParkingSubLot(r10);
 
-        Polygon spot2 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422478, -89.258165),
-                        new LatLng(48.422453, -89.258100),
-                        new LatLng(48.422431, -89.258125),
-                        new LatLng(48.422454, -89.258185)));
-        spot2.setStrokeWidth(3);
-        spot2.setFillColor(0x66746AB0);
+        // Make it clickable to zoom in on the chosen sub lot
+        mMap.setOnPolygonClickListener(polygon -> {
+            if ("R9".equals(polygon.getTag()))
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(48.42232555839978, -89.25824351676498), 19));
+            else if ("R10".equals(polygon.getTag()))
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(48.42126780490169, -89.25815691384268), 19));
+        });
 
-        Polygon spot3 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422454, -89.258185),
-                        new LatLng(48.422431, -89.258125),
-                        new LatLng(48.422407, -89.258145),
-                        new LatLng(48.422432, -89.258208)));
-        spot3.setStrokeWidth(3);
-        spot3.setFillColor(0x66746AB0);
+        // Get the parking spaces from the database and dynamically load them in
+        firestore = FirebaseFirestore.getInstance();
+        firestore.collection("ParkingSpaces")
+                //.whereEqualTo("subLotID", "R9")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            // Load in the spaces from the DB and create the polygon
+                            Polygon polygon = googleMap.addPolygon(new PolygonOptions().add(
+                                    new LatLng(document.getGeoPoint("x1").getLatitude(), document.getGeoPoint("x1").getLongitude()),
+                                    new LatLng(document.getGeoPoint("x2").getLatitude(), document.getGeoPoint("x2").getLongitude()),
+                                    new LatLng(document.getGeoPoint("x3").getLatitude(), document.getGeoPoint("x3").getLongitude()),
+                                    new LatLng(document.getGeoPoint("x4").getLatitude(), document.getGeoPoint("x4").getLongitude())
+                            ));
 
-        Polygon spot4 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422432, -89.258208),
-                        new LatLng(48.422407, -89.258145),
-                        new LatLng(48.422382, -89.258166),
-                        new LatLng(48.422405, -89.258227)));
-        spot4.setStrokeWidth(3);
-        spot4.setFillColor(0x66746AB0);
+                            // Style them as an empty space (green)
+                            if (Boolean.TRUE.equals(document.getBoolean("isFree")))
+                                styleParkingEmptySpace(polygon);
+                            else
+                                styleParkingFilledSpace(polygon);
+                        }
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                });
 
-        Polygon spot5 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422405, -89.258227),
-                        new LatLng(48.422382, -89.258166),
-                        new LatLng(48.422359, -89.258188),
-                        new LatLng(48.422381, -89.258248)));
-        spot5.setStrokeWidth(3);
-        spot5.setFillColor(0x66746AB0);
-
-        Polygon spot6 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422432, -89.258208),
-                        new LatLng(48.422405, -89.258227),
-                        new LatLng(48.422432, -89.258293),
-                        new LatLng(48.422456, -89.258271)));
-        spot6.setStrokeWidth(3);
-        spot6.setFillColor(0x66746AB0);
-
-        Polygon spot7 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422432, -89.258293),
-                        new LatLng(48.422407, -89.258315),
-                        new LatLng(48.422381, -89.258248),
-                        new LatLng(48.422405, -89.258227)));
-        spot7.setStrokeWidth(3);
-        spot7.setFillColor(0x66746AB0);
-
-        Polygon spot8 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422384, -89.258334),
-                        new LatLng(48.422358, -89.258263),
-                        new LatLng(48.422381, -89.258248),
-                        new LatLng(48.422407, -89.258315)));
-        spot8.setStrokeWidth(3);
-        spot8.setFillColor(0x66746AB0);
-
-        Polygon spot9 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422385, -89.258334),
-                        new LatLng(48.422358, -89.258263),
-                        new LatLng(48.422333, -89.258288),
-                        new LatLng(48.422359, -89.258358)));
-        spot9.setStrokeWidth(3);
-        spot9.setFillColor(0x66746AB0);
-
-        Polygon spot10 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422381, -89.258248),
-                        new LatLng(48.422359, -89.258188),
-                        new LatLng(48.422337, -89.258208),
-                        new LatLng(48.422358, -89.258263)));
-        spot10.setStrokeWidth(3);
-        spot10.setFillColor(0x66746AB0);
-
-        Polygon spot11 = googleMap.addPolygon(new PolygonOptions()
-                .clickable(true)
-                .add(
-                        new LatLng(48.422358, -89.258263),
-                        new LatLng(48.422337, -89.258208),
-                        new LatLng(48.422311, -89.258228),
-                        new LatLng(48.422333, -89.258288)));
-        spot11.setStrokeWidth(3);
-        spot11.setFillColor(0x66746AB0);
-
-        // move the camera
+        // move the camera to default position
         LatLng Lot = new LatLng(48.42101, -89.25828);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 15));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17));
 
         //Geofencing Code --------------------------------------------------------
         mMap.setOnMapLongClickListener(this);
         // -----------------------------------------------------------------------
     }
 
-    /**
-     * Styles the parking space
-     * @param polygon The polygon that represents the parking space
-     */
-    private void styleParkingSpace(Polygon polygon) {
-        polygon.setStrokeWidth(POLYGON_STROKE_WIDTH_PX);
-        polygon.setStrokeColor(COLOR_BLACK_ARGB);
-        polygon.setFillColor(COLOR_LIGHT_GREEN_ARGB);
+
+    private void styleParkingEmptySpace(Polygon polygon) {
+        polygon.setStrokeWidth(3);
+        polygon.setFillColor(ContextCompat.getColor(this, R.color.green));
+    }
+
+    private void styleParkingFilledSpace(Polygon polygon) {
+        polygon.setStrokeWidth(3);
+        polygon.setFillColor(ContextCompat.getColor(this, R.color.red));
+    }
+
+    private void styleParkingSubLot(Polygon polygon){
+        polygon.setStrokeWidth(5);
+        polygon.setFillColor(ContextCompat.getColor(this, R.color.parking_space_purple));
     }
 
     @Override //Geofence
@@ -353,8 +275,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
             //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)
@@ -362,7 +282,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        geofenceingClient.addGeofences(geofencingRequest, pendingIntent)
+        geofencingClient.addGeofences(geofencingRequest, pendingIntent)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
@@ -418,8 +338,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
             //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)

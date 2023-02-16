@@ -2,7 +2,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle" >
 
-    <solid android:color="#00509d" />
+    <solid android:color="@color/your_car_blue" />
 
     <corners
         android:bottomLeftRadius="8dp"

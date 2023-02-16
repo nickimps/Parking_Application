@@ -53,9 +53,7 @@ public class AdminActivity extends AppCompatActivity {
         // Enable location to be tracked and populate textfield with location
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         refreshButton = findViewById(R.id.refreshButton);
-        refreshButton.setOnClickListener(v -> {
-            getLocation();
-        });
+        refreshButton.setOnClickListener(v -> getLocation());
 
         // SAVE BUTTON
         Button saveButton = findViewById(R.id.saveButton);
@@ -153,7 +151,7 @@ public class AdminActivity extends AppCompatActivity {
             // Success Message
             Toast.makeText(AdminActivity.this, "Location File Saved!", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Log.e("Exception", "File write failed: " + e.toString());
+            Log.e("Exception", "File write failed: " + e);
             Toast.makeText(AdminActivity.this, "Failed to save.", Toast.LENGTH_SHORT).show();
         }
     }
