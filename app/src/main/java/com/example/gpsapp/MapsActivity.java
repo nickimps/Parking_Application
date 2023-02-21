@@ -47,6 +47,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.Objects;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
     // Default colours
@@ -228,8 +230,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             // Style them as an empty space (green)
                             if (Boolean.TRUE.equals(document.getBoolean("isFree")))
                                 styleParkingEmptySpace(polygon);
-                            else
-                                styleParkingFilledSpace(polygon);
+                            else                                    //need to do another if inside to check the user of this spot and cross reference with the logged in user
+                                styleParkingFilledSpace(polygon);   // may need to add that field to the DB.
+
+                            if (Objects.equals(document.getString("user"), "npimperi"))
+                                styleParkingYourSpace(polygon);
                         }
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
@@ -254,6 +259,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void styleParkingFilledSpace(Polygon polygon) {
         polygon.setStrokeWidth(3);
         polygon.setFillColor(ContextCompat.getColor(this, R.color.red));
+    }
+
+    private void styleParkingYourSpace(Polygon polygon) {
+        polygon.setStrokeWidth(3);
+        polygon.setFillColor(ContextCompat.getColor(this, R.color.your_car_blue));
     }
 
     private void styleParkingSubLot(Polygon polygon){
