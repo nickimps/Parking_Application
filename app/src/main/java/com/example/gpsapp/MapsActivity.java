@@ -7,18 +7,21 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
@@ -38,6 +41,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.gpsapp.databinding.ActivityMapsBinding;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
@@ -49,10 +53,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
+public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
     private GoogleMap mMap;
+    private LocationManager mLocationManager;
     private ActivityMapsBinding binding;
     private FusedLocationProviderClient fusedLocationClient;
     private TextView name;
@@ -60,7 +67,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Boolean isAdmin;
     private String username;
 
+    private Timer mTimer;
+    private boolean hasStoppedMoving = false;
     private List<Polygon> parkingSpaces = new ArrayList<>();
+    private List<String> parkingSpacesDocIDs = new ArrayList<>();
+
+    int counter = 0;
 
     //geofence
     //GEOFENCE -----------------------------------------------------------------------------
@@ -127,7 +139,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             isAdmin = document.getBoolean("isAdmin");
                             name = findViewById(R.id.welcomeText);
-                            name.setText("Welcome " + document.getString("name"));
+                            String newName = "Welcome " + document.getString("name");
+                            name.setText(newName);
                         }
                         if (Boolean.TRUE.equals(isAdmin))
                             findViewById(R.id.adminText).setVisibility(View.VISIBLE);
@@ -144,6 +157,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
+        // Get a reference to the location manager
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        // Request location updates every 0.5 seconds or when the user moves 0.001 meters
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500L, (float) 0.001, this);
 
         Button button = findViewById(R.id.settingsButton);
         button.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
@@ -220,6 +238,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     new LatLng(document.getGeoPoint("x4").getLatitude(), document.getGeoPoint("x4").getLongitude())
                             ));
                             parkingSpaces.add(polygon);
+                            parkingSpacesDocIDs.add(document.getId());
 
                             // Check if it is filled, empty, or your own and style the space accordingly
                             String parkedUsername = document.getString("user");
@@ -237,11 +256,69 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // move the camera to default position
         LatLng Lot = new LatLng(48.42101, -89.25828);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17));       // Need to figure out a way to not reset this everytime we enter the map I feel
 
         //Geofencing Code --------------------------------------------------------
         mMap.setOnMapLongClickListener(this);
         // -----------------------------------------------------------------------
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        // Reset the flag to indicate that the user is still moving
+//        hasStoppedMoving = false;
+
+        // Check if the user's location is inside any of the polygons
+        if (mMap != null) {
+            for (Polygon polygon : parkingSpaces) {
+                // Create a LatLngBounds object that contains the polygon
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                for (LatLng latLng : polygon.getPoints()) {
+                    builder.include(latLng);
+                }
+                LatLngBounds bounds = builder.build();
+
+                // Check if the user's location is inside the bounds of the polygon
+                if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
+                    // The user's location is inside the polygon
+                    System.out.println("Inside  of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
+
+//                    // Start the timer to check if the user has stopped moving
+//                    mTimer = new Timer();
+//                    mTimer.schedule(new TimerTask() {
+//                        @Override
+//                        public void run() {
+//                            if (hasStoppedMoving) {
+//                                // User has stopped moving, do something here
+//                                System.out.println("User has stopped moving " + counter++ + " Inside: " + polygon.toString());
+//                                //styleParkingYourSpace(polygon);
+//                            } else {
+//                                // User is still moving, reset the flag
+//                                hasStoppedMoving = true;
+//                            }
+//                        }
+//                    }, 0, 5000); // Check every 5 seconds
+                }
+                else {
+                    System.out.println("Outside of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        // Called when the user enables the GPS provider
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        // Called when the user disables the GPS provider
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        // Called when the status of the GPS provider changes
     }
 
 
@@ -263,28 +340,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void styleParkingSubLot(Polygon polygon){
         polygon.setStrokeWidth(5);
         polygon.setFillColor(ContextCompat.getColor(this, R.color.parking_space_purple));
-    }
-
-    private class MyLocationListener implements LocationListener {
-        private List<Polygon> parkingSpaces;
-
-        public MyLocationListener(List<Polygon> parkingSpaces) {
-            this.parkingSpaces = parkingSpaces;
-        }
-
-        @Override
-        public void onLocationChanged(Location location) {
-            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-            // Iterate over the polygons and check if the user's location is inside any of them
-//            for (Polygon parkingSpace : parkingSpaces) {
-//                if (parkingSpace.contains(latLng)) {
-//                    styleParkingYourSpace(parkingSpace);
-//                } else {
-//                    styleParkingYourSpace(parkingSpace);
-//                }
-//            }
-        }
     }
 
     @Override //Geofence
