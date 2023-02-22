@@ -12,7 +12,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -47,20 +47,20 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
-    // Default colours
-    private static final int COLOR_LIGHT_GREEN_ARGB = 0xff81C784;
-    private static final int COLOR_BLACK_ARGB = 0xff000000;
-    private static final int POLYGON_STROKE_WIDTH_PX = 4;
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
     private FusedLocationProviderClient fusedLocationClient;
     private TextView name;
     FirebaseFirestore firestore;
     Boolean isAdmin;
+    private String username;
+
+    private List<Polygon> parkingSpaces = new ArrayList<>();
 
     //geofence
     //GEOFENCE -----------------------------------------------------------------------------
@@ -72,7 +72,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //GEOFENCE -----------------------------------------------------------------------------
 
     private LocationRequest locationRequest;
-    private LocationManager locationManager;
     LocationCallback locationCallBack = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
@@ -84,10 +83,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     };
-
-    protected static final int REQUEST_CHECK_SETTINGS = 9001;
-    public boolean requestingLocationUpdates;
-    protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,8 +99,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
             //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)
@@ -122,7 +115,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Get the username of the current logged in user
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
-        String username = sharedPref.getString("username", null);
+        username = sharedPref.getString("username", null);
 
         // Gets user administrator access
         firestore = FirebaseFirestore.getInstance();
@@ -226,15 +219,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     new LatLng(document.getGeoPoint("x3").getLatitude(), document.getGeoPoint("x3").getLongitude()),
                                     new LatLng(document.getGeoPoint("x4").getLatitude(), document.getGeoPoint("x4").getLongitude())
                             ));
+                            parkingSpaces.add(polygon);
 
-                            // Style them as an empty space (green)
-                            if (Boolean.TRUE.equals(document.getBoolean("isFree")))
+                            // Check if it is filled, empty, or your own and style the space accordingly
+                            String parkedUsername = document.getString("user");
+                            if (parkedUsername.equals(""))
                                 styleParkingEmptySpace(polygon);
-                            else                                    //need to do another if inside to check the user of this spot and cross reference with the logged in user
-                                styleParkingFilledSpace(polygon);   // may need to add that field to the DB.
-
-                            if (Objects.equals(document.getString("user"), "npimperi"))
+                            else if (parkedUsername.equalsIgnoreCase(username))
                                 styleParkingYourSpace(polygon);
+                            else
+                                styleParkingFilledSpace(polygon);
                         }
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
@@ -269,6 +263,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void styleParkingSubLot(Polygon polygon){
         polygon.setStrokeWidth(5);
         polygon.setFillColor(ContextCompat.getColor(this, R.color.parking_space_purple));
+    }
+
+    private class MyLocationListener implements LocationListener {
+        private List<Polygon> parkingSpaces;
+
+        public MyLocationListener(List<Polygon> parkingSpaces) {
+            this.parkingSpaces = parkingSpaces;
+        }
+
+        @Override
+        public void onLocationChanged(Location location) {
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+            // Iterate over the polygons and check if the user's location is inside any of them
+//            for (Polygon parkingSpace : parkingSpaces) {
+//                if (parkingSpace.contains(latLng)) {
+//                    styleParkingYourSpace(parkingSpace);
+//                } else {
+//                    styleParkingYourSpace(parkingSpace);
+//                }
+//            }
+        }
     }
 
     @Override //Geofence
@@ -362,3 +378,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         fusedLocationClient.removeLocationUpdates(locationCallBack);
     }
 }
+
+
