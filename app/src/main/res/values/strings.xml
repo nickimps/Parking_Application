@@ -43,5 +43,7 @@
     <string name="create_account">Create Account</string>
     <string name="register2">Register</string>
     <string name="create_an_account_to_continue">Create an account to continue</string>
+    <string name="current_speed_xx_m_s">Current Speed:\n0.000000000 m/s</string>
+    <string name="stopped">Stopped</string>
 
 </resources>

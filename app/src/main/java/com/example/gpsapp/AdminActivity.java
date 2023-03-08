@@ -7,9 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.provider.Settings;
@@ -22,15 +24,21 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Polygon;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Locale;
 
-public class AdminActivity extends AppCompatActivity {
+public class AdminActivity extends AppCompatActivity implements LocationListener {
 
+    private static final long POLLING_SPEED = 500L;
+    private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    TextView locationTextView;
+    TextView locationTextView, speedTextView, isStoppedTextView;
     Button refreshButton;
     LocationManager locationManager;
     TextInputEditText filenameEditText;
@@ -42,10 +50,11 @@ public class AdminActivity extends AppCompatActivity {
 
         getSupportActionBar().setTitle("Admin Portal");
 
+        // Get the ids to access them
         locationTextView = findViewById(R.id.locationTextView);
         filenameEditText = findViewById(R.id.filenameTextInputEditText);
-
-
+        speedTextView = findViewById(R.id.speedTextView);
+        isStoppedTextView = findViewById(R.id.isStoppedTextView);
 
         // Have location auto load when loading screen
         getLocation();
@@ -86,28 +95,66 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Function to get permissions and then provide an alert if they are not set
+     * If permissions are good, then we proceed to getGPSData()
+     */
     public void getLocation() {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            OnGPS();        // Need to ok permissions first
+            // Need permissions to be good
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("No", (dialog, which) -> dialog.cancel());
+            final AlertDialog alertDialog = builder.create();
+            alertDialog.show();
         } else {
-            getGPSData();  // Get Location
+            // Get Location
+            getGPSData();
         }
     }
 
-
     /**
-     * Gets user to confirm their location permissions
+     * Function runs whenever the location of the user changes
+     *
+     * @param location the location of the user
      */
-    private void OnGPS() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("No", (dialog, which) -> dialog.cancel());
-        final AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+    @Override
+    public void onLocationChanged(Location location) {
+        float speed = 0.0f;
+        if (location.hasSpeed()) {
+            speed = location.getSpeed();
+        } else {
+            speed = 0.0f;
+        }
+
+        //String speedString = "Current Speed:\n" + speed + " m/s";
+        String speedString = String.format(Locale.CANADA, "Current Speed:\n%.9f m/s", speed);
+        speedTextView.setText(speedString);
+
+        String movingString = "Moving";
+        if (speed == 0)
+            movingString = "Stopped"; // would be nice to say parked here if in parking spot
+
+        isStoppedTextView.setText(movingString);
     }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        // Called when the user enables the GPS provider
+    }
+    @Override
+    public void onProviderDisabled(String provider) {
+        // Called when the user disables the GPS provider
+    }
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        // Called when the status of the GPS provider changes
+    }
+
 
     /**
      * Populates the textfield with the location
+     * Also starts the .requestLocationUpdates for the onLocationChanged function
      */
     @SuppressLint("SetTextI18n")
     private void getGPSData() {
@@ -115,6 +162,10 @@ public class AdminActivity extends AppCompatActivity {
                 && ActivityCompat.checkSelfPermission(AdminActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         } else {
+            // Start the listener to manage location updates
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
+
+            // Get GPS coordinates of last location to update the text view
             Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (locationGPS != null) {
                 String locationString = "Latitude: " + locationGPS.getLatitude() + "\nLongitude: " + locationGPS.getLongitude();
