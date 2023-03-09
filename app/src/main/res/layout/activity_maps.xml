@@ -74,20 +74,21 @@
 <!--    Admin Information Banner-->
     <androidx.cardview.widget.CardView
         android:id="@+id/adminBannerCardView"
-        android:layout_width="match_parent"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="65dp"
         android:visibility="invisible"
+        android:layout_centerHorizontal="true"
         app:cardElevation="10dp"
         app:cardCornerRadius="10dp"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="@color/orange"
         app:cardMaxElevation="12dp"
         app:cardPreventCornerOverlap="true"
         app:cardUseCompatPadding="true">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:padding="5dp">
 
             <TextView
@@ -96,7 +97,19 @@
                 android:layout_height="wrap_content"
                 android:text="@string/current_speed_xx_m_s"
                 android:fontFamily="@font/dm_sans"
-                android:textColor="@color/LU_blue"
+                android:textColor="@color/white"
+                android:textAlignment="center"
+                android:textStyle="bold"
+                android:textSize="20sp"/>
+
+            <TextView
+                android:id="@+id/movingStatusTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/speedAdminTextView"
+                android:text="@string/stopped"
+                android:fontFamily="@font/dm_sans"
+                android:textColor="@color/white"
                 android:textAlignment="center"
                 android:textSize="18sp"/>
 

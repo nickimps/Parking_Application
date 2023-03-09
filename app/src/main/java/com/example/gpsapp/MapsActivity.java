@@ -23,6 +23,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
@@ -33,7 +35,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
@@ -76,6 +77,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        binding = ActivityMapsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
         // Get a reference to the location manager
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -94,9 +98,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         geofenceHelper = new GeofenceHelper(this);
         // -----------------------------------------------------------------------
 
-        binding = ActivityMapsBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
+        // For the admin speed card view
         speedAdminTextView = findViewById(R.id.speedAdminTextView);
 
         // Get the username of the current logged in user
@@ -243,7 +245,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             speed = 0.0f;
         }
 
-        String speedString = String.format(Locale.CANADA, "Current Speed:\n%.9f m/s", speed);
+        String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
         speedAdminTextView.setText(speedString);
 
         // Check if the user's location is inside any of the polygons
@@ -260,9 +262,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
                     // The user's location is inside the polygon
                     System.out.println("Inside  of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
+                    styleParkingYourSpace(polygon);
                 }
                 else {
                     System.out.println("Outside of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
+                    styleParkingEmptySpace(polygon);
                 }
             }
         }
