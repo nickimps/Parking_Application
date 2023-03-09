@@ -41,12 +41,17 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
@@ -57,7 +62,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private GoogleMap mMap;
     private LocationManager mLocationManager;
     private ActivityMapsBinding binding;
-    private TextView name, speedAdminTextView;
+    private TextView name, speedAdminTextView, movingStatusTextView;
     FirebaseFirestore firestore;
     Boolean isAdmin;
     private String username;
@@ -100,6 +105,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         // For the admin speed card view
         speedAdminTextView = findViewById(R.id.speedAdminTextView);
+        movingStatusTextView = findViewById(R.id.movingStatusTextView);
 
         // Get the username of the current logged in user
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
@@ -236,8 +242,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // -----------------------------------------------------------------------
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
+    private float updateSpeedTextView(Location location) {
         float speed = 0.0f;
         if (location.hasSpeed()) {
             speed = location.getSpeed();
@@ -248,28 +253,133 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
         speedAdminTextView.setText(speedString);
 
-        // Check if the user's location is inside any of the polygons
-        if (mMap != null) {
-            for (Polygon polygon : parkingSpaces) {
-                // Create a LatLngBounds object that contains the polygon
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                for (LatLng latLng : polygon.getPoints()) {
-                    builder.include(latLng);
-                }
-                LatLngBounds bounds = builder.build();
+        return speed;
+    }
 
-                // Check if the user's location is inside the bounds of the polygon
-                if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
-                    // The user's location is inside the polygon
-                    System.out.println("Inside  of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
-                    styleParkingYourSpace(polygon);
+    private String checkStop(Location location) {
+        // Default moving status
+        String movingStatus = "Stopped";
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        } else {
+            Location currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+            HashMap<Polygon, Double> possibleParkedSpaces = new HashMap<>();
+
+            // Check if the user's location is inside any of the polygons
+            if (mMap != null) {
+                for (Polygon polygon : parkingSpaces) {
+
+                    // Create a LatLngBounds object that contains the polygon
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    for (LatLng latLng : polygon.getPoints()) {
+                        builder.include(latLng);
+                    }
+                    LatLngBounds bounds = builder.build();
+
+                    // Check if the user's location is inside the bounds of the polygon
+                    if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
+                        // The user's location is inside the polygon
+                        System.out.println("Inside  of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
+
+                        // Get the points of this polygon
+                        List<LatLng> points = polygon.getPoints();
+                        double latSum = 0, lngSum = 0;
+                        for (LatLng point : points) {
+                            latSum += point.latitude;
+                            lngSum += point.longitude;
+                        }
+
+                        // Compute the center of the polygon
+                        LatLng centerPoint = new LatLng(latSum / points.size(), lngSum / points.size());
+
+                        // Turn the center point into a location for measuring
+                        Location centerOfPolygon = new Location("");
+                        centerOfPolygon.setLatitude(centerPoint.latitude);
+                        centerOfPolygon.setLongitude(centerPoint.longitude);
+
+                        // Get the new distance
+                        double distance = currentLocation.distanceTo(centerOfPolygon);
+
+                        // Save the parking spaces and their distance to the users current location.
+                        possibleParkedSpaces.put(polygon, distance);
+
+                        // Set the status to 'parked'
+                        movingStatus = "Parked";
+                    }
                 }
-                else {
-                    System.out.println("Outside of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
-                    styleParkingEmptySpace(polygon);
+
+                if (movingStatus.equals("Parked")) {
+                    String bestOption = "";
+                    double lowestDistance = 10000;
+
+                    // Go through the hashmap and check if the lowest spot is empty
+                    for(Map.Entry possibleSpace : possibleParkedSpaces.entrySet()) {
+                        // Get the parking space id and distance for comparisons
+                        String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
+                        double polyDistance = (double) possibleSpace.getValue();
+
+                        if (polyDistance < lowestDistance) {
+                            AtomicReference<Boolean> empty = new AtomicReference<>(true);
+
+                            //Check if the parking space does not have a user assigned to it
+                            firestore = FirebaseFirestore.getInstance();
+                            firestore.collection("ParkingSpaces")
+                                    .document(docID)
+                                    .get()
+                                    .addOnCompleteListener(task -> {
+                                        if (task.isSuccessful())
+                                            empty.set(Objects.requireNonNull(task.getResult().get("user")).toString().equals(""));
+                                        else
+                                            Log.d(TAG, "Error getting documents: ", task.getException());
+                                    });
+
+                            // If no user, we can choose it
+                            if (empty.get()) {
+                                lowestDistance = polyDistance;
+                                bestOption = docID;
+                            }
+                        }
+
+                    }
+
+                    // Change appearance of the parking space if we have parked in it
+                    if (!bestOption.equals("")) {
+                        for (Polygon polygon : parkingSpaces) {
+                            if (parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)).equals(bestOption)) {
+                                styleParkingYourSpace(polygon);
+                                break;
+                            }
+                        }
+
+                        // Update the DB to your new spot
+                        // Remove any other spaces we may be parked inside of
+                    }
+
+
                 }
             }
         }
+
+        return movingStatus;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        // Update the speed on the card view on the screen
+        float speed = updateSpeedTextView(location);
+        String movingStatus = "Stopped";
+
+        if (speed <= 0.05) {
+            movingStatus = checkStop(location);
+        } else if (speed > 0.05 && speed <= 2) {
+            movingStatus = "Walking";
+        } else if (speed > 2) {
+            movingStatus = "Driving";
+        }
+
+        movingStatusTextView.setText(movingStatus);
     }
 
     @Override
