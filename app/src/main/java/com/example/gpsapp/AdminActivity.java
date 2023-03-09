@@ -120,19 +120,18 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
      */
     @Override
     public void onLocationChanged(Location location) {
-        float speed = 0.0f;
+        float speed;
         if (location.hasSpeed()) {
             speed = location.getSpeed();
         } else {
             speed = 0.0f;
         }
 
-        //String speedString = "Current Speed:\n" + speed + " m/s";
         String speedString = String.format(Locale.CANADA, "Current Speed:\n%.9f m/s", speed);
         speedTextView.setText(speedString);
 
         String movingString = "Moving";
-        if (speed == 0)
+        if (speed < 0.001)
             movingString = "Stopped"; // would be nice to say parked here if in parking spot
 
         isStoppedTextView.setText(movingString);

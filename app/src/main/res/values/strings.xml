@@ -45,5 +45,10 @@
     <string name="create_an_account_to_continue">Create an account to continue</string>
     <string name="current_speed_xx_m_s">Current Speed:\n0.000000000 m/s</string>
     <string name="stopped">Stopped</string>
+    <string name="admin">ADMIN</string>
+    <string name="welcome_name">Welcome Name</string>
+    <string name="your_car">Your Car</string>
+    <string name="available">Available</string>
+    <string name="occupied">Occupied</string>
 
 </resources>

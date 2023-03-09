@@ -6,6 +6,8 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -16,24 +18,15 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -47,32 +40,28 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
+
+    private static final long POLLING_SPEED = 500L;
+    private static final float POLLING_DISTANCE = (float) 0.0001;
+    private static final int REQUEST_LOCATION = 1;
 
     private GoogleMap mMap;
     private LocationManager mLocationManager;
     private ActivityMapsBinding binding;
-    private FusedLocationProviderClient fusedLocationClient;
-    private TextView name;
+    private TextView name, speedAdminTextView;
     FirebaseFirestore firestore;
     Boolean isAdmin;
     private String username;
-
-    private Timer mTimer;
-    private boolean hasStoppedMoving = false;
     private List<Polygon> parkingSpaces = new ArrayList<>();
     private List<String> parkingSpacesDocIDs = new ArrayList<>();
-
-    int counter = 0;
 
     //geofence
     //GEOFENCE -----------------------------------------------------------------------------
@@ -83,22 +72,22 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final String TAG = "MapsActivity";
     //GEOFENCE -----------------------------------------------------------------------------
 
-    private LocationRequest locationRequest;
-    LocationCallback locationCallBack = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            if (locationResult == null) {
-                return;
-            }
-            for (Location location: locationResult.getLocations()) {
-                Log.d(TAG, "onLocationResult: " + location.toString());
-            }
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Get a reference to the location manager
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            // Need permissions to be good
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("No", (dialog, which) -> dialog.cancel());
+            final AlertDialog alertDialog = builder.create();
+            alertDialog.show();
+        } else {
+            // Get Location and start requesting updates
+            getGPSData();
+        }
 
         //Geofencing Code --------------------------------------------------------
         geofencingClient = LocationServices.getGeofencingClient(this);
@@ -108,22 +97,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallBack, null);
-
-        locationRequest = LocationRequest.create();
-        locationRequest.setInterval(100);
-        locationRequest.setFastestInterval(100);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        speedAdminTextView = findViewById(R.id.speedAdminTextView);
 
         // Get the username of the current logged in user
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
@@ -142,10 +116,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             String newName = "Welcome " + document.getString("name");
                             name.setText(newName);
                         }
-                        if (Boolean.TRUE.equals(isAdmin))
+                        if (Boolean.TRUE.equals(isAdmin)) {
                             findViewById(R.id.adminText).setVisibility(View.VISIBLE);
-                        else
+                            findViewById(R.id.adminBannerCardView).setVisibility(View.VISIBLE);
+                        } else {
                             findViewById(R.id.adminText).setVisibility(View.GONE);
+                            findViewById(R.id.adminBannerCardView).setVisibility(View.GONE);
+                        }
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
                     }
@@ -156,12 +133,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
-
-        // Get a reference to the location manager
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        // Request location updates every 0.5 seconds or when the user moves 0.001 meters
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500L, (float) 0.001, this);
 
         Button button = findViewById(R.id.settingsButton);
         button.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
@@ -265,8 +236,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     @Override
     public void onLocationChanged(Location location) {
-        // Reset the flag to indicate that the user is still moving
-//        hasStoppedMoving = false;
+        float speed = 0.0f;
+        if (location.hasSpeed()) {
+            speed = location.getSpeed();
+        } else {
+            speed = 0.0f;
+        }
+
+        String speedString = String.format(Locale.CANADA, "Current Speed:\n%.9f m/s", speed);
+        speedAdminTextView.setText(speedString);
 
         // Check if the user's location is inside any of the polygons
         if (mMap != null) {
@@ -282,22 +260,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
                     // The user's location is inside the polygon
                     System.out.println("Inside  of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
-
-//                    // Start the timer to check if the user has stopped moving
-//                    mTimer = new Timer();
-//                    mTimer.schedule(new TimerTask() {
-//                        @Override
-//                        public void run() {
-//                            if (hasStoppedMoving) {
-//                                // User has stopped moving, do something here
-//                                System.out.println("User has stopped moving " + counter++ + " Inside: " + polygon.toString());
-//                                //styleParkingYourSpace(polygon);
-//                            } else {
-//                                // User is still moving, reset the flag
-//                                hasStoppedMoving = true;
-//                            }
-//                        }
-//                    }, 0, 5000); // Check every 5 seconds
                 }
                 else {
                     System.out.println("Outside of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
@@ -340,6 +302,21 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private void styleParkingSubLot(Polygon polygon){
         polygon.setStrokeWidth(5);
         polygon.setFillColor(ContextCompat.getColor(this, R.color.parking_space_purple));
+    }
+
+    /**
+     * Populates the textfield with the location
+     * Also starts the .requestLocationUpdates for the onLocationChanged function
+     */
+    @SuppressLint("SetTextI18n")
+    private void getGPSData() {
+        if (ActivityCompat.checkSelfPermission(MapsActivity.this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        } else {
+            // Start the listener to manage location updates
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
+        }
     }
 
     @Override //Geofence
@@ -396,42 +373,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         mMap.addCircle(circleOptions);
     }
 
-    private void checkSettings() {
-        LocationSettingsRequest request = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest).build();
-        SettingsClient client = LocationServices.getSettingsClient(this);
-
-        Task<LocationSettingsResponse> locationSettingsResponseTask = client.checkLocationSettings(request);
-        locationSettingsResponseTask.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                //If settings allowed
-                startLocationUpdates();
-            }
-        });
-        locationSettingsResponseTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-
-            }
-        });
-    }
-
-    private void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallBack, Looper.getMainLooper());
-    }
-
-    private void stopLocationUpdates() {
-        fusedLocationClient.removeLocationUpdates(locationCallBack);
-    }
 }
 
 

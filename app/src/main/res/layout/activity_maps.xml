@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -13,7 +13,9 @@
         android:layout_height="match_parent"
         tools:context=".MapsActivity" />
 
+<!--    Name and Settings Banner at top-->
     <androidx.cardview.widget.CardView
+        android:id="@+id/nameSettingsCardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingVertical="3dp"
@@ -34,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
                 android:layout_marginStart="15dp"
-                android:text="Welcome Name"
+                android:text="@string/welcome_name"
                 android:textStyle="bold"
                 android:textAlignment="textStart"
                 android:paddingTop="16dp"
@@ -46,7 +48,7 @@
                 android:layout_width="100dp"
                 android:layout_height="50dp"
                 android:layout_marginStart="15dp"
-                android:text="ADMIN"
+                android:text="@string/admin"
                 android:textStyle="bold"
                 android:textAlignment="center"
                 android:paddingTop="16dp"
@@ -57,7 +59,7 @@
             <Button
                 android:id="@+id/settingsButton"
                 android:layout_width="wrap_content"
-                android:text="Settings"
+                android:text="@string/settings"
                 android:textAllCaps="false"
                 android:layout_height="37dp"
                 android:layout_alignParentEnd="true"
@@ -69,6 +71,40 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
+<!--    Admin Information Banner-->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/adminBannerCardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="65dp"
+        android:visibility="invisible"
+        app:cardElevation="10dp"
+        app:cardCornerRadius="10dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardMaxElevation="12dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/speedAdminTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/current_speed_xx_m_s"
+                android:fontFamily="@font/dm_sans"
+                android:textColor="@color/LU_blue"
+                android:textAlignment="center"
+                android:textSize="18sp"/>
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+
+<!--    Legend banner at the bottom-->
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
         android:layout_height="80dp"
@@ -104,9 +140,9 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
-                android:text="Occupied"
+                android:text="@string/occupied"
                 android:textColor="@color/grey_fromImage"
-                android:textSize="13dp"
+                android:textSize="13sp"
                 android:layout_toEndOf="@id/redSpot"
                 android:paddingStart="5dp"
                 android:layout_marginEnd="5dp"
@@ -129,9 +165,9 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
-                android:text="Available"
+                android:text="@string/available"
                 android:textColor="@color/grey_fromImage"
-                android:textSize="13dp"
+                android:textSize="13sp"
                 android:layout_toEndOf="@id/greenSpot"
                 android:paddingStart="5dp"
                 android:layout_marginEnd="5dp"
@@ -155,9 +191,9 @@
                 android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="10dp"
-                android:text="Your Car"
+                android:text="@string/your_car"
                 android:textColor="@color/grey_fromImage"
-                android:textSize="13dp"
+                android:textSize="13sp"
                 android:layout_toEndOf="@id/blueSpot"
                 android:paddingStart="5dp"
                 />
@@ -165,4 +201,4 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-</android.widget.RelativeLayout>
+</RelativeLayout>
