@@ -18,6 +18,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -41,18 +42,24 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
@@ -65,11 +72,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private LocationManager mLocationManager;
     private ActivityMapsBinding binding;
     private TextView name, speedAdminTextView, movingStatusTextView;
-    FirebaseFirestore firestore;
+    FirebaseFirestore firestore = FirebaseFirestore.getInstance();;
     Boolean isAdmin;
     private String username;
     private List<Polygon> parkingSpaces = new ArrayList<>();
     private List<String> parkingSpacesDocIDs = new ArrayList<>();
+    private List<String> parkedSpaces = new ArrayList<>();
 
     //geofence
     //GEOFENCE -----------------------------------------------------------------------------
@@ -114,7 +122,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         username = sharedPref.getString("username", null);
 
         // Gets user administrator access
-        firestore = FirebaseFirestore.getInstance();
         firestore.collection("Users")
                 .whereEqualTo("username", username)
                 .get()
@@ -204,7 +211,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         });
 
         // Get the parking spaces from the database and dynamically load them in
-        firestore = FirebaseFirestore.getInstance();
         firestore.collection("ParkingSpaces")
                 //.whereEqualTo("subLotID", "R9")
                 .get()
@@ -243,8 +249,52 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         //Insert a geofence at time of map creation centered around the parking lot with a radius of 500
         addGeofence(Lot, GEOFENCE_RADIUS);
         // -----------------------------------------------------------------------
+
+
+        // This timer will update the current list of parked spaces - helps with computation time
+        // in the checkStop() function so that it doesn't have to pull from the firestore database
+        // everytime that you move.
+        final Handler handler = new Handler();
+        Timer timer = new Timer();
+        TimerTask doAsynchronousTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(() -> {
+                    try {
+                        updateParkedSpacesList();
+                    } catch (Exception e) {
+                        Log.d(TAG, "onFailure: " + Arrays.toString(e.getStackTrace()));
+                    }
+                });
+            }
+        };
+        timer.schedule(doAsynchronousTask, 0, 60000); // 60000 ms = 1 min
     }
 
+    /**
+     * Refreshes the list of parked spaces on function call and stores them in a global arrayList to
+     * be used in the checkStop() function.
+     */
+    private void updateParkedSpacesList() {
+        // Get list of non-empty parking spaces and add them to the parkedSpaces list
+        parkedSpaces = new ArrayList<>();
+        firestore.collection("ParkingSpaces")
+                .whereNotEqualTo("user", "")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful())
+                        for (QueryDocumentSnapshot document : task.getResult())
+                            parkedSpaces.add(document.getId());
+                });
+    }
+
+    /**
+     * This function will change the speed label on the admin card view to the current speed in
+     * real-time.
+     *
+     * @param location The location parameter
+     * @return The speed to be set in the TextView
+     */
     private float updateSpeedTextView(Location location) {
         float speed = 0.0f;
         if (location.hasSpeed()) {
@@ -259,21 +309,35 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         return speed;
     }
 
+    /**
+     * This function runs whenever the user has stopped moving. It is supposed to check if we have
+     * stopped inside or outside of a parking spot.
+     * It starts by looking at which parking spaces we may be inside of and adds those to a list of
+     * possible candidates. It then looks at the distance to the center of those possible parking
+     * spaces and choose the closest EMPTY parking space. Once it has chosen a parking space, it will
+     * change the colour of the parking space to make the 'Your Car' colour scheme.
+     *
+     * @param location The location parameter
+     * @return MovingStatus, will be either 'Stopped' or 'Parked'
+     */
     private String checkStop(Location location) {
         // Default moving status
         String movingStatus = "Stopped";
 
+        // Check permissions first
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         } else {
+            // Get the current location of the user
             Location currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
+            // Hashmap to store a key-value pair of the possible parking spaces that we may be occupying
             HashMap<Polygon, Double> possibleParkedSpaces = new HashMap<>();
 
             // Check if the user's location is inside any of the polygons
             if (mMap != null) {
+                // Need to go through each parking space and gather which parking spaces we think we are parked in
                 for (Polygon polygon : parkingSpaces) {
-
                     // Create a LatLngBounds object that contains the polygon
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     for (LatLng latLng : polygon.getPoints()) {
@@ -283,9 +347,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                     // Check if the user's location is inside the bounds of the polygon
                     if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
-                        // The user's location is inside the polygon
-                        System.out.println("Inside  of " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
-
                         // Get the points of this polygon
                         List<LatLng> points = polygon.getPoints();
                         double latSum = 0, lngSum = 0;
@@ -313,56 +374,47 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     }
                 }
 
+                // If we changed the status to parked, we need to choose a single parking spot
                 if (movingStatus.equals("Parked")) {
-                    String bestOption = "";
-                    double lowestDistance = 10000;
+                    // If its only size of 1, we can skip unnecessary computations
+                    if (possibleParkedSpaces.size() == 1) {
+                        Map.Entry<Polygon, Double> entry = possibleParkedSpaces.entrySet().iterator().next();
+                        String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(entry.getKey()));
 
-                    // Go through the hashmap and check if the lowest spot is empty
-                    for(Map.Entry possibleSpace : possibleParkedSpaces.entrySet()) {
-                        // Get the parking space id and distance for comparisons
-                        String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
-                        double polyDistance = (double) possibleSpace.getValue();
+                        if (!parkedSpaces.contains(docID))
+                            styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(docID)));
 
-                        if (polyDistance < lowestDistance) {
-                            AtomicReference<Boolean> empty = new AtomicReference<>(true);
-
-                            //Check if the parking space does not have a user assigned to it
-                            firestore = FirebaseFirestore.getInstance();
-                            firestore.collection("ParkingSpaces")
-                                    .document(docID)
-                                    .get()
-                                    .addOnCompleteListener(task -> {
-                                        if (task.isSuccessful())
-                                            empty.set(Objects.requireNonNull(task.getResult().get("user")).toString().equals(""));
-                                        else
-                                            Log.d(TAG, "Error getting documents: ", task.getException());
-                                    });
-
-                            // If no user, we can choose it
-                            if (empty.get()) {
-                                lowestDistance = polyDistance;
-                                bestOption = docID;
-                            }
-                        }
-
-                    }
-
-                    // Change appearance of the parking space if we have parked in it
-                    if (!bestOption.equals("")) {
-                        for (Polygon polygon : parkingSpaces) {
-                            if (parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)).equals(bestOption)) {
-                                styleParkingYourSpace(polygon);
-                                break;
-                            }
-                        }
-
-                        // Update the DB to your new spot
-                        // Remove any other spaces we may be parked inside of
                     } else {
-                        movingStatus = "Stopped";
+                        String bestOption = "";
+                        double lowestDistance = 10000;
+
+                        // Go through the hashmap and check if the lowest spot is empty
+                        for(Map.Entry possibleSpace : possibleParkedSpaces.entrySet()) {
+                            // Get the parking space id and distance for comparisons
+                            String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
+                            double polyDistance = (double) possibleSpace.getValue();
+
+                            if (polyDistance < lowestDistance) {
+                                // If the parking space has someone parked there, we cant park there so
+                                // don't consider it as a good option.
+                                if (!parkedSpaces.contains(docID)) {
+                                    lowestDistance = polyDistance;
+                                    bestOption = docID;
+                                }
+                            }
+                        }
+
+                        // Change appearance of the parking space if we have parked in it
+                        if (!bestOption.equals("")) {
+                            // Get index of the parking space and then change the colour of that polygon
+                            styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(bestOption)));
+
+                            // Update the DB to your new spot
+                            // Remove any other spaces we may be parked inside of
+                        } else {
+                            movingStatus = "Stopped";
+                        }
                     }
-
-
                 }
             }
         }
@@ -370,6 +422,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         return movingStatus;
     }
 
+    /**
+     * When the user moves, this function is called. It checks the speed, if we have determined the
+     * user as being stopped, we call the checkStop() function. Otherwise, we determine if the user
+     * is walking or driving and display that label and the speed accordingly.
+     *
+     * @param location The location parameter
+     */
     @Override
     public void onLocationChanged(Location location) {
         // Update the speed on the card view on the screen
@@ -452,28 +511,19 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
+
+        // PRETTY SURE THIS CODE BELOW IS USELESS, IT WORKS WITHOUT THIS CODE BTW
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        geofencingClient.addGeofences(geofencingRequest, pendingIntent)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        Log.d(TAG, "onSuccess: Geofence Added...");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        } else {
+            geofencingClient.addGeofences(geofencingRequest, pendingIntent)
+                    .addOnSuccessListener(unused -> Log.d(TAG, "onSuccess: Geofence Added..."))
+                    .addOnFailureListener(e -> {
                         String errorMessage = geofenceHelper.getErrorString(e);
                         Log.d(TAG, "onFailure: " + errorMessage);
-                    }
-                });
+                    });
+        }
+
     }
 
 }
