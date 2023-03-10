@@ -73,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     //GEOFENCE -----------------------------------------------------------------------------
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
-    private float GEOFENCE_RADIUS = 200;
+    private float GEOFENCE_RADIUS = 500;
     private String GEOFENCE_ID = "SOME_GEOFENCE_ID"; //each geofence has a unique id
     private static final String TAG = "MapsActivity";
     //GEOFENCE -----------------------------------------------------------------------------
@@ -238,7 +238,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17));       // Need to figure out a way to not reset this everytime we enter the map I feel
 
         //Geofencing Code --------------------------------------------------------
-        mMap.setOnMapLongClickListener(this);
+        //mMap.setOnMapLongClickListener(this);
+        onMapLongClick(Lot);
         // -----------------------------------------------------------------------
     }
 
@@ -355,6 +356,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                         // Update the DB to your new spot
                         // Remove any other spaces we may be parked inside of
+                    } else {
+                        movingStatus = "Stopped";
                     }
 
 
