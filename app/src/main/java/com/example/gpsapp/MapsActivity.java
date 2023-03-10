@@ -431,6 +431,23 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      */
     @Override
     public void onLocationChanged(Location location) {
+        //Set a flag to see if user touches the screen or moves the map at all, surround code below
+        //with if statement so if the user moves the map, do not update camera position, add button
+        //to let the user recenter and have it track the camera once again
+
+        //Possible methods: Override onTouch(...), use Events
+        //Toggle zoom within Geofence -> To be added
+
+
+        //Update camera position every time user location changes
+        //Create an object to capture the position of the camera based on Lat and Long
+        //then update the camera position
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(19.0f).build();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+        mMap.animateCamera(cameraUpdate);
+
+
         // Update the speed on the card view on the screen
         float speed = updateSpeedTextView(location);
         String movingStatus = "Stopped";
@@ -444,22 +461,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
 
         movingStatusTextView.setText(movingStatus);
-
-        //Set a flag to see if user touches the screen or moves the map at all, surround code below
-        //with if statement so if the user moves the map, do not update camera position, add button
-        //to let the user recenter and have it track the camera once again
-
-        //Possible methods: Override onTouch(...), use Events
-        //Toggle zoom within Geofence -> To be added
-
-
-        //Update camera position every time user location changes
-        //Create an object to capture the position of the camera based on Lat and Long
-        //then update the camera position
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(16.0f).build();
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-        mMap.animateCamera(cameraUpdate);
     }
 
     @Override
