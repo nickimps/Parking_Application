@@ -445,6 +445,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         movingStatusTextView.setText(movingStatus);
 
+        //Set a flag to see if user touches the screen or moves the map at all, surround code below
+        //with if statement so if the user moves the map, do not update camera position, add button
+        //to let the user recenter and have it track the camera once again
+
+        //Possible methods: Override onTouch(...), use Events
+        //Toggle zoom within Geofence -> To be added
+
+
         //Update camera position every time user location changes
         //Create an object to capture the position of the camera based on Lat and Long
         //then update the camera position
