@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
+public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
@@ -238,8 +238,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17));       // Need to figure out a way to not reset this everytime we enter the map I feel
 
         //Geofencing Code --------------------------------------------------------
-        //mMap.setOnMapLongClickListener(this);
-        onMapLongClick(Lot);
+        //Insert a geofence at time of map creation centered around the parking lot with a radius of 500
+        addGeofence(Lot, GEOFENCE_RADIUS);
         // -----------------------------------------------------------------------
     }
 
@@ -436,13 +436,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
-    @Override //Geofence
-    public void onMapLongClick(@NonNull LatLng latLng) {
-        addMarker(latLng);
-        addCircle(latLng, GEOFENCE_RADIUS);
-        addGeofence(latLng, GEOFENCE_RADIUS);
-    }
-
     private void addGeofence(LatLng latLng, float radius) {
         //trigger geofence when entering dwelling or exiting (maybe change)
         Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
@@ -471,23 +464,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         Log.d(TAG, "onFailure: " + errorMessage);
                     }
                 });
-    }
-
-    //adds a marker for geofence
-    private void addMarker(LatLng latLng) {
-        MarkerOptions markerOptions = new MarkerOptions().position(latLng);
-        mMap.addMarker(markerOptions);
-    }
-
-    //adds radius for geofence
-    private void addCircle(LatLng latLng, float radius) {
-        CircleOptions circleOptions = new CircleOptions();
-        circleOptions.center(latLng);
-        circleOptions.radius(radius);
-        circleOptions.strokeColor(Color.argb(255, 255, 0, 0));
-        circleOptions.fillColor(Color.argb(64, 255, 0, 0));
-        circleOptions.strokeWidth(4);
-        mMap.addCircle(circleOptions);
     }
 
 }
