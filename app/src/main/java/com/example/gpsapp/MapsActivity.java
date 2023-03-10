@@ -77,7 +77,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private String username;
     private List<Polygon> parkingSpaces = new ArrayList<>();
     private List<String> parkingSpacesDocIDs = new ArrayList<>();
-    private List<String> parkedSpaces = new ArrayList<>();
+    private List<String> parkedSpacesIDs = new ArrayList<>();
+    private List<String> parkedSpacesUsers = new ArrayList<>();
 
     //geofence
     //GEOFENCE -----------------------------------------------------------------------------
@@ -277,14 +278,17 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      */
     private void updateParkedSpacesList() {
         // Get list of non-empty parking spaces and add them to the parkedSpaces list
-        parkedSpaces = new ArrayList<>();
+        parkedSpacesIDs = new ArrayList<>();
+        parkedSpacesUsers = new ArrayList<>();
         firestore.collection("ParkingSpaces")
                 .whereNotEqualTo("user", "")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful())
-                        for (QueryDocumentSnapshot document : task.getResult())
-                            parkedSpaces.add(document.getId());
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            parkedSpacesIDs.add(document.getId());
+                            parkedSpacesUsers.add(document.getString("user"));
+                        }
                 });
     }
 
@@ -381,7 +385,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         Map.Entry<Polygon, Double> entry = possibleParkedSpaces.entrySet().iterator().next();
                         String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(entry.getKey()));
 
-                        if (!parkedSpaces.contains(docID))
+                        if (!parkedSpacesIDs.contains(docID))
                             styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(docID)));
 
                     } else {
@@ -397,7 +401,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             if (polyDistance < lowestDistance) {
                                 // If the parking space has someone parked there, we cant park there so
                                 // don't consider it as a good option.
-                                if (!parkedSpaces.contains(docID)) {
+                                if (!parkedSpacesIDs.contains(docID)) {
                                     lowestDistance = polyDistance;
                                     bestOption = docID;
                                 }
@@ -408,6 +412,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         if (!bestOption.equals("")) {
                             // Get index of the parking space and then change the colour of that polygon
                             styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(bestOption)));
+
+//                            if (parkedSpacesUsers.contains(username)) {
+//
+//                            }
 
                             // Update the DB to your new spot
                             // Remove any other spaces we may be parked inside of

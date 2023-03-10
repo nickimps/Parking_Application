@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -31,17 +32,23 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class AdminActivity extends AppCompatActivity implements LocationListener {
 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    TextView locationTextView, speedTextView, isStoppedTextView;
+    TextView locationTextView, consoleTextView;
     Button refreshButton;
-    LocationManager locationManager;
+    LocationManager mLocationManager;
     TextInputEditText filenameEditText;
+    private boolean tracking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +60,12 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         // Get the ids to access them
         locationTextView = findViewById(R.id.locationTextView);
         filenameEditText = findViewById(R.id.filenameTextInputEditText);
-        speedTextView = findViewById(R.id.speedTextView);
-        isStoppedTextView = findViewById(R.id.isStoppedTextView);
+        consoleTextView = findViewById(R.id.consoleTextView);
+
+        // Start with date there
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z", Locale.CANADA);
+        consoleTextView.setText("Start: " + sdf.format(new Date()));
+        consoleTextView.setMovementMethod(new ScrollingMovementMethod());
 
         // Have location auto load when loading screen
         getLocation();
@@ -64,14 +75,39 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         refreshButton = findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(v -> getLocation());
 
-        // SAVE BUTTON
         Button saveButton = findViewById(R.id.saveButton);
+        Button startTrackingButton = findViewById(R.id.startTrackingButton);
+
+        // SAVE BUTTON
         saveButton.setOnClickListener(v -> {
-            saveLocationToFile(locationTextView.getText().toString(), filenameEditText.getText().toString().trim());
+            saveLocationToFile(consoleTextView.getText().toString(), filenameEditText.getText().toString().trim());
             filenameEditText.setText(null);
             filenameEditText.clearFocus();
             saveButton.setEnabled(false);
+
+            // Stop Tracking
+            startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_green));
+            startTrackingButton.setText("Start Tracking");
+            tracking = false;
+
+            // Clear Screen
+            consoleTextView.setText("Start: " + sdf.format(new Date()));
+            consoleTextView.setMovementMethod(new ScrollingMovementMethod());
         });
+
+        // START TRACKING BUTTON
+        startTrackingButton.setOnClickListener(v -> {
+            if (tracking) {
+                startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_green));
+                startTrackingButton.setText("Start Tracking");
+                tracking = false;
+            } else {
+                startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_red));
+                startTrackingButton.setText("Stop Tracking");
+                tracking = true;
+            }
+        });
+
 
         filenameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -100,8 +136,8 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
      * If permissions are good, then we proceed to getGPSData()
      */
     public void getLocation() {
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             // Need permissions to be good
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("No", (dialog, which) -> dialog.cancel());
@@ -114,27 +150,48 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
     }
 
     /**
-     * Function runs whenever the location of the user changes
+     * This function will change the speed label on the admin card view to the current speed in
+     * real-time.
      *
-     * @param location the location of the user
+     * @param location The location parameter
+     * @return The speed to be set in the TextView
      */
+    private float updateSpeedTextView(Location location) {
+        if (location.hasSpeed())
+            return location.getSpeed();
+        else
+            return 0.0f;
+    }
+
     @Override
     public void onLocationChanged(Location location) {
-        float speed;
-        if (location.hasSpeed()) {
-            speed = location.getSpeed();
-        } else {
-            speed = 0.0f;
+        // Update the speed on the card view on the screen
+        float speed = updateSpeedTextView(location);
+        String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
+        String movingStatus = "Stopped";
+
+        if (speed <= 0.05) {
+            //movingStatus = checkStop(location);
+            movingStatus = "Not Moving";
+        } else if (speed > 0.05 && speed <= 2) {
+            movingStatus = "Walking";
+        } else if (speed > 2) {
+            movingStatus = "Driving";
         }
 
-        String speedString = String.format(Locale.CANADA, "Current Speed:\n%.9f m/s", speed);
-        speedTextView.setText(speedString);
+        if (tracking) {
+            // Get the time
+            SimpleDateFormat sdf2 = new SimpleDateFormat("HH:mm:ss z", Locale.CANADA);
+            String time = sdf2.format(new Date());
 
-        String movingString = "Moving";
-        if (speed < 0.001)
-            movingString = "Stopped"; // would be nice to say parked here if in parking spot
+            // Append the speed, status and time to the output
+            String textToAppend = consoleTextView.getText() + "\n" + time + " -- " + speedString + " -- " + movingStatus;
+            consoleTextView.setText(textToAppend);
 
-        isStoppedTextView.setText(movingString);
+            // Keep scrolled to the latest appended text
+            int scrollAmount = consoleTextView.getLayout().getLineTop(consoleTextView.getLineCount()) - consoleTextView.getHeight();
+            consoleTextView.scrollTo(0, Math.max(scrollAmount, 0));
+        }
     }
 
     @Override
@@ -162,10 +219,10 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         } else {
             // Start the listener to manage location updates
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
 
             // Get GPS coordinates of last location to update the text view
-            Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location locationGPS = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (locationGPS != null) {
                 String locationString = "Latitude: " + locationGPS.getLatitude() + "\nLongitude: " + locationGPS.getLongitude();
                 locationTextView.setText(locationString);

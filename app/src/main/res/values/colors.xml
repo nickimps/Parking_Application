@@ -17,6 +17,8 @@
     <color name="honey_yellow">#FFB20F</color>
     <color name="grey_fromImage">#393939</color>
     <color name="green">#00D100</color>
+    <color name="start_green">#7CB342</color>
+    <color name="start_red">#E53935</color>
     <color name="your_car_blue">#00509d</color>
     <color name="tranGrey">#3394969B</color>
     <color name="parking_space_purple">#0C746AB0</color>

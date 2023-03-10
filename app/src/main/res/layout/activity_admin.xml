@@ -11,7 +11,7 @@
         android:id="@+id/locationTextView"
         android:layout_width="match_parent"
         android:layout_height="40sp"
-        android:layout_marginTop="150sp"
+        android:layout_marginTop="60sp"
         android:text="@string/latitude_longitude"
         android:fontFamily="@font/dm_sans"
         android:textColor="@color/LU_blue"
@@ -46,37 +46,47 @@
             android:textSize="17sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/buttonLinLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/filenameInputLayout"
-        android:layout_centerHorizontal="true"
-        android:backgroundTint="@color/honey_yellow"
-        android:text="@string/save"
-        android:fontFamily="@font/dm_sans"
-        android:enabled="false" />
+        android:orientation="horizontal"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:backgroundTint="@color/honey_yellow"
+            android:text="@string/save"
+            android:fontFamily="@font/dm_sans"
+            android:enabled="false" />
+
+        <Button
+            android:id="@+id/startTrackingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="#7CB342"
+            android:text="@string/start_tracking"
+            android:fontFamily="@font/dm_sans"
+            android:enabled="true" />
+
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/speedTextView"
+        android:id="@+id/consoleTextView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         android:layout_marginTop="15sp"
-        android:layout_below="@id/saveButton"
-        android:text="@string/current_speed_xx_m_s"
+        android:layout_below="@id/buttonLinLayout"
+        android:text=""
         android:fontFamily="@font/dm_sans"
         android:textColor="@color/LU_blue"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:scrollbars = "vertical"/>
 
-    <TextView
-        android:id="@+id/isStoppedTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5sp"
-        android:layout_below="@id/speedTextView"
-        android:text="@string/stopped"
-        android:fontFamily="@font/dm_sans"
-        android:textColor="@color/LU_blue"
-        android:textAlignment="center"/>
 
 </android.widget.RelativeLayout>

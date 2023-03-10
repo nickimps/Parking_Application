@@ -27,7 +27,7 @@
     <string name="sign_in">SIGN IN</string>
     <string name="don_t_have_an_account_register_here">Don\'t have an account? Register here</string>
     <string name="tap_your_name_or_permit_number_to_change">Tap your name or permit number to change</string>
-    <string name="save">Save Location</string>
+    <string name="save">Save</string>
 
     <string-array name="filter">
         <item>Unavailable Spot</item>
@@ -50,5 +50,6 @@
     <string name="your_car">Your Car</string>
     <string name="available">Available</string>
     <string name="occupied">Occupied</string>
+    <string name="start_tracking">Start Tracking</string>
 
 </resources>
