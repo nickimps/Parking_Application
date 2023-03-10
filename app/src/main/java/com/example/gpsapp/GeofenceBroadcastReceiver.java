@@ -1,20 +1,52 @@
 package com.example.gpsapp;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
+
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofenceStatusCodes;
+import com.google.android.gms.location.GeofencingEvent;
+
+import java.util.List;
 
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO: This method is called when the BroadcastReceiver is receiving
-        // an Intent broadcast.
-        Toast.makeText(context,"Geofence Triggered...",Toast.LENGTH_SHORT).show();
-        //System.out.println("TEST3");
+        //This method is called when the BroadcastReceiver is receiving
 
         // Add if to see what kinda of event actually happened
         // to location permissions from precise to approximate.
+
+        //Grab the event that occurred
+        GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
+
+        //If there is an error, throw an error code and message
+        if (geofencingEvent.hasError()) {
+            String errorMessage = GeofenceStatusCodes
+                    .getStatusCodeString(geofencingEvent.getErrorCode());
+            Log.e(TAG, errorMessage);
+            return;
+        }
+
+        // Get the transition type.
+        int geofenceTransition = geofencingEvent.getGeofenceTransition();
+
+        // Test that the reported transition was of interest.
+        //If they enter the geofence
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+            //Toast
+            Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
+        }
+        //If they leave the geofence
+        else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+            //Toast
+            Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
+        }
     }
 }
