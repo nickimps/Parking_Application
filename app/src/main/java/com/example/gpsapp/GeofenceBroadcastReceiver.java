@@ -15,6 +15,7 @@ import com.google.android.gms.location.GeofencingEvent;
 import java.util.List;
 
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
+    //MapsActivity mapsActivity = new MapsActivity();
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -42,15 +43,13 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             //Toast
             Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
-            MapsActivity mapsActivity = new MapsActivity();
-            mapsActivity.setGeoFenceStatus(true);
+            MapsActivity.geoFenceStatus = true;
         }
         //If they leave the geofence
         else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
             //Toast
             Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
-            MapsActivity mapsActivity = new MapsActivity();
-            mapsActivity.setGeoFenceStatus(false);
+            MapsActivity.geoFenceStatus = false;
         }
     }
 }

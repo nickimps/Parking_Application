@@ -68,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
 
-    public boolean geoFenceStatus;
+    public static boolean geoFenceStatus;
 
     private GoogleMap mMap;
     private LocationManager mLocationManager;
@@ -452,7 +452,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         //Update camera position every time user location changes
         //Create an object to capture the position of the camera based on Lat and Long
         //then update the camera position
-        if (getGeoFenceStatus() /* && Check if re-center button is not visible */) {
+        if (geoFenceStatus /* && Check if re-center button is not visible */) {
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(19.0f).build();
             CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
@@ -545,14 +545,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     });
         }
 
-    }
-
-    public void setGeoFenceStatus(boolean geoFenceStatus) {
-        this.geoFenceStatus = geoFenceStatus;
-    }
-
-    public boolean getGeoFenceStatus() {
-        return this.geoFenceStatus;
     }
 }
 
