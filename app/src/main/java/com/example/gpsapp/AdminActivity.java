@@ -10,8 +10,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.provider.Settings;
@@ -24,20 +22,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
-
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Polygon;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Objects;
 
 public class AdminActivity extends AppCompatActivity implements LocationListener {
 
@@ -50,13 +42,15 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
     TextInputEditText filenameEditText;
     private boolean tracking = false;
     private String saveData;
+    private final SimpleDateFormat dayPlusTimeSDF = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z", Locale.CANADA);
+    private final SimpleDateFormat timeSDF = new SimpleDateFormat("HH:mm:ss z", Locale.CANADA);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
-        getSupportActionBar().setTitle("Admin Portal");
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Admin Portal");
 
         // Get the ids to access them
         locationTextView = findViewById(R.id.locationTextView);
@@ -64,8 +58,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         consoleTextView = findViewById(R.id.consoleTextView);
 
         // Start with date there
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z", Locale.CANADA);
-        saveData = "Start: " + sdf.format(new Date()) + "\n";
+        saveData = "Start: " + dayPlusTimeSDF.format(new Date()) + "\n";
         consoleTextView.setText(saveData);
         consoleTextView.setMovementMethod(new ScrollingMovementMethod());
 
@@ -83,19 +76,18 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
 
         // SAVE BUTTON
         saveButton.setOnClickListener(v -> {
-            saveLocationToFile(saveData, filenameEditText.getText().toString().trim());
+            saveLocationToFile(saveData, Objects.requireNonNull(filenameEditText.getText()).toString().trim());
             filenameEditText.setText(null);
             filenameEditText.clearFocus();
             saveButton.setEnabled(false);
 
             // Stop Tracking
             startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_green));
-            startTrackingButton.setText("Start Tracking");
+            startTrackingButton.setText(R.string.start_tracking);
             tracking = false;
 
             // Clear Screen
-            SimpleDateFormat sdf2 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z", Locale.CANADA);
-            saveData = "Start: " + sdf2.format(new Date()) + "\n";
+            saveData = "Start: " + dayPlusTimeSDF.format(new Date()) + "\n";
             consoleTextView.setText(saveData);
             consoleTextView.setMovementMethod(new ScrollingMovementMethod());
         });
@@ -104,11 +96,11 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         startTrackingButton.setOnClickListener(v -> {
             if (tracking) {
                 startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_green));
-                startTrackingButton.setText("Start Tracking");
+                startTrackingButton.setText(R.string.start_tracking);
                 tracking = false;
             } else {
                 startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_red));
-                startTrackingButton.setText("Stop Tracking");
+                startTrackingButton.setText(R.string.stop_tracking);
                 tracking = true;
             }
         });
@@ -176,8 +168,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         String movingStatus = "Stopped";
 
         if (speed <= 0.05) {
-            //movingStatus = checkStop(location);
-            movingStatus = "Not Moving";
+            movingStatus = MapsActivity.movingStatus;
         } else if (speed > 0.05 && speed <= 2) {
             movingStatus = "Walking";
         } else if (speed > 2) {
@@ -186,8 +177,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
 
         if (tracking) {
             // Get the time
-            SimpleDateFormat sdf3 = new SimpleDateFormat("HH:mm:ss z", Locale.CANADA);
-            String time = sdf3.format(new Date());
+            String time = timeSDF.format(new Date());
 
             // Append the speed, status and time to the output
             String textToAppend = time + " -- " + speedString + " -- " + movingStatus + "\n";

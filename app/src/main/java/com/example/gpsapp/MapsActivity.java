@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -36,20 +35,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,34 +51,27 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-
     public static boolean geoFenceStatus;
-
+    public static String movingStatus;
     private GoogleMap mMap;
     private LocationManager mLocationManager;
-    private ActivityMapsBinding binding;
     private TextView name, speedAdminTextView, movingStatusTextView;
-    FirebaseFirestore firestore = FirebaseFirestore.getInstance();;
+    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     Boolean isAdmin;
     private String username;
-    private List<Polygon> parkingSpaces = new ArrayList<>();
-    private List<String> parkingSpacesDocIDs = new ArrayList<>();
+    private final List<Polygon> parkingSpaces = new ArrayList<>();
+    private final List<String> parkingSpacesDocIDs = new ArrayList<>();
     private List<String> parkedSpacesIDs = new ArrayList<>();
     private List<String> parkedSpacesUsers = new ArrayList<>();
-
-    //geofence
-    //GEOFENCE -----------------------------------------------------------------------------
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
-    private float GEOFENCE_RADIUS = 500;
-    private String GEOFENCE_ID = "SOME_GEOFENCE_ID"; //each geofence has a unique id
+
     private static final String TAG = "MapsActivity";
     //GEOFENCE -----------------------------------------------------------------------------
 
@@ -95,7 +79,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMapsBinding.inflate(getLayoutInflater());
+        ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         // Get a reference to the location manager
@@ -168,11 +152,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // do not show your position
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         } else
             mMap.setMyLocationEnabled(true);
 
@@ -222,16 +206,17 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             // Load in the spaces from the DB and create the polygon
                             Polygon polygon = googleMap.addPolygon(new PolygonOptions().add(
-                                    new LatLng(document.getGeoPoint("x1").getLatitude(), document.getGeoPoint("x1").getLongitude()),
-                                    new LatLng(document.getGeoPoint("x2").getLatitude(), document.getGeoPoint("x2").getLongitude()),
-                                    new LatLng(document.getGeoPoint("x3").getLatitude(), document.getGeoPoint("x3").getLongitude()),
-                                    new LatLng(document.getGeoPoint("x4").getLatitude(), document.getGeoPoint("x4").getLongitude())
+                                    new LatLng(Objects.requireNonNull(document.getGeoPoint("x1")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x1")).getLongitude()),
+                                    new LatLng(Objects.requireNonNull(document.getGeoPoint("x2")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x2")).getLongitude()),
+                                    new LatLng(Objects.requireNonNull(document.getGeoPoint("x3")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x3")).getLongitude()),
+                                    new LatLng(Objects.requireNonNull(document.getGeoPoint("x4")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x4")).getLongitude())
                             ));
                             parkingSpaces.add(polygon);
                             parkingSpacesDocIDs.add(document.getId());
 
                             // Check if it is filled, empty, or your own and style the space accordingly
                             String parkedUsername = document.getString("user");
+                            assert parkedUsername != null;
                             if (parkedUsername.equals(""))
                                 styleParkingEmptySpace(polygon);
                             else if (parkedUsername.equalsIgnoreCase(username))
@@ -250,6 +235,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         //Geofencing Code --------------------------------------------------------
         //Insert a geofence at time of map creation centered around the parking lot with a radius of 500
+        float GEOFENCE_RADIUS = 500;
         addGeofence(Lot, GEOFENCE_RADIUS);
         // -----------------------------------------------------------------------
 
@@ -302,7 +288,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      * @return The speed to be set in the TextView
      */
     private float updateSpeedTextView(Location location) {
-        float speed = 0.0f;
+        float speed;
         if (location.hasSpeed()) {
             speed = location.getSpeed();
         } else {
@@ -324,11 +310,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      * change the colour of the parking space to make the 'Your Car' colour scheme.
      *
      * @param location The location parameter
-     * @return MovingStatus, will be either 'Stopped' or 'Parked'
+     * @return stoppedStatus, will be either 'Stopped' or 'Parked'
      */
     private String checkStop(Location location) {
         // Default moving status
-        String movingStatus = "Stopped";
+        String stoppedStatus = "Stopped";
 
         // Check permissions first
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -376,12 +362,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         possibleParkedSpaces.put(polygon, distance);
 
                         // Set the status to 'parked'
-                        movingStatus = "Parked";
+                        stoppedStatus = "Parked";
                     }
                 }
 
                 // If we changed the status to parked, we need to choose a single parking spot
-                if (movingStatus.equals("Parked")) {
+                if (stoppedStatus.equals("Parked")) {
                     // If its only size of 1, we can skip unnecessary computations
                     if (possibleParkedSpaces.size() == 1) {
                         Map.Entry<Polygon, Double> entry = possibleParkedSpaces.entrySet().iterator().next();
@@ -415,21 +401,21 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             // Get index of the parking space and then change the colour of that polygon
                             styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(bestOption)));
 
-//                            if (parkedSpacesUsers.contains(username)) {
-//
-//                            }
+                            if (parkedSpacesUsers.contains(username)) {
+                                System.out.println("This is filler.");
+                            }
 
                             // Update the DB to your new spot
                             // Remove any other spaces we may be parked inside of
                         } else {
-                            movingStatus = "Stopped";
+                            stoppedStatus = "Stopped";
                         }
                     }
                 }
             }
         }
 
-        return movingStatus;
+        return stoppedStatus;
     }
 
     /**
@@ -462,7 +448,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         // Update the speed on the card view on the screen
         float speed = updateSpeedTextView(location);
-        String movingStatus = "Stopped";
+        movingStatus = "Stopped";
 
         if (speed <= 0.05) {
             movingStatus = checkStop(location);
@@ -528,6 +514,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     private void addGeofence(LatLng latLng, float radius) {
         //trigger geofence when entering dwelling or exiting (maybe change)
+        //each geofence has a unique id
+        String GEOFENCE_ID = "SOME_GEOFENCE_ID";
         Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();

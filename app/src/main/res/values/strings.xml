@@ -51,5 +51,5 @@
     <string name="available">Available</string>
     <string name="occupied">Occupied</string>
     <string name="start_tracking">Start Tracking</string>
-
+    <string name="stop_tracking">Stop Tracking</string>
 </resources>
