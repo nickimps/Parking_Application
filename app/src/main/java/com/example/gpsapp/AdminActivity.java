@@ -117,13 +117,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.length() < 1) {
-                    if (locationTextView.getText().toString().isEmpty())
-                        saveButton.setEnabled(false);
-                    else
-                        saveButton.setEnabled(true);
-                } else
-                    saveButton.setEnabled(true);
+                saveButton.setEnabled(!Objects.requireNonNull(filenameEditText.getText()).toString().isEmpty());
             }
         });
     }
@@ -238,21 +232,26 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
 
             // Creates directory to store data into called Location_Data
             File file = new File(AdminActivity.this.getFilesDir(), "Location_Data");
-            if (!file.exists()) {
-                file.mkdir();
+
+            boolean dirMade;
+            if (!file.exists())
+                dirMade = file.mkdir();
+            else
+                dirMade = true;
+
+            if (dirMade) {
+                // Create the file to be saved with the timestamp as the file name
+                File fileToSave = new File(file, filename);
+
+                // Perform saving operations
+                FileWriter writer = new FileWriter(fileToSave);
+                writer.append(data);
+                writer.flush();
+                writer.close();
+
+                // Success Message
+                Toast.makeText(AdminActivity.this, "Location File Saved!", Toast.LENGTH_SHORT).show();
             }
-
-            // Create the file to be saved with the timestamp as the file name
-            File fileToSave = new File(file, filename);
-
-            // Perform saving operations
-            FileWriter writer = new FileWriter(fileToSave);
-            writer.append(data);
-            writer.flush();
-            writer.close();
-
-            // Success Message
-            Toast.makeText(AdminActivity.this, "Location File Saved!", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.e("Exception", "File write failed: " + e);
             Toast.makeText(AdminActivity.this, "Failed to save.", Toast.LENGTH_SHORT).show();
