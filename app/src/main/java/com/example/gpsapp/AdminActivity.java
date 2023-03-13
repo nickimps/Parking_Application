@@ -49,6 +49,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
     LocationManager mLocationManager;
     TextInputEditText filenameEditText;
     private boolean tracking = false;
+    private String saveData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +65,8 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
 
         // Start with date there
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z", Locale.CANADA);
-        consoleTextView.setText("Start: " + sdf.format(new Date()));
+        saveData = "Start: " + sdf.format(new Date()) + "\n";
+        consoleTextView.setText(saveData);
         consoleTextView.setMovementMethod(new ScrollingMovementMethod());
 
         // Have location auto load when loading screen
@@ -75,12 +77,13 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         refreshButton = findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(v -> getLocation());
 
+        // Get button element IDs
         Button saveButton = findViewById(R.id.saveButton);
         Button startTrackingButton = findViewById(R.id.startTrackingButton);
 
         // SAVE BUTTON
         saveButton.setOnClickListener(v -> {
-            saveLocationToFile(consoleTextView.getText().toString(), filenameEditText.getText().toString().trim());
+            saveLocationToFile(saveData, filenameEditText.getText().toString().trim());
             filenameEditText.setText(null);
             filenameEditText.clearFocus();
             saveButton.setEnabled(false);
@@ -91,7 +94,9 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
             tracking = false;
 
             // Clear Screen
-            consoleTextView.setText("Start: " + sdf.format(new Date()));
+            SimpleDateFormat sdf2 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z", Locale.CANADA);
+            saveData = "Start: " + sdf2.format(new Date()) + "\n";
+            consoleTextView.setText(saveData);
             consoleTextView.setMovementMethod(new ScrollingMovementMethod());
         });
 
@@ -181,12 +186,13 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
 
         if (tracking) {
             // Get the time
-            SimpleDateFormat sdf2 = new SimpleDateFormat("HH:mm:ss z", Locale.CANADA);
-            String time = sdf2.format(new Date());
+            SimpleDateFormat sdf3 = new SimpleDateFormat("HH:mm:ss z", Locale.CANADA);
+            String time = sdf3.format(new Date());
 
             // Append the speed, status and time to the output
-            String textToAppend = consoleTextView.getText() + "\n" + time + " -- " + speedString + " -- " + movingStatus;
+            String textToAppend = time + " -- " + speedString + " -- " + movingStatus + "\n";
             consoleTextView.setText(textToAppend);
+            saveData += textToAppend;
 
             // Keep scrolled to the latest appended text
             int scrollAmount = consoleTextView.getLayout().getLineTop(consoleTextView.getLineCount()) - consoleTextView.getHeight();

@@ -42,11 +42,15 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             //Toast
             Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
+            MapsActivity mapsActivity = new MapsActivity();
+            mapsActivity.setGeoFenceStatus(true);
         }
         //If they leave the geofence
         else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
             //Toast
             Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
+            MapsActivity mapsActivity = new MapsActivity();
+            mapsActivity.setGeoFenceStatus(false);
         }
     }
 }
