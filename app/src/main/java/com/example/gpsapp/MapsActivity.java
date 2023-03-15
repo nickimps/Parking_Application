@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -71,7 +72,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private List<String> parkedSpacesUsers = new ArrayList<>();
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
+    public static Button centerButton;
 
+    //Create a flag to see if the camera should follow
+    Boolean follow = false;
     private static final String TAG = "MapsActivity";
     //GEOFENCE -----------------------------------------------------------------------------
 
@@ -140,6 +144,21 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         Button button = findViewById(R.id.settingsButton);
         button.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
+
+        centerButton = findViewById(R.id.recenterButton);
+        @SuppressLint("MissingPermission") Location currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        centerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(currentLocation
+                        .getLatitude(), currentLocation.getLongitude())).zoom(19.0f).build();
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+                mMap.animateCamera(cameraUpdate);
+                follow = true;
+            }
+        });
+
+        int action = MotionEvent.ACTION_MOVE;
     }
 
     /**
@@ -438,13 +457,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         //Update camera position every time user location changes
         //Create an object to capture the position of the camera based on Lat and Long
         //then update the camera position
-        if (geoFenceStatus /* && Check if re-center button is not visible */) {
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(19.0f).build();
+        if (geoFenceStatus && follow == true/* && Check if re-center button is not visible */) {
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location
+                    .getLatitude(), location.getLongitude())).zoom(19.0f).build();
             CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
             mMap.animateCamera(cameraUpdate);
         }
-
 
         // Update the speed on the card view on the screen
         float speed = updateSpeedTextView(location);
@@ -459,6 +477,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
 
         movingStatusTextView.setText(movingStatus);
+
     }
 
     @Override

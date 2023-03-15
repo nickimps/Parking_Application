@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
@@ -44,12 +45,17 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             //Toast
             Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
             MapsActivity.geoFenceStatus = true;
+            //Enable recenter button when inside the geofence
+            MapsActivity.centerButton.setVisibility(View.VISIBLE);
+
         }
         //If they leave the geofence
         else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
             //Toast
             Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
             MapsActivity.geoFenceStatus = false;
+            //Disable recenter button when outside the geofence
+            MapsActivity.centerButton.setVisibility(View.INVISIBLE);
         }
     }
 }
