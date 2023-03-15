@@ -47,6 +47,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             MapsActivity.geoFenceStatus = true;
             //Enable recenter button when inside the geofence
             MapsActivity.centerButton.setVisibility(View.VISIBLE);
+            MapsActivity.follow = true;
 
         }
         //If they leave the geofence
@@ -56,6 +57,8 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             MapsActivity.geoFenceStatus = false;
             //Disable recenter button when outside the geofence
             MapsActivity.centerButton.setVisibility(View.INVISIBLE);
+            MapsActivity.follow = false;
+
         }
     }
 }

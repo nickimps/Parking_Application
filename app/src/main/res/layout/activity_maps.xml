@@ -221,5 +221,6 @@
         android:fontFamily="@font/dm_sans"
         android:textAllCaps="false"
         android:textColor="@color/LU_yellow"
+        android:background="@drawable/settings_button_background"
         />
 </RelativeLayout>

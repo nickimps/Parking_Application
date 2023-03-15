@@ -53,7 +53,7 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnCameraMoveStartedListener {
 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
@@ -75,7 +75,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public static Button centerButton;
 
     //Create a flag to see if the camera should follow
-    Boolean follow = false;
+    public static Boolean follow = false;
     private static final String TAG = "MapsActivity";
     //GEOFENCE -----------------------------------------------------------------------------
 
@@ -158,7 +158,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             }
         });
 
-        int action = MotionEvent.ACTION_MOVE;
     }
 
     /**
@@ -173,6 +172,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnCameraMoveStartedListener(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
@@ -552,6 +552,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     });
         }
 
+    }
+
+    @Override
+    public void onCameraMoveStarted(int i) {
+        System.out.println(i);
+        if(i == 1 && geoFenceStatus) {
+            follow = false;
+            System.out.println("MOVE");
+        }
     }
 }
 
