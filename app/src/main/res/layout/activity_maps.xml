@@ -59,15 +59,15 @@
             <Button
                 android:id="@+id/settingsButton"
                 android:layout_width="wrap_content"
-                android:text="@string/settings"
-                android:textAllCaps="false"
                 android:layout_height="37dp"
                 android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
                 android:layout_marginEnd="10dp"
-                android:textColor="@color/LU_yellow"
                 android:background="@drawable/settings_button_background"
                 android:fontFamily="@font/dm_sans"
-                android:layout_centerInParent="true"/>
+                android:text="@string/settings"
+                android:textAllCaps="false"
+                android:textColor="@color/LU_yellow" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
@@ -119,15 +119,18 @@
 
 <!--    Legend banner at the bottom-->
     <androidx.cardview.widget.CardView
+        android:id="@+id/legend"
         android:layout_width="wrap_content"
         android:layout_height="80dp"
-        app:cardElevation="10dp"
-        app:cardCornerRadius="15dp"
-        android:layout_margin="10dp"
-        android:layout_centerVertical="true"
-        android:layout_centerInParent="true"
         android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
         app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="15dp"
+        app:cardElevation="10dp"
         app:cardMaxElevation="12dp"
         app:cardPreventCornerOverlap="true"
         app:cardUseCompatPadding="true">
@@ -135,83 +138,89 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:paddingHorizontal="5dp"
-            android:gravity="center">
+            android:gravity="center"
+            android:paddingHorizontal="5dp">
 
             <TextView
                 android:id="@+id/redSpot"
-                android:layout_centerVertical="true"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:layout_centerVertical="true"
                 android:layout_marginStart="10dp"
-                android:background="@drawable/red_rounded_rectangle"
-                />
+                android:background="@drawable/red_rounded_rectangle" />
 
             <TextView
                 android:id="@+id/takenView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
+                android:layout_marginEnd="5dp"
+                android:layout_toEndOf="@id/redSpot"
+                android:fontFamily="@font/dm_sans_bold"
+                android:paddingStart="5dp"
                 android:text="@string/occupied"
                 android:textColor="@color/grey_fromImage"
-                android:textSize="13sp"
-                android:layout_toEndOf="@id/redSpot"
-                android:paddingStart="5dp"
-                android:layout_marginEnd="5dp"
-                />
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/greenSpot"
-                android:layout_centerVertical="true"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:layout_centerVertical="true"
                 android:layout_marginStart="10dp"
-                android:background="@drawable/green_rounded_rectangle"
                 android:layout_toEndOf="@id/takenView"
-                android:paddingStart="5dp"
-                />
+                android:background="@drawable/green_rounded_rectangle"
+                android:paddingStart="5dp" />
 
             <TextView
                 android:id="@+id/availableView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
+                android:layout_marginEnd="5dp"
+                android:layout_toEndOf="@id/greenSpot"
+                android:fontFamily="@font/dm_sans_bold"
+                android:paddingStart="5dp"
                 android:text="@string/available"
                 android:textColor="@color/grey_fromImage"
-                android:textSize="13sp"
-                android:layout_toEndOf="@id/greenSpot"
-                android:paddingStart="5dp"
-                android:layout_marginEnd="5dp"
-                />
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/blueSpot"
-                android:layout_centerVertical="true"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:layout_centerVertical="true"
                 android:layout_marginStart="10dp"
-                android:background="@drawable/blue_rounded_rectangle"
                 android:layout_toEndOf="@id/availableView"
-                android:paddingStart="5dp"
-                />
+                android:background="@drawable/blue_rounded_rectangle"
+                android:paddingStart="5dp" />
 
             <TextView
                 android:id="@+id/yourView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/dm_sans_bold"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="10dp"
+                android:layout_toEndOf="@id/blueSpot"
+                android:fontFamily="@font/dm_sans_bold"
+                android:paddingStart="5dp"
                 android:text="@string/your_car"
                 android:textColor="@color/grey_fromImage"
-                android:textSize="13sp"
-                android:layout_toEndOf="@id/blueSpot"
-                android:paddingStart="5dp"
-                />
-
+                android:textSize="13sp" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/recenterButton"
+        android:layout_above="@+id/legend"
+        android:layout_centerHorizontal="true"
+        android:text="Recenter"
+        android:textSize="14dp"
+        android:fontFamily="@font/dm_sans"
+        android:textAllCaps="false"
+        android:textColor="@color/LU_yellow"
+        android:background="@drawable/settings_button_background"
+        />
 </RelativeLayout>
