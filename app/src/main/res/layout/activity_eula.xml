@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".eulaActivity">
+
+    <ImageView
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:alpha="0.9"
+        android:src="@drawable/parking_lines" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:cardElevation="10dp"
+        app:cardCornerRadius="20dp"
+        android:layout_margin="10dp"
+        android:layout_centerVertical="true"
+        app:cardBackgroundColor="@color/white"
+        app:cardMaxElevation="12dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/userAgreementText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/dm_sans_bold"
+                android:text="USER AGREEMENT"
+                android:textColor="@color/grey_fromImage"
+
+                android:textSize="35sp" />
+
+            <TextView
+                android:id="@+id/warningText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/userAgreementText"
+                android:layout_marginBottom="20dp"
+                android:layout_marginHorizontal="25dp"
+                android:fontFamily="@font/dm_sans"
+                android:text="Please accept the terms and conditions to continue"
+                android:textAlignment="textStart"
+                android:textColor="@color/grey"
+                android:textColorLink="@color/LU_blue"
+                android:textSize="15sp"/>
+
+            <ScrollView
+                android:id="@+id/eulaScroll"
+                android:layout_width="match_parent"
+                android:layout_height="410dp"
+                android:layout_below="@id/warningText">
+
+                <TextView
+                    android:id="@+id/eulaText"
+                    android:layout_below="@id/warningText"
+                    android:layout_width="match_parent"
+                    android:layout_height="410dp"
+                    android:layout_marginBottom="100dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginVertical="10dp"
+                    android:layout_marginHorizontal="10dp"
+                    android:scrollbars="vertical"
+                    android:text="Placeholder"
+                    android:textSize="12dp"
+                    />
+            </ScrollView>
+
+            <Button
+                android:id="@+id/agreeButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/eulaScroll"
+                android:layout_centerHorizontal="true"
+                android:layout_marginHorizontal="18dp"
+                android:layout_marginTop="10dp"
+                android:enabled="false"
+                android:fontFamily="@font/dm_sans"
+                android:text="I Accept"
+                android:textColor="@color/LU_yellow"
+                android:backgroundTint="@color/LU_blue"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/doNotAgreeButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/agreeButton"
+                android:layout_centerHorizontal="true"
+                android:layout_marginHorizontal="18dp"
+                android:enabled="false"
+                android:fontFamily="@font/dm_sans"
+                android:text="I Do Not Accept"
+                android:textSize="15sp" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

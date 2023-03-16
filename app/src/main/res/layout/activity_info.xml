@@ -99,4 +99,15 @@
         android:layout_centerHorizontal="true"
         android:backgroundTint="@color/red" />
 
+    <Button
+        android:id="@+id/testEulaButton"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:layout_below="@id/logoutButton"
+        android:text="EULA"
+        android:fontFamily="@font/dm_sans"
+        android:layout_centerHorizontal="true"
+        android:backgroundTint="@color/LU_blue" />
+
 </android.widget.RelativeLayout>
