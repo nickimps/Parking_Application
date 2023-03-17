@@ -146,15 +146,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         centerButton = findViewById(R.id.recenterButton);
         @SuppressLint("MissingPermission") Location currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        centerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(currentLocation
-                        .getLatitude(), currentLocation.getLongitude())).zoom(19.0f).build();
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-                mMap.animateCamera(cameraUpdate);
-                follow = true;
-            }
+        centerButton.setOnClickListener(view -> {
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(currentLocation
+                    .getLatitude(), currentLocation.getLongitude())).zoom(19.0f).build();
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+            mMap.animateCamera(cameraUpdate);
+            follow = true;
         });
 
     }
@@ -402,7 +399,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         for(Map.Entry<Polygon, Double> possibleSpace : possibleParkedSpaces.entrySet()) {
                             // Get the parking space id and distance for comparisons
                             String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
-                            double polyDistance = (double) possibleSpace.getValue();
+                            double polyDistance = possibleSpace.getValue();
 
                             if (polyDistance < lowestDistance) {
                                 // If the parking space has someone parked there, we cant park there so
@@ -519,6 +516,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         } else {
             // Start the listener to manage location updates
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
         }
     }
 

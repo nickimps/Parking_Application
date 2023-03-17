@@ -9,9 +9,9 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -36,14 +36,15 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    TextView locationTextView, consoleTextView;
+    TextView locationTextView;
+    @SuppressLint("StaticFieldLeak")
+    public static TextView consoleTextView;
     Button refreshButton;
     LocationManager mLocationManager;
     TextInputEditText filenameEditText;
-    private boolean tracking = false;
-    private String saveData;
+    public static boolean tracking = false;
+    public static String saveData;
     private final SimpleDateFormat dayPlusTimeSDF = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z", Locale.CANADA);
-    private final SimpleDateFormat timeSDF = new SimpleDateFormat("HH:mm:ss z", Locale.CANADA);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +52,8 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         setContentView(R.layout.activity_admin);
 
         Objects.requireNonNull(getSupportActionBar()).setTitle("Admin Portal");
+
+        Intent serviceIntent = new Intent(this, AdminLocationService.class);
 
         // Get the ids to access them
         locationTextView = findViewById(R.id.locationTextView);
@@ -76,6 +79,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
 
         // SAVE BUTTON
         saveButton.setOnClickListener(v -> {
+            // Save the information
             saveLocationToFile(saveData, Objects.requireNonNull(filenameEditText.getText()).toString().trim());
             filenameEditText.setText(null);
             filenameEditText.clearFocus();
@@ -86,6 +90,10 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
             startTrackingButton.setText(R.string.start_tracking);
             tracking = false;
 
+            // Stop tracking service
+            serviceIntent.setAction(AdminLocationService.ACTION_STOP_FOREGROUND_SERVICE);
+            startService(new Intent(this, AdminLocationService.class).setAction(AdminLocationService.ACTION_STOP_FOREGROUND_SERVICE));
+
             // Clear Screen
             saveData = "Start: " + dayPlusTimeSDF.format(new Date()) + "\n";
             consoleTextView.setText(saveData);
@@ -95,13 +103,23 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         // START TRACKING BUTTON
         startTrackingButton.setOnClickListener(v -> {
             if (tracking) {
-                startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_green));
+                startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_green));   // Tracking Stopped
                 startTrackingButton.setText(R.string.start_tracking);
                 tracking = false;
+
+                // Stop tracking service
+                serviceIntent.setAction(AdminLocationService.ACTION_STOP_FOREGROUND_SERVICE);
+                startService(serviceIntent);
             } else {
-                startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_red));
+                startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_red));     // Tracking Started
                 startTrackingButton.setText(R.string.stop_tracking);
                 tracking = true;
+
+                // Start tracking service
+                serviceIntent.setAction(AdminLocationService.ACTION_START_FOREGROUND_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent);
+                }
             }
         });
 
@@ -140,48 +158,53 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         }
     }
 
-    /**
-     * This function will change the speed label on the admin card view to the current speed in
-     * real-time.
-     *
-     * @param location The location parameter
-     * @return The speed to be set in the TextView
-     */
-    private float updateSpeedTextView(Location location) {
-        if (location.hasSpeed())
-            return location.getSpeed();
-        else
-            return 0.0f;
-    }
+//    /**
+//     * This function will change the speed label on the admin card view to the current speed in
+//     * real-time.
+//     *
+//     * @param location The location parameter
+//     * @return The speed to be set in the TextView
+//     */
+//    public static float updateSpeedTextView(Location location) {
+//        if (location.hasSpeed())
+//            return location.getSpeed();
+//        else
+//            return 0.0f;
+//    }
 
     @Override
     public void onLocationChanged(Location location) {
-        // Update the speed on the card view on the screen
-        float speed = updateSpeedTextView(location);
-        String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
-        String movingStatus = "Stopped";
-
-        if (speed <= 0.05) {
-            movingStatus = MapsActivity.movingStatus;
-        } else if (speed > 0.05 && speed <= 2) {
-            movingStatus = "Walking";
-        } else if (speed > 2) {
-            movingStatus = "Driving";
-        }
-
-        if (tracking) {
-            // Get the time
-            String time = timeSDF.format(new Date());
-
-            // Append the speed, status and time to the output
-            String textToAppend = time + " -- " + speedString + " -- " + movingStatus + "\n";
-            consoleTextView.setText(textToAppend);
-            saveData += textToAppend;
-
-            // Keep scrolled to the latest appended text
-            int scrollAmount = consoleTextView.getLayout().getLineTop(consoleTextView.getLineCount()) - consoleTextView.getHeight();
-            consoleTextView.scrollTo(0, Math.max(scrollAmount, 0));
-        }
+//        float speed = updateSpeedTextView(location);
+//        String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
+//        String movingStatus = "Stopped";
+//
+//        if (speed <= 0.05) {
+//            movingStatus = MapsActivity.movingStatus;
+//        } else if (speed > 0.05 && speed <= 2) {
+//            movingStatus = "Walking";
+//        } else if (speed > 2) {
+//            movingStatus = "Driving";
+//        }
+//
+//        if (tracking) {
+//            // Get the time
+//            String time = timeSDF.format(new Date());
+//
+//            // Append the speed, status and time to the output
+//            String textToAppend = time + " -- " + speedString + " -- " + movingStatus + "\n";
+//            saveData += textToAppend;
+//
+//            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+//            boolean isScreenOn = pm.isInteractive();
+//            System.out.println(isScreenOn + " " + textToAppend);
+//
+//            if (isScreenOn)
+//                consoleTextView.setText(textToAppend);
+//
+//            // Keep scrolled to the latest appended text
+//            int scrollAmount = consoleTextView.getLayout().getLineTop(consoleTextView.getLineCount()) - consoleTextView.getHeight();
+//            consoleTextView.scrollTo(0, Math.max(scrollAmount, 0));
+//        }
     }
 
     @Override
@@ -197,7 +220,6 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         // Called when the status of the GPS provider changes
     }
 
-
     /**
      * Populates the textfield with the location
      * Also starts the .requestLocationUpdates for the onLocationChanged function
@@ -210,6 +232,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         } else {
             // Start the listener to manage location updates
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
 
             // Get GPS coordinates of last location to update the text view
             Location locationGPS = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
