@@ -61,15 +61,15 @@
             <ScrollView
                 android:id="@+id/eulaScroll"
                 android:layout_width="match_parent"
-                android:layout_height="410dp"
+                android:layout_height="480dp"
                 android:layout_below="@id/warningText">
 
                 <TextView
                     android:id="@+id/eulaText"
                     android:layout_below="@id/warningText"
                     android:layout_width="match_parent"
-                    android:layout_height="410dp"
-                    android:layout_marginBottom="100dp"
+                    android:layout_height="480dp"
+                    android:layout_marginBottom="50dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginVertical="10dp"
                     android:layout_marginHorizontal="10dp"
