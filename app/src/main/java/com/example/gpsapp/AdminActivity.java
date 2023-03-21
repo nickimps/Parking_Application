@@ -53,17 +53,12 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
 
         Objects.requireNonNull(getSupportActionBar()).setTitle("Admin Portal");
 
-        Intent serviceIntent = new Intent(this, AdminLocationService.class);
-
         // Get the ids to access them
         locationTextView = findViewById(R.id.locationTextView);
         filenameEditText = findViewById(R.id.filenameTextInputEditText);
         consoleTextView = findViewById(R.id.consoleTextView);
-
-        // Start with date there
-        saveData = "Start: " + dayPlusTimeSDF.format(new Date()) + "\n";
-        consoleTextView.setText(saveData);
         consoleTextView.setMovementMethod(new ScrollingMovementMethod());
+
 
         // Have location auto load when loading screen
         getLocation();
@@ -76,6 +71,16 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         // Get button element IDs
         Button saveButton = findViewById(R.id.saveButton);
         Button startTrackingButton = findViewById(R.id.startTrackingButton);
+
+        // Need to check if background services are active
+        if (tracking) {
+            startTrackingButton.setBackgroundColor(getResources().getColor(R.color.start_red));     // Tracking Started
+            startTrackingButton.setText(R.string.stop_tracking);
+        } else {
+            // Start with date there
+            saveData = "Start: " + dayPlusTimeSDF.format(new Date()) + "\n";
+            consoleTextView.setText(saveData);
+        }
 
         // SAVE BUTTON
         saveButton.setOnClickListener(v -> {
@@ -91,6 +96,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
             tracking = false;
 
             // Stop tracking service
+            Intent serviceIntent = new Intent(this, AdminLocationService.class);
             serviceIntent.setAction(AdminLocationService.ACTION_STOP_FOREGROUND_SERVICE);
             startService(new Intent(this, AdminLocationService.class).setAction(AdminLocationService.ACTION_STOP_FOREGROUND_SERVICE));
 
@@ -108,6 +114,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
                 tracking = false;
 
                 // Stop tracking service
+                Intent serviceIntent = new Intent(this, AdminLocationService.class);
                 serviceIntent.setAction(AdminLocationService.ACTION_STOP_FOREGROUND_SERVICE);
                 startService(serviceIntent);
             } else {
@@ -116,10 +123,9 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
                 tracking = true;
 
                 // Start tracking service
+                Intent serviceIntent = new Intent(this, AdminLocationService.class);
                 serviceIntent.setAction(AdminLocationService.ACTION_START_FOREGROUND_SERVICE);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(serviceIntent);
-                }
+                startService(serviceIntent);
             }
         });
 

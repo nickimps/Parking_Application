@@ -1,6 +1,10 @@
 package com.example.gpsapp;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,7 +32,8 @@ public class AdminLocationService extends Service implements LocationListener {
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private final SimpleDateFormat timeSDF = new SimpleDateFormat("HH:mm:ss z", Locale.CANADA);
     LocationManager mLocationManager;
-
+    private static final int NOTIFICATION_ID = 6;
+    private static final String CHANNEL_ID = "my_channel";
     @Override
     public void onCreate() {
         super.onCreate();
@@ -40,10 +46,22 @@ public class AdminLocationService extends Service implements LocationListener {
 
             switch (action) {
                 case ACTION_START_FOREGROUND_SERVICE:
-                    System.out.println("startForegroundService called.");
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService();
-                    }
+                    createNotificationChannel();
+
+                    // Create a notification
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_launcher_foreground)
+                            .setContentTitle("Parking Spotter")
+                            .setContentText("Admin Foreground Tracking Active")
+                            .setSilent(true)
+                            .setPriority(NotificationCompat.PRIORITY_LOW);
+
+                    // Start the service as a foreground service
+                    startForeground(NOTIFICATION_ID, builder.build());
+
+                    Toast.makeText(this, "Tracking Started", Toast.LENGTH_SHORT).show();
+
+                    getLocation();
                     break;
                 case ACTION_STOP_FOREGROUND_SERVICE:
                     stopForegroundService();
@@ -53,22 +71,20 @@ public class AdminLocationService extends Service implements LocationListener {
         return START_STICKY;
     }
 
-    private void startForegroundService() {
-        Toast.makeText(this, "Tracking Started", Toast.LENGTH_SHORT).show();
-
-        // Start location tracking
-        getLocation();
-    }
+//    private void startForegroundService() {
+//        Toast.makeText(this, "Tracking Started", Toast.LENGTH_SHORT).show();
+//
+//        startForeground(6, notification);
+//    }
 
     private void stopForegroundService() {
         Toast.makeText(this, "Tracking Stopped", Toast.LENGTH_SHORT).show();
-        System.out.println("stopForegroundService called.");
-
-        // Stop foreground service and remove the notification.
-        stopForeground(true);
 
         // Stop the foreground service.
         stopSelf();
+
+        // Stop foreground service and remove the notification.
+        stopForeground(true);
     }
 
     @Override
@@ -80,9 +96,6 @@ public class AdminLocationService extends Service implements LocationListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        //Toast.makeText(this, "onDestroy called", Toast.LENGTH_SHORT).show();
-        System.out.println("onDestroy called.");
     }
 
     /**
@@ -140,6 +153,19 @@ public class AdminLocationService extends Service implements LocationListener {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Foreground Service Channel",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            serviceChannel.setShowBadge(false);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
         }
     }
 }
