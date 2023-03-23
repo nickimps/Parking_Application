@@ -18,11 +18,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.android.gms.location.Geofence;
@@ -37,6 +39,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -169,6 +172,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setOnCameraMoveStartedListener(this);
+        // Disable the current location button
+//        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+
+        mMap.setPadding(0, 255, 15, 0);
+        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_map));
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
@@ -417,7 +425,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(bestOption)));
 
                             if (parkedSpacesUsers.contains(username)) {
-                                System.out.println("This is filler.");
+                                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(), "Timer Running", Toast.LENGTH_SHORT).show();
+                                    }
+                                }, 5000);
                             }
 
                             // Update the DB to your new spot
@@ -500,8 +513,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     }
 
     private void styleParkingSubLot(Polygon polygon){
-        polygon.setStrokeWidth(5);
-        polygon.setFillColor(ContextCompat.getColor(this, R.color.parking_space_purple));
+        polygon.setStrokeWidth(0);
+        //polygon.setFillColor(ContextCompat.getColor(this, R.color.parking_space_purple));
     }
 
     /**

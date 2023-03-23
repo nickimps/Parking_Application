@@ -164,53 +164,9 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         }
     }
 
-//    /**
-//     * This function will change the speed label on the admin card view to the current speed in
-//     * real-time.
-//     *
-//     * @param location The location parameter
-//     * @return The speed to be set in the TextView
-//     */
-//    public static float updateSpeedTextView(Location location) {
-//        if (location.hasSpeed())
-//            return location.getSpeed();
-//        else
-//            return 0.0f;
-//    }
-
     @Override
     public void onLocationChanged(Location location) {
-//        float speed = updateSpeedTextView(location);
-//        String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
-//        String movingStatus = "Stopped";
-//
-//        if (speed <= 0.05) {
-//            movingStatus = MapsActivity.movingStatus;
-//        } else if (speed > 0.05 && speed <= 2) {
-//            movingStatus = "Walking";
-//        } else if (speed > 2) {
-//            movingStatus = "Driving";
-//        }
-//
-//        if (tracking) {
-//            // Get the time
-//            String time = timeSDF.format(new Date());
-//
-//            // Append the speed, status and time to the output
-//            String textToAppend = time + " -- " + speedString + " -- " + movingStatus + "\n";
-//            saveData += textToAppend;
-//
-//            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-//            boolean isScreenOn = pm.isInteractive();
-//            System.out.println(isScreenOn + " " + textToAppend);
-//
-//            if (isScreenOn)
-//                consoleTextView.setText(textToAppend);
-//
-//            // Keep scrolled to the latest appended text
-//            int scrollAmount = consoleTextView.getLayout().getLineTop(consoleTextView.getLineCount()) - consoleTextView.getHeight();
-//            consoleTextView.scrollTo(0, Math.max(scrollAmount, 0));
-//        }
+        // Called when the user's location changes
     }
 
     @Override
