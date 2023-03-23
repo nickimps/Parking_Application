@@ -125,7 +125,6 @@
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="10dp"
         app:cardBackgroundColor="@color/white"
@@ -211,14 +210,15 @@
     </androidx.cardview.widget.CardView>
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:id="@+id/recenterButton"
         android:layout_above="@+id/legend"
         android:layout_centerHorizontal="true"
-        android:text="Recenter"
-        android:textSize="14dp"
+        android:text="@string/recenter"
+        android:textSize="16sp"
         android:fontFamily="@font/dm_sans"
+        android:textStyle="bold"
         android:textAllCaps="false"
         android:textColor="@color/LU_yellow"
         android:background="@drawable/settings_button_background"
