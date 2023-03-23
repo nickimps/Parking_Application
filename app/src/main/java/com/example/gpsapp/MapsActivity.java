@@ -1,6 +1,7 @@
 package com.example.gpsapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -42,8 +43,14 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -252,6 +259,38 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     }
                 });
 
+        // Create a listener to respond to database updates in real time
+        firestore.collection("ParkingSpaces")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot snapshots, @Nullable FirebaseFirestoreException error) {
+                        if (error != null) {
+                            Log.w(TAG, "Listen failed.", error);
+                            return;
+                        }
+
+                        // Get which documents have been updated
+                        assert snapshots != null;
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            if (dc.getType() == DocumentChange.Type.MODIFIED) {
+                                // Get the index of the polygon that we are wanting to change the style of
+                                int parkingSpacePolygonIndex = parkingSpacesDocIDs.indexOf(dc.getDocument().getId());
+                                // Get the new value from the user field that has been updated
+                                String newUser = Objects.requireNonNull(dc.getDocument().get("user")).toString();
+
+                                // Check if the new user is empty, current user, or someone else and style appropriately
+                                if (newUser.equals(""))
+                                    styleParkingEmptySpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                else if (newUser.equals(username))
+                                    styleParkingYourSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                else
+                                    styleParkingFilledSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+
+                            }
+                        }
+                    }
+                });
+
         // move the camera to default position
         LatLng Lot = new LatLng(48.42101, -89.25828);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17));       // Need to figure out a way to not reset this everytime we enter the map I feel
@@ -261,46 +300,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         float GEOFENCE_RADIUS = 500;
         addGeofence(Lot, GEOFENCE_RADIUS);
         // -----------------------------------------------------------------------
-
-
-        // This timer will update the current list of parked spaces - helps with computation time
-        // in the checkStop() function so that it doesn't have to pull from the firestore database
-        // everytime that you move.
-        final Handler handler = new Handler();
-        Timer timer = new Timer();
-        TimerTask doAsynchronousTask = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(() -> {
-                    try {
-                        updateParkedSpacesList();
-                    } catch (Exception e) {
-                        Log.d(TAG, "onFailure: " + Arrays.toString(e.getStackTrace()));
-                    }
-                });
-            }
-        };
-        timer.schedule(doAsynchronousTask, 0, 60000); // 60000 ms = 1 min
-    }
-
-    /**
-     * Refreshes the list of parked spaces on function call and stores them in a global arrayList to
-     * be used in the checkStop() function.
-     */
-    private void updateParkedSpacesList() {
-        // Get list of non-empty parking spaces and add them to the parkedSpaces list
-        parkedSpacesIDs = new ArrayList<>();
-        parkedSpacesUsers = new ArrayList<>();
-        firestore.collection("ParkingSpaces")
-                .whereNotEqualTo("user", "")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful())
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            parkedSpacesIDs.add(document.getId());
-                            parkedSpacesUsers.add(document.getString("user"));
-                        }
-                });
     }
 
     /**
