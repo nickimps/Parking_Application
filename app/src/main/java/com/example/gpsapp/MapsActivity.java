@@ -43,9 +43,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -53,22 +51,22 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnCameraMoveStartedListener {
 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
+    private static final int RUNNABLE_TIME = 3000;
     public static boolean geoFenceStatus;
     public static String movingStatus;
+    public static boolean available_spot;
     private GoogleMap mMap;
     private LocationManager mLocationManager;
     private TextView name, speedAdminTextView, movingStatusTextView;
@@ -89,7 +87,34 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     //Create a flag to see if the camera should follow
     public static Boolean follow = false;
     private static final String TAG = "MapsActivity";
-    //GEOFENCE -----------------------------------------------------------------------------
+
+    // parkedHandler, parkedRunnable, parkedBestOption are all used in checkStop to set a timer
+    // to determine if the user has entered a parking space or left one
+    public String parkedBestOption;
+    public static Handler parkedHandler = new Handler();
+    Runnable parkedRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Toast.makeText(getApplicationContext(), "Timer Done", Toast.LENGTH_SHORT).show();
+            if (movingStatus.equals("Driving")) {
+                // Set the parking space to empty
+                firestore.collection("ParkingSpaces")
+                        .document(parkedSpacesIDs.get(parkingSpacesDocIDs.indexOf(parkedBestOption)))
+                        .update("user", "");
+
+                // Get index of the parking space and then change the colour of that polygon
+                styleParkingEmptySpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption)));
+            } else if (movingStatus.equals("Walking")) {
+                // Set the firebase to be occupied by current user
+                firestore.collection("ParkingSpaces")
+                        .document(parkedSpacesIDs.get(parkingSpacesDocIDs.indexOf(parkedBestOption)))
+                        .update("user", username);
+
+                // Get index of the parking space and then change the colour of that polygon
+                styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption)));
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,12 +179,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
-        Button button = findViewById(R.id.settingsButton);
-        button.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
+        Button settingsButton = findViewById(R.id.settingsButton);
+        settingsButton.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
 
+        // Default the button to invisible
         centerButton = findViewById(R.id.recenterButton);
         centerButton.setVisibility(View.INVISIBLE);
 
+        // Show the button if they have a parked car
         firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
@@ -168,6 +195,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             }
         });
 
+        // Set the onClick listener for the center button to zoom in the users parked car
         centerButton.setOnClickListener(view -> {
             firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
@@ -411,53 +439,43 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                 // If we changed the status to parked, we need to choose a single parking spot
                 if (stoppedStatus.equals("Parked")) {
-                    // If its only size of 1, we can skip unnecessary computations
-                    if (possibleParkedSpaces.size() == 1) {
-                        Map.Entry<Polygon, Double> entry = possibleParkedSpaces.entrySet().iterator().next();
-                        String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(entry.getKey()));
+                    String bestOption = "";
+                    double lowestDistance = 10000;
+                    available_spot = true;
 
-                        if (!parkedSpacesIDs.contains(docID))
-                            styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(docID)));
+                    // Go through the hashmap and check if the lowest spot is empty
+                    for(Map.Entry<Polygon, Double> possibleSpace : possibleParkedSpaces.entrySet()) {
+                        // Get the parking space id and distance for comparisons
+                        String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
+                        double polyDistance = possibleSpace.getValue();
 
-                    } else {
-                        String bestOption = "";
-                        double lowestDistance = 10000;
-
-                        // Go through the hashmap and check if the lowest spot is empty
-                        for(Map.Entry<Polygon, Double> possibleSpace : possibleParkedSpaces.entrySet()) {
-                            // Get the parking space id and distance for comparisons
-                            String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
-                            double polyDistance = possibleSpace.getValue();
-
-                            if (polyDistance < lowestDistance) {
-                                // If the parking space has someone parked there, we cant park there so
-                                // don't consider it as a good option.
-                                if (!parkedSpacesIDs.contains(docID)) {
-                                    lowestDistance = polyDistance;
-                                    bestOption = docID;
-                                }
-                            }
-                        }
-
-                        // Change appearance of the parking space if we have parked in it
-                        if (!bestOption.equals("")) {
-                            // Get index of the parking space and then change the colour of that polygon
-                            styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(bestOption)));
-
-                            if (parkedSpacesUsers.contains(username)) {
-                                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(), "Timer Running", Toast.LENGTH_SHORT).show();
+                        firestore.collection("ParkingSpaces")
+                                .document(docID)
+                                .get()
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        if(!Objects.equals(task.getResult().getString("user"), ""))
+                                            available_spot = false;
                                     }
-                                }, 5000);
-                            }
+                                });
 
-                            // Update the DB to your new spot
-                            // Remove any other spaces we may be parked inside of
-                        } else {
-                            stoppedStatus = "Stopped";
+                        if (polyDistance < lowestDistance && available_spot) {
+                            // If the parking space has someone parked there, we cant park there so
+                            // don't consider it as a good option.
+                            if (!parkedSpacesIDs.contains(docID)) {
+                                lowestDistance = polyDistance;
+                                bestOption = docID;
+                            }
                         }
+                    }
+
+                    // If we have a best option, then start the runnable to tell if we have parked or not
+                    if (!bestOption.equals("")) {
+                        parkedBestOption = bestOption;
+                        parkedHandler.removeCallbacks(parkedRunnable);
+                        parkedHandler.postDelayed(parkedRunnable, RUNNABLE_TIME);
+                    } else {
+                        stoppedStatus = "Stopped";
                     }
                 }
             }
