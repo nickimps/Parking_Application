@@ -212,7 +212,7 @@
     <Button
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:id="@+id/recenterButton"
+        android:id="@+id/findMyCarButton"
         android:layout_above="@+id/legend"
         android:layout_centerHorizontal="true"
         android:text="@string/recenter"
