@@ -28,7 +28,7 @@ public class RegisterActivity extends AppCompatActivity {
     FirebaseFirestore firestore;
 
     private TextInputEditText usernameEditText, passwordEditText, nameEditText, permitEditText;
-    private TextInputLayout usernameLayout, passwordLayout, nameLayout;
+    public static TextInputLayout usernameLayout, passwordLayout, nameLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

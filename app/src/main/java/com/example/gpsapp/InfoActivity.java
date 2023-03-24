@@ -198,13 +198,5 @@ public class InfoActivity extends AppCompatActivity {
             Intent intent = new Intent(InfoActivity.this, AdminActivity.class);
             startActivity((intent));
         });
-
-        // EULA BuTTOn
-        Button eulaButton = findViewById(R.id.testEulaButton);
-        eulaButton.setOnClickListener(v -> {
-            // Send the user to EULA screen
-            Intent intent = new Intent(InfoActivity.this, eulaActivity.class);
-            startActivity((intent));
-        });
         }
     }

@@ -301,7 +301,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(@NonNull View view) {
                 // Go to register screen on click
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                Intent intent = new Intent(LoginActivity.this, eulaActivity.class);
                 startActivity((intent));
             }
         };
