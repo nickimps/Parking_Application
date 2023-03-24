@@ -158,15 +158,29 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         button.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
 
         centerButton = findViewById(R.id.recenterButton);
-        @SuppressLint("MissingPermission") Location currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        centerButton.setOnClickListener(view -> {
-            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(currentLocation
-                    .getLatitude(), currentLocation.getLongitude())).zoom(19.0f).build();
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-            mMap.animateCamera(cameraUpdate);
-            follow = true;
+        centerButton.setVisibility(View.INVISIBLE);
+
+        firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    centerButton.setVisibility(View.VISIBLE);
+                }
+            }
         });
 
+        centerButton.setOnClickListener(view -> {
+            firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x1")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x1")).getLongitude());
+                        CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(20.0f).build();
+                        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+                        mMap.animateCamera(cameraUpdate);
+                        follow = true;
+                    }
+                }
+            });
+        });
     }
 
     /**
@@ -282,10 +296,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                                 String newUser = Objects.requireNonNull(dc.getDocument().get("user")).toString();
 
                                 // Check if the new user is empty, current user, or someone else and style appropriately
-                                if (newUser.equals(""))
+                                if (newUser.equals("")) {
                                     styleParkingEmptySpace(parkingSpaces.get(parkingSpacePolygonIndex));
-                                else if (newUser.equals(username))
+                                    centerButton.setVisibility(View.INVISIBLE);
+                                }
+                                else if (newUser.equals(username)) {
                                     styleParkingYourSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                    centerButton.setVisibility(View.VISIBLE);
+                                }
                                 else
                                     styleParkingFilledSpace(parkingSpaces.get(parkingSpacePolygonIndex));
 

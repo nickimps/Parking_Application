@@ -46,7 +46,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
             MapsActivity.geoFenceStatus = true;
             //Enable recenter button when inside the geofence
-            MapsActivity.centerButton.setVisibility(View.VISIBLE);
+            //MapsActivity.centerButton.setVisibility(View.VISIBLE);
             MapsActivity.follow = true;
 
         }
@@ -56,7 +56,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
             MapsActivity.geoFenceStatus = false;
             //Disable recenter button when outside the geofence
-            MapsActivity.centerButton.setVisibility(View.INVISIBLE);
+            //MapsActivity.centerButton.setVisibility(View.INVISIBLE);
             MapsActivity.follow = false;
 
         }
