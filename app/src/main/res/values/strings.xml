@@ -53,4 +53,6 @@
     <string name="start_tracking">Start Tracking</string>
     <string name="stop_tracking">Stop Tracking</string>
     <string name="recenter">Go To Car</string>
+    <string name="meter_parking">Meter Parking</string>
+    <string name="ev_parking">EV Parking</string>
 </resources>

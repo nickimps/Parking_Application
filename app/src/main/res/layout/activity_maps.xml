@@ -121,7 +121,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/legend"
         android:layout_width="wrap_content"
-        android:layout_height="80dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
         android:layout_marginStart="10dp"
@@ -134,79 +134,141 @@
         app:cardPreventCornerOverlap="true"
         app:cardUseCompatPadding="true">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:paddingHorizontal="5dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/redSpot"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/red_rounded_rectangle" />
-
-            <TextView
-                android:id="@+id/takenView"
+            <RelativeLayout
+                android:id="@+id/layoutTop"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="5dp"
-                android:layout_toEndOf="@id/redSpot"
-                android:fontFamily="@font/dm_sans_bold"
-                android:paddingStart="5dp"
-                android:text="@string/occupied"
-                android:textColor="@color/grey_fromImage"
-                android:textSize="13sp" />
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:paddingHorizontal="5dp">
 
-            <TextView
-                android:id="@+id/greenSpot"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="10dp"
-                android:layout_toEndOf="@id/takenView"
-                android:background="@drawable/green_rounded_rectangle"
-                android:paddingStart="5dp" />
+                <TextView
+                    android:id="@+id/redSpot"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/red_rounded_rectangle" />
 
-            <TextView
-                android:id="@+id/availableView"
+                <TextView
+                    android:id="@+id/takenView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="5dp"
+                    android:layout_toEndOf="@id/redSpot"
+                    android:fontFamily="@font/dm_sans_bold"
+                    android:paddingStart="5dp"
+                    android:text="@string/occupied"
+                    android:textColor="@color/grey_fromImage"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/greenSpot"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_toEndOf="@id/takenView"
+                    android:background="@drawable/green_rounded_rectangle"
+                    android:paddingStart="5dp" />
+
+                <TextView
+                    android:id="@+id/availableView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="5dp"
+                    android:layout_toEndOf="@id/greenSpot"
+                    android:fontFamily="@font/dm_sans_bold"
+                    android:paddingStart="5dp"
+                    android:text="@string/available"
+                    android:textColor="@color/grey_fromImage"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/blueSpot"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_toEndOf="@id/availableView"
+                    android:background="@drawable/blue_rounded_rectangle"
+                    android:paddingStart="5dp" />
+
+                <TextView
+                    android:id="@+id/yourView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="10dp"
+                    android:layout_toEndOf="@id/blueSpot"
+                    android:fontFamily="@font/dm_sans_bold"
+                    android:paddingStart="5dp"
+                    android:text="@string/your_car"
+                    android:textColor="@color/grey_fromImage"
+                    android:textSize="13sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/layoutBottom"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="5dp"
-                android:layout_toEndOf="@id/greenSpot"
-                android:fontFamily="@font/dm_sans_bold"
-                android:paddingStart="5dp"
-                android:text="@string/available"
-                android:textColor="@color/grey_fromImage"
-                android:textSize="13sp" />
+                android:layout_height="match_parent"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:gravity="center"
+                android:paddingHorizontal="5dp">
 
-            <TextView
-                android:id="@+id/blueSpot"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="10dp"
-                android:layout_toEndOf="@id/availableView"
-                android:background="@drawable/blue_rounded_rectangle"
-                android:paddingStart="5dp" />
+                <TextView
+                    android:id="@+id/evSpot"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="50dp"
+                    android:background="@drawable/ev_rounded_rectangle" />
 
-            <TextView
-                android:id="@+id/yourView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="10dp"
-                android:layout_toEndOf="@id/blueSpot"
-                android:fontFamily="@font/dm_sans_bold"
-                android:paddingStart="5dp"
-                android:text="@string/your_car"
-                android:textColor="@color/grey_fromImage"
-                android:textSize="13sp" />
-        </RelativeLayout>
+                <TextView
+                    android:id="@+id/ev_parkingTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="5dp"
+                    android:layout_toEndOf="@id/evSpot"
+                    android:fontFamily="@font/dm_sans_bold"
+                    android:paddingStart="5dp"
+                    android:text="@string/ev_parking"
+                    android:textColor="@color/grey_fromImage"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/meterColourSpot"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_toEndOf="@id/ev_parkingTextView"
+                    android:background="@drawable/meter_rounded_rectangle"
+                    android:paddingStart="5dp" />
+
+                <TextView
+                    android:id="@+id/meter_parkingTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="5dp"
+                    android:layout_toEndOf="@id/meterColourSpot"
+                    android:fontFamily="@font/dm_sans_bold"
+                    android:paddingStart="5dp"
+                    android:text="@string/meter_parking"
+                    android:textColor="@color/grey_fromImage"
+                    android:textSize="13sp" />
+            </RelativeLayout>
+        </LinearLayout>
     </androidx.cardview.widget.CardView>
 
     <Button

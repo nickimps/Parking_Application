@@ -14,6 +14,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -56,14 +59,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnCameraMoveStartedListener {
+public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback{ //, GoogleMap.OnCameraMoveStartedListener {
 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    private static final int RUNNABLE_TIME = 3000;
+    private static final int RUNNABLE_TIME = 3500;
     public static boolean geoFenceStatus;
     public static String movingStatus;
     public static boolean available_spot;
@@ -101,8 +103,17 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 // Set the parking space to empty
                 firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", "");
 
-                // Get index of the parking space and then change the colour of that polygon
-                styleParkingEmptySpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption)));
+                // parking space ID and its polygon
+                String id = parkingSpacesDocIDs.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
+                Polygon parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
+
+                if (id.startsWith("EV"))
+                    styleEVParkingSpace(parking_space);
+                else if (id.startsWith("METER"))
+                    styleMeterParkingSpace(parking_space);
+                else
+                    styleParkingEmptySpace(parking_space);
+
             } else if (movingStatus.equals("Walking")) {
                 // Set the firebase to be occupied by current user
                 firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", username);
@@ -198,10 +209,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x1")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x1")).getLongitude());
-                        CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(19.0f).build();
+                        CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(18.5f).build();
                         CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
                         mMap.animateCamera(cameraUpdate);
-                        follow = true;
+//                        follow = true;
                     }
                 }
             });
@@ -220,7 +231,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setOnCameraMoveStartedListener(this);
+//        mMap.setOnCameraMoveStartedListener(this);
         // Disable the current location button
 //        mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
@@ -248,19 +259,19 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Style it as a parking sub lot
         styleParkingSubLot(r9);
 
-        // Create sub lot R9
-        Polygon r10 = googleMap.addPolygon(new PolygonOptions()  // could possibly store this in the DB too I think but we need to figure out how to check for different number of vertices
-                .clickable(true)
-                .add(
-                        new LatLng(48.42177096009731, -89.25813853884138),
-                        new LatLng(48.42152531583647, -89.25747603324294),
-                        new LatLng(48.420697592740154, -89.2582163228995),
-                        new LatLng(48.42093434072241, -89.25888687512463)
-                ));
-        // Set the tag for clicking
-        r10.setTag("R10");
-        // Style it as a parking sub lot
-        styleParkingSubLot(r10);
+//        // Create sub lot R9
+//        Polygon r10 = googleMap.addPolygon(new PolygonOptions()  // could possibly store this in the DB too I think but we need to figure out how to check for different number of vertices
+//                .clickable(true)
+//                .add(
+//                        new LatLng(48.42177096009731, -89.25813853884138),
+//                        new LatLng(48.42152531583647, -89.25747603324294),
+//                        new LatLng(48.420697592740154, -89.2582163228995),
+//                        new LatLng(48.42093434072241, -89.25888687512463)
+//                ));
+//        // Set the tag for clicking
+//        r10.setTag("R10");
+//        // Style it as a parking sub lot
+//        styleParkingSubLot(r10);
 
         // Make it clickable to zoom in on the chosen sub lot
         mMap.setOnPolygonClickListener(polygon -> {
@@ -291,7 +302,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             String parkedUsername = document.getString("user");
                             assert parkedUsername != null;
                             if (parkedUsername.equals(""))
-                                styleParkingEmptySpace(polygon);
+                                if (document.getId().startsWith("EV"))
+                                    styleEVParkingSpace(polygon);
+                                else if (document.getId().startsWith("METER"))
+                                    styleMeterParkingSpace(polygon);
+                                else
+                                    styleParkingEmptySpace(polygon);
                             else if (parkedUsername.equalsIgnoreCase(username))
                                 styleParkingYourSpace(polygon);
                             else
@@ -324,7 +340,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                                 // Check if the new user is empty, current user, or someone else and style appropriately
                                 // Also, show or hide the find my car button
                                 if (newUser.equals("")) {
-                                    styleParkingEmptySpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                    if (dc.getDocument().getId().startsWith("EV"))
+                                        styleEVParkingSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                    else if (dc.getDocument().getId().startsWith("METER"))
+                                        styleMeterParkingSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                    else
+                                        styleParkingEmptySpace(parkingSpaces.get(parkingSpacePolygonIndex));
                                     findMyCarButton.setVisibility(View.INVISIBLE);
                                 } else if (newUser.equals(username)) {
                                     styleParkingYourSpace(parkingSpaces.get(parkingSpacePolygonIndex));
@@ -341,11 +362,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         LatLng Lot = new LatLng(48.42101, -89.25828);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17));       // Need to figure out a way to not reset this everytime we enter the map I feel
 
-        //Geofencing Code --------------------------------------------------------
         //Insert a geofence at time of map creation centered around the parking lot with a radius of 500
         float GEOFENCE_RADIUS = 500;
         addGeofence(Lot, GEOFENCE_RADIUS);
-        // -----------------------------------------------------------------------
     }
 
     /**
@@ -466,6 +485,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                     // If we have a best option, then start the runnable to tell if we have parked or not
                     if (!bestOption.equals("")) {
+                        Toast.makeText(getApplicationContext(), "Runnable Timer Started", Toast.LENGTH_SHORT).show();
+
+                        // Get best parked option and run the runnable to check if we need to style a new parking space
                         parkedBestOption = bestOption;
                         parkedHandler.removeCallbacks(parkedRunnable);
                         parkedHandler.postDelayed(parkedRunnable, RUNNABLE_TIME);
@@ -491,12 +513,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Update camera position every time user location changes
         // Create an object to capture the position of the camera based on Lat and Long
         // then update the camera position
-        if (geoFenceStatus && follow) {
-            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location
-                    .getLatitude(), location.getLongitude())).zoom(19.0f).build();
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-            mMap.animateCamera(cameraUpdate);
-        }
+//        if (geoFenceStatus && follow) {
+//            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location
+//                    .getLatitude(), location.getLongitude())).zoom(17.0f).build();
+//            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+//            mMap.animateCamera(cameraUpdate);
+//        }
 
         // Update the speed on the card view on the screen
         float speed = updateSpeedTextView(location);
@@ -544,6 +566,16 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         polygon.setFillColor(ContextCompat.getColor(this, R.color.your_car_blue));
     }
 
+    private void styleEVParkingSpace(Polygon polygon) {
+        polygon.setStrokeWidth(3);
+        polygon.setFillColor(ContextCompat.getColor(this, R.color.ev_spot));
+    }
+
+    private void styleMeterParkingSpace(Polygon polygon) {
+        polygon.setStrokeWidth(3);
+        polygon.setFillColor(ContextCompat.getColor(this, R.color.meter_spot));
+    }
+
     private void styleParkingSubLot(Polygon polygon){
         polygon.setStrokeWidth(0);
         //polygon.setFillColor(ContextCompat.getColor(this, R.color.parking_space_purple));
@@ -588,12 +620,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     }
 
-    @Override
-    public void onCameraMoveStarted(int i) {
-        if(i == 1 && geoFenceStatus) {
-            follow = false;
-        }
-    }
+//    @Override
+//    public void onCameraMoveStarted(int i) {
+//        if(i == 1 && geoFenceStatus) {
+//            follow = false;
+//        }
+//    }
 }
 
 
