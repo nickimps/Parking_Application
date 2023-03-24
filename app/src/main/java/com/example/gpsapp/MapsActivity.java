@@ -83,6 +83,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private GeofenceHelper geofenceHelper;
     public static Button centerButton;
 
+    //To be used for EULA
+    public boolean acceptedTerms;
+
     //Create a flag to see if the camera should follow
     public static Boolean follow = false;
     private static final String TAG = "MapsActivity";
