@@ -87,7 +87,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginHorizontal="18dp"
                 android:layout_marginTop="10dp"
-                android:enabled="false"
+                android:enabled="true"
                 android:fontFamily="@font/dm_sans"
                 android:text="I Accept"
                 android:textColor="@color/LU_yellow"
@@ -101,7 +101,7 @@
                 android:layout_below="@id/agreeButton"
                 android:layout_centerHorizontal="true"
                 android:layout_marginHorizontal="18dp"
-                android:enabled="false"
+                android:enabled="true"
                 android:fontFamily="@font/dm_sans"
                 android:text="I Do Not Accept"
                 android:textSize="15sp" />

@@ -1,9 +1,20 @@
 package com.example.gpsapp;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class eulaActivity extends AppCompatActivity {
 
@@ -13,7 +24,6 @@ public class eulaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_eula);
 
         TextView textView = findViewById(R.id.eulaText);
-
         String eula = "END USER LICENSE AGREEMENT (EULA) FOR SMART PARKING APPLICATION\n" +
                 "\n" +
                 "PLEASE READ THIS END USER LICENSE AGREEMENT (\"EULA\") CAREFULLY BEFORE USING THE SMART PARKING APPLICATION.\n" +
@@ -48,12 +58,25 @@ public class eulaActivity extends AppCompatActivity {
                 "10. ENTIRE AGREEMENT\n" +
                 "This EULA constitutes the entire agreement between you and Company regarding the use of the Application and supersedes all prior agreements and understandings, whether written or oral, regarding the subject matter of this EULA.\n" +
                 "\n" +
-                "By using the Smart Parking Application, you acknowledge that you have read this EULA, understand it, and agree to be bound by its terms and conditions. If you do not agree to the terms and conditions of this EULA, do not use the Smart Parking Application. ";
+                "By using the Smart Parking Application, you acknowledge that you have read this EULA, understand it, and agree to be bound by its terms and conditions. If you do not agree to the terms and conditions of this EULA, do not use the Application.\n";
 
         textView.setText(eula);
 
+        Button acceptButton = findViewById(R.id.agreeButton);
+        acceptButton.setOnClickListener(view -> {
+            Intent intent = new Intent(eulaActivity.this, RegisterActivity.class);
+            startActivity((intent));
+        });
+
+        Button doNotAcceptButton = findViewById(R.id.doNotAgreeButton);
+        doNotAcceptButton.setOnClickListener(view -> {
+            Intent intent = new Intent(eulaActivity.this, LoginActivity.class);
+            startActivity((intent));
+        });
+
+    }
         //If click I Agree, then toast saying account created, go to login
         //If click I Do Not Agree, then toast saying account not created, go to login
         //Keep track of whether they have agreed before or not, shared preference is probably the way to go, or we can just do it when they register
-    }
+
 }
