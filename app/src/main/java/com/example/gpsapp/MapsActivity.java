@@ -52,21 +52,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback{ //, GoogleMap.OnCameraMoveStartedListener {
-
+public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
     private static final int RUNNABLE_TIME = 6000;
-    public static boolean geoFenceStatus;
+    private static final String TAG = "MapsActivity";
+    public static boolean geoFenceStatus, available_spot, isAdmin, follow = false;
     public static String movingStatus;
-    public static boolean available_spot;
     private GoogleMap mMap;
     private LocationManager mLocationManager;
     private TextView name, speedAdminTextView, movingStatusTextView;
     FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    static Boolean isAdmin;
-    private String username;
+    private String username, parkedBestOption;
     private final List<Polygon> parkingSpaces = new ArrayList<>();
     private final List<String> parkingSpacesDocIDs = new ArrayList<>();
     private GeofencingClient geofencingClient;
@@ -76,17 +74,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     //To be used for EULA
 //    public boolean acceptedTerms;
 
-    //Create a flag to see if the camera should follow
-    public static Boolean follow = false;
-    private static final String TAG = "MapsActivity";
-
-    //**** Timer/Runnable code
-    public String parkedBestOption;
     public static Handler parkedHandler = new Handler();
-    /*
-    This runnable will check if we are driving or walking after so many seconds after being parked.
-     */
-    Runnable parkedRunnable = new Runnable() {
+    Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
         @Override
         public void run() {
             // If the moving status is driving, then the user was leaving their parked spot, otherwise if they were
@@ -140,7 +129,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      * Restarts the runnable to continue to poll
      */
     private void restartRunnable() {
+        // Stop current runnable
         parkedHandler.removeCallbacks(parkedRunnable);
+
+        // Start a new runnable
         parkedHandler.postDelayed(parkedRunnable, RUNNABLE_TIME);
     }
 
@@ -189,7 +181,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            isAdmin = document.getBoolean("isAdmin");
+                            isAdmin = Boolean.TRUE.equals(document.getBoolean("isAdmin"));
                             name = findViewById(R.id.welcomeText);
                             String newName = "Welcome " + document.getString("name");
                             name.setText(newName);
@@ -221,42 +213,39 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         // Show the button if they have a parked car
         firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                if (!task.getResult().isEmpty()) {
+            if (task.isSuccessful())
+                if (!task.getResult().isEmpty())
                     findMyCarButton.setVisibility(View.VISIBLE);
-                }
-            }
         });
 
         // Set the onClick listener for the center button to zoom in the users parked car
         findMyCarButton.setOnClickListener(view -> firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
-                    LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x1")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x1")).getLongitude());
+                    LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x3")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x3")).getLongitude());
                     CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(18.5f).build();
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
                     mMap.animateCamera(cameraUpdate);
-//                        follow = true;
                 }
             }
         }));
     }
 
     /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
+     * This function is called when the map is ready, loads in polygons and changes things accordingly
      */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-//        mMap.setOnCameraMoveStartedListener(this);
-        // Disable the current location button
-//        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+
+        // Set a listener for the maps current location button
+        mMap.setOnMyLocationButtonClickListener(() -> {
+            follow = true;
+            return false; // Need this here don't remove or change this line
+        });
+
+        // Disable follow if the map is moved
+        mMap.setOnCameraMoveStartedListener(reason -> follow = true);
 
         // Relocate the center location button on the mapview
         mMap.setPadding(0, 255, 15, 0);
@@ -282,26 +271,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Style it as a parking sub lot
         styleParkingSubLot(r9);
 
-//        // Create sub lot R9
-//        Polygon r10 = googleMap.addPolygon(new PolygonOptions()  // could possibly store this in the DB too I think but we need to figure out how to check for different number of vertices
-//                .clickable(true)
-//                .add(
-//                        new LatLng(48.42177096009731, -89.25813853884138),
-//                        new LatLng(48.42152531583647, -89.25747603324294),
-//                        new LatLng(48.420697592740154, -89.2582163228995),
-//                        new LatLng(48.42093434072241, -89.25888687512463)
-//                ));
-//        // Set the tag for clicking
-//        r10.setTag("R10");
-//        // Style it as a parking sub lot
-//        styleParkingSubLot(r10);
-
         // Make it clickable to zoom in on the chosen sub lot
         mMap.setOnPolygonClickListener(polygon -> {
             if ("R9".equals(polygon.getTag()))
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(48.42232555839978, -89.25824351676498), 19));
-            else if ("R10".equals(polygon.getTag()))
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(48.42126780490169, -89.25815691384268), 19));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(48.42232555839978, -89.25824351676498), 18.5f));
         });
 
         // Get the parking spaces from the database and dynamically load them in
@@ -380,7 +353,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         // move the camera to default position
         LatLng Lot = new LatLng(48.42101, -89.25828);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17));       // Need to figure out a way to not reset this everytime we enter the map I feel
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17.5f));       // Need to figure out a way to not reset this everytime we enter the map I feel
 
         //Insert a geofence at time of map creation centered around the parking lot with a radius of 500
         float GEOFENCE_RADIUS = 500;
@@ -396,18 +369,30 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      */
     private float updateSpeedTextView(Location location) {
         float speed;
+
+        // If there is speed, get it
         if (location.hasSpeed()) {
             speed = location.getSpeed();
         } else {
             speed = 0.0f;
         }
 
-        String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
-        speedAdminTextView.setText(speedString);
+        // Only need to do this if we are admin
+        if (isAdmin) {
+            // Change the speed label on the screen
+            String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
+            speedAdminTextView.setText(speedString);
+        }
 
+        // Return the speed
         return speed;
     }
 
+    /**
+     * Gets the center of a polygon
+     * @param polygon The polygon to get the center of
+     * @return the center LatLng of the polygon
+     */
     public Location getPolygonCenter(Polygon polygon) {
         // Get the points of this polygon
         List<LatLng> points = polygon.getPoints();
@@ -430,12 +415,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
 
     /**
-     * This function runs whenever the user has stopped moving. It is supposed to check if we have
-     * stopped inside or outside of a parking spot.
-     * It starts by looking at which parking spaces we may be inside of and adds those to a list of
-     * possible candidates. It then looks at the distance to the center of those possible parking
-     * spaces and choose the closest EMPTY parking space. Once it has chosen a parking space, it will
-     * change the colour of the parking space to make the 'Your Car' colour scheme.
+     * This function runs whenever the user has stopped moving. It is supposed to check if we have stopped inside or outside of a parking spot.
+     * It starts by looking at which parking spaces we may be inside of and adds those to a list of possible candidates. It then looks at the
+     * distance to the center of those possible parking spaces and choose the closest EMPTY parking space. Once it has chosen a parking space,
+     * it will change the colour of the parking space to make the 'Your Car' colour scheme.
      *
      * @param location The location parameter
      * @return stoppedStatus, will be either 'Stopped' or 'Parked'
@@ -482,13 +465,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 if (stoppedStatus.equals("Parked")) {
                     String bestOption = "";
                     double lowestDistance = 10000;
-                    available_spot = true;
 
                     // Go through the hashmap and check if the lowest spot is empty
                     for(Map.Entry<Polygon, Double> possibleSpace : possibleParkedSpaces.entrySet()) {
                         // Get the parking space id and distance for comparisons
                         String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
                         double polyDistance = possibleSpace.getValue();
+
+                        available_spot = true;
 
                         // Query the database to see if a user is parked in this spot
                         firestore.collection("ParkingSpaces")
@@ -517,9 +501,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         parkedBestOption = bestOption;
                         parkedHandler.removeCallbacks(parkedRunnable);
                         parkedHandler.postDelayed(parkedRunnable, RUNNABLE_TIME);
-                    } else {
+                    } else
                         stoppedStatus = "Stopped";
-                    }
                 }
             }
         }
@@ -528,28 +511,25 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     }
 
     /**
-     * When the user moves, this function is called. It checks the speed, if we have determined the
-     * user as being stopped, we call the checkStop() function. Otherwise, we determine if the user
-     * is walking or driving and display that label and the speed accordingly.
+     * When the user moves, this function is called. It checks the speed, if we have determined the user as being stopped, we call the
+     * checkStop() function. Otherwise, we determine if the user is walking or driving and display that label and the speed accordingly.
      *
      * @param location The location parameter
      */
     @Override
     public void onLocationChanged(Location location) {
-        // Update camera position every time user location changes
-        // Create an object to capture the position of the camera based on Lat and Long
-        // then update the camera position
-//        if (geoFenceStatus && follow) {
-//            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location
-//                    .getLatitude(), location.getLongitude())).zoom(17.0f).build();
-//            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-//            mMap.animateCamera(cameraUpdate);
-//        }
+        // Have the camera follow the user
+        if (follow) {
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(mMap.getCameraPosition().zoom).build();
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+            mMap.animateCamera(cameraUpdate);
+        }
 
         // Update the speed on the card view on the screen
         float speed = updateSpeedTextView(location);
         movingStatus = "Stopped";
 
+        // Get the label based on the speed
         if (speed <= 0.05) {
             movingStatus = checkStop(location);
         } else if (speed > 0.05 && speed <= 2) {
@@ -558,7 +538,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             movingStatus = "Driving";
         }
 
-        movingStatusTextView.setText(movingStatus);
+        // If we are admin, adjust the banner
+        if (isAdmin)
+            movingStatusTextView.setText(movingStatus);
     }
 
     @Override
@@ -623,7 +605,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
-
     /**
      * Adds the geofence to the map so we can do some tracking in that instance
      *
@@ -650,15 +631,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         Log.d(TAG, "onFailure: " + errorMessage);
                     });
         }
-
     }
-
-//    @Override
-//    public void onCameraMoveStarted(int i) {
-//        if(i == 1 && geoFenceStatus) {
-//            follow = false;
-//        }
-//    }
 }
 
 
