@@ -1,7 +1,6 @@
 package com.example.gpsapp;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -14,15 +13,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -47,11 +42,8 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +57,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    private static final int RUNNABLE_TIME = 3500;
+    private static final int RUNNABLE_TIME = 6000;
     public static boolean geoFenceStatus;
     public static String movingStatus;
     public static boolean available_spot;
@@ -73,57 +65,90 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private LocationManager mLocationManager;
     private TextView name, speedAdminTextView, movingStatusTextView;
     FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    Boolean isAdmin;
+    static Boolean isAdmin;
     private String username;
     private final List<Polygon> parkingSpaces = new ArrayList<>();
     private final List<String> parkingSpacesDocIDs = new ArrayList<>();
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
-    public static Button findMyCarButton;
+    public Button findMyCarButton;
 
     //To be used for EULA
-    public boolean acceptedTerms;
+//    public boolean acceptedTerms;
 
     //Create a flag to see if the camera should follow
     public static Boolean follow = false;
     private static final String TAG = "MapsActivity";
 
-    // parkedHandler, parkedRunnable, parkedBestOption are all used in checkStop to set a timer
-    // to determine if the user has entered a parking space or left one
+    //**** Timer/Runnable code
     public String parkedBestOption;
     public static Handler parkedHandler = new Handler();
+    /*
+    This runnable will check if we are driving or walking after so many seconds after being parked.
+     */
     Runnable parkedRunnable = new Runnable() {
         @Override
         public void run() {
-            Toast.makeText(getApplicationContext(), "Runnable Timer Executed", Toast.LENGTH_SHORT).show();
-
             // If the moving status is driving, then the user was leaving their parked spot, otherwise if they were
             // were walking, we can assume that they parked in their spot.
             if (movingStatus.equals("Driving")) {
+                if (Boolean.TRUE.equals(isAdmin))
+                    Toast.makeText(getApplicationContext(), "Clearing Parking Space", Toast.LENGTH_SHORT).show();
+
                 // Set the parking space to empty
                 firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", "");
+
+                // Hide the find my car button
+                findMyCarButton.setVisibility(View.INVISIBLE);
 
                 // parking space ID and its polygon
                 String id = parkingSpacesDocIDs.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
                 Polygon parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
 
-                if (id.startsWith("EV"))
+                // Restore the style depending on what type of parking space it is
+                if (id.startsWith("EV")) {
                     styleEVParkingSpace(parking_space);
-                else if (id.startsWith("METER"))
+                } else if (id.startsWith("METER")) {
                     styleMeterParkingSpace(parking_space);
-                else
+                } else {
                     styleParkingEmptySpace(parking_space);
-
+                }
             } else if (movingStatus.equals("Walking")) {
+                if (Boolean.TRUE.equals(isAdmin))
+                    Toast.makeText(getApplicationContext(), "Filling Parking Space", Toast.LENGTH_SHORT).show();
+
                 // Set the firebase to be occupied by current user
                 firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", username);
 
-                // Get index of the parking space and then change the colour of that polygon
-                styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption)));
+                // Check to see if we already have a parked car, we do not want to parked cars right
+                if (findMyCarButton.getVisibility() != View.VISIBLE) {
+                    // Get index of the parking space and then change the colour of that polygon
+                    styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption)));
+                    findMyCarButton.setVisibility(View.VISIBLE);
+                }
+            } else {
+                if (Boolean.TRUE.equals(isAdmin))
+                    Toast.makeText(getApplicationContext(), "Runnable Restarting", Toast.LENGTH_SHORT).show();
+
+                // If we are still stopped, we want to restart this and keep polling
+                restartRunnable();
             }
         }
     };
 
+    /**
+     * Restarts the runnable to continue to poll
+     */
+    private void restartRunnable() {
+        parkedHandler.removeCallbacks(parkedRunnable);
+        parkedHandler.postDelayed(parkedRunnable, RUNNABLE_TIME);
+    }
+
+    /**
+     * Called on activity creation, many things initialize and happen here.
+     *
+     * @param savedInstanceState The instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -197,26 +222,24 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Show the button if they have a parked car
         firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
+                if (!task.getResult().isEmpty()) {
                     findMyCarButton.setVisibility(View.VISIBLE);
                 }
             }
         });
 
         // Set the onClick listener for the center button to zoom in the users parked car
-        findMyCarButton.setOnClickListener(view -> {
-            firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x1")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x1")).getLongitude());
-                        CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(18.5f).build();
-                        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-                        mMap.animateCamera(cameraUpdate);
+        findMyCarButton.setOnClickListener(view -> firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x1")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x1")).getLongitude());
+                    CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(18.5f).build();
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+                    mMap.animateCamera(cameraUpdate);
 //                        follow = true;
-                    }
                 }
-            });
-        });
+            }
+        }));
     }
 
     /**
@@ -320,40 +343,37 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         // Create a listener to respond to database updates in real time
         firestore.collection("ParkingSpaces")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot snapshots, @Nullable FirebaseFirestoreException error) {
-                        if (error != null) {
-                            Log.w(TAG, "Listen failed.", error);
-                            return;
-                        }
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        Log.w(TAG, "Listen failed.", error);
+                        return;
+                    }
 
-                        // Get which documents have been updated
-                        assert snapshots != null;
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            if (dc.getType() == DocumentChange.Type.MODIFIED) {
-                                // Get the index of the polygon that we are wanting to change the style of
-                                int parkingSpacePolygonIndex = parkingSpacesDocIDs.indexOf(dc.getDocument().getId());
-                                // Get the new value from the user field that has been updated
-                                String newUser = Objects.requireNonNull(dc.getDocument().get("user")).toString();
+                    // Get which documents have been updated
+                    assert snapshots != null;
+                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                        if (dc.getType() == DocumentChange.Type.MODIFIED) {
+                            // Get the index of the polygon that we are wanting to change the style of
+                            int parkingSpacePolygonIndex = parkingSpacesDocIDs.indexOf(dc.getDocument().getId());
+                            // Get the new value from the user field that has been updated
+                            String newUser = Objects.requireNonNull(dc.getDocument().get("user")).toString();
 
-                                // Check if the new user is empty, current user, or someone else and style appropriately
-                                // Also, show or hide the find my car button
-                                if (newUser.equals("")) {
-                                    if (dc.getDocument().getId().startsWith("EV"))
-                                        styleEVParkingSpace(parkingSpaces.get(parkingSpacePolygonIndex));
-                                    else if (dc.getDocument().getId().startsWith("METER"))
-                                        styleMeterParkingSpace(parkingSpaces.get(parkingSpacePolygonIndex));
-                                    else
-                                        styleParkingEmptySpace(parkingSpaces.get(parkingSpacePolygonIndex));
-                                    findMyCarButton.setVisibility(View.INVISIBLE);
-                                } else if (newUser.equals(username)) {
-                                    styleParkingYourSpace(parkingSpaces.get(parkingSpacePolygonIndex));
-                                    findMyCarButton.setVisibility(View.VISIBLE);
-                                } else
-                                    styleParkingFilledSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                            // Check if the new user is empty, current user, or someone else and style appropriately
+                            // Also, show or hide the find my car button
+                            if (newUser.equals("")) {
+                                if (dc.getDocument().getId().startsWith("EV"))
+                                    styleEVParkingSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                else if (dc.getDocument().getId().startsWith("METER"))
+                                    styleMeterParkingSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                else
+                                    styleParkingEmptySpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                findMyCarButton.setVisibility(View.INVISIBLE);
+                            } else if (newUser.equals(username)) {
+                                styleParkingYourSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                findMyCarButton.setVisibility(View.VISIBLE);
+                            } else
+                                styleParkingFilledSpace(parkingSpaces.get(parkingSpacePolygonIndex));
 
-                            }
                         }
                     }
                 });
@@ -387,6 +407,27 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         return speed;
     }
+
+    public Location getPolygonCenter(Polygon polygon) {
+        // Get the points of this polygon
+        List<LatLng> points = polygon.getPoints();
+        double latSum = 0, lngSum = 0;
+        for (LatLng point : points) {
+            latSum += point.latitude;
+            lngSum += point.longitude;
+        }
+
+        // Compute the center of the polygon
+        LatLng centerPoint = new LatLng(latSum / points.size(), lngSum / points.size());
+
+        // Turn the center point into a location for measuring
+        Location centerOfPolygon = new Location("");
+        centerOfPolygon.setLatitude(centerPoint.latitude);
+        centerOfPolygon.setLongitude(centerPoint.longitude);
+
+        return centerOfPolygon;
+    }
+
 
     /**
      * This function runs whenever the user has stopped moving. It is supposed to check if we have
@@ -426,24 +467,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                     // Check if the user's location is inside the bounds of the polygon
                     if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
-                        // Get the points of this polygon
-                        List<LatLng> points = polygon.getPoints();
-                        double latSum = 0, lngSum = 0;
-                        for (LatLng point : points) {
-                            latSum += point.latitude;
-                            lngSum += point.longitude;
-                        }
-
-                        // Compute the center of the polygon
-                        LatLng centerPoint = new LatLng(latSum / points.size(), lngSum / points.size());
-
-                        // Turn the center point into a location for measuring
-                        Location centerOfPolygon = new Location("");
-                        centerOfPolygon.setLatitude(centerPoint.latitude);
-                        centerOfPolygon.setLongitude(centerPoint.longitude);
-
                         // Get the new distance
-                        double distance = currentLocation.distanceTo(centerOfPolygon);
+                        double distance = currentLocation.distanceTo(getPolygonCenter(polygon));
 
                         // Save the parking spaces and their distance to the users current location.
                         possibleParkedSpaces.put(polygon, distance);
@@ -485,7 +510,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                     // If we have a best option, then start the runnable to tell if we have parked or not
                     if (!bestOption.equals("")) {
-                        Toast.makeText(getApplicationContext(), "Runnable Timer Started", Toast.LENGTH_SHORT).show();
+                        if (Boolean.TRUE.equals(isAdmin))
+                            Toast.makeText(getApplicationContext(), "Check Stop Runnable Starting", Toast.LENGTH_SHORT).show();
 
                         // Get best parked option and run the runnable to check if we need to style a new parking space
                         parkedBestOption = bestOption;
@@ -597,6 +623,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
+
+    /**
+     * Adds the geofence to the map so we can do some tracking in that instance
+     *
+     * @param latLng the location of the geofence
+     * @param radius the radius of the geofence
+     */
     private void addGeofence(LatLng latLng, float radius) {
         //trigger geofence when entering dwelling or exiting (maybe change)
         //each geofence has a unique id

@@ -1,10 +1,8 @@
 package com.example.gpsapp;
 
 import android.Manifest;
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -34,11 +32,24 @@ public class AdminLocationService extends Service implements LocationListener {
     LocationManager mLocationManager;
     private static final int NOTIFICATION_ID = 6;
     private static final String CHANNEL_ID = "my_channel";
+
+    /**
+     * Called when the service is created, default
+     */
     @Override
     public void onCreate() {
         super.onCreate();
     }
 
+    /**
+     * When the service is called, we check if we are trying to start or stop the foreground service. If we are starting
+     * then we should create the notification and notification channel so that we can track and then start the service itself.
+     *
+     * @param intent Current intent
+     * @param flags any flags
+     * @param startId the id of the service
+     * @return some value
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
@@ -71,12 +82,9 @@ public class AdminLocationService extends Service implements LocationListener {
         return START_STICKY;
     }
 
-//    private void startForegroundService() {
-//        Toast.makeText(this, "Tracking Started", Toast.LENGTH_SHORT).show();
-//
-//        startForeground(6, notification);
-//    }
-
+    /**
+     * This stopped the foreground service and lets the user know that is has stopped
+     */
     private void stopForegroundService() {
         Toast.makeText(this, "Tracking Stopped", Toast.LENGTH_SHORT).show();
 
@@ -87,12 +95,21 @@ public class AdminLocationService extends Service implements LocationListener {
         stopForeground(true);
     }
 
+    /**
+     * We disregard this, here because we need it
+     *
+     * @param intent The intent
+     * @return null
+     */
     @Override
     public IBinder onBind(Intent intent) {
         // We don't provide binding, so return null
         return null;
     }
 
+    /**
+     * Called when the service is stopped.
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -112,6 +129,11 @@ public class AdminLocationService extends Service implements LocationListener {
             return 0.0f;
     }
 
+    /**
+     * Called when the location changes, this just gathers the moving status to append to the data
+     *
+     * @param location the current location of user
+     */
     @Override
     public void onLocationChanged(@NonNull Location location) {
         float speed = updateSpeedTextView(location);
@@ -156,6 +178,9 @@ public class AdminLocationService extends Service implements LocationListener {
         }
     }
 
+    /**
+     * Creates the notification to show the user that we are tracking their location in the background
+     */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
