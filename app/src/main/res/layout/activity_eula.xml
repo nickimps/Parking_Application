@@ -62,14 +62,18 @@
             <ScrollView
                 android:id="@+id/eulaScroll"
                 android:layout_width="match_parent"
-                android:layout_height="480sp"
-                android:layout_below="@id/warningText">
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:layout_below="@id/warningText"
+                android:layout_above="@id/agreeButton"
+                >
 
                 <TextView
                     android:id="@+id/eulaText"
                     android:layout_below="@id/warningText"
+                    android:layout_above="@id/agreeButton"
                     android:layout_width="match_parent"
-                    android:layout_height="480sp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="50dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginVertical="10dp"
@@ -77,6 +81,7 @@
                     android:scrollbars="vertical"
                     android:text="Placeholder"
                     android:textSize="12dp"
+
                     />
             </ScrollView>
 
@@ -84,7 +89,7 @@
                 android:id="@+id/agreeButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/eulaScroll"
+                android:layout_above="@id/doNotAgreeButton"
                 android:layout_centerHorizontal="true"
                 android:layout_marginHorizontal="18dp"
                 android:layout_marginTop="10dp"
@@ -99,10 +104,10 @@
                 android:id="@+id/doNotAgreeButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/agreeButton"
                 android:layout_centerHorizontal="true"
                 android:layout_marginHorizontal="18dp"
                 android:enabled="true"
+                android:layout_alignParentBottom="true"
                 android:fontFamily="@font/dm_sans"
                 android:text="I Do Not Accept"
                 android:textSize="15sp" />
