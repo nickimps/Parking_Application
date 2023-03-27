@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:visibility="visible"
     tools:context=".RegisterActivity"
+    android:screenOrientation="portrait"
     tools:visibility="visible">
 
     <ImageView
