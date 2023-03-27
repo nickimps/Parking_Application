@@ -22,8 +22,12 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         // Add if to see what kinda of event actually happened
         // to location permissions from precise to approximate.
 
+        System.out.println("1");
+
         //Grab the event that occurred
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
+
+        System.out.println("2");
 
         //If there is an error, throw an error code and message
         assert geofencingEvent != null;
@@ -34,14 +38,25 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
+        System.out.println("3");
+
         // Get the transition type.
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
+
+        System.out.println("4");
 
         // Test that the reported transition was of interest.
         //If they enter the geofence
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             if (MapsActivity.isAdmin)
                 Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
+
+            System.out.println("Start geofence");
+
+//            // Start foreground tracking
+//            Intent serviceIntent = new Intent(context, MapsLocationService.class);
+//            serviceIntent.setAction(MapsLocationService.ACTION_START_FOREGROUND_SERVICE);
+//            MapsActivity.this_context.startService(serviceIntent);
 
             //Enable the geofence status
             MapsActivity.geoFenceStatus = true;
@@ -54,6 +69,14 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
             if (MapsActivity.isAdmin)
                 Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
+
+            System.out.println("Leaving geofence");
+
+
+//            // Stop foreground tracking
+//            Intent serviceIntent = new Intent(context, MapsLocationService.class);
+//            serviceIntent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
+//            MapsActivity.this_context.startService(serviceIntent);
 
             //Disable the geofence status
             MapsActivity.geoFenceStatus = false;

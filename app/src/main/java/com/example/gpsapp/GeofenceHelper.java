@@ -27,6 +27,7 @@ public class GeofenceHelper extends ContextWrapper {
     }
     //Create a new geofence given the specified parameters
     public GeofencingRequest getGeofencingRequest(Geofence geofence){
+        System.out.println("Trigger Geofencing Request");
         return new GeofencingRequest.Builder()
                 .addGeofence(geofence)
                 //Set the initial trigger to enter
@@ -35,6 +36,9 @@ public class GeofenceHelper extends ContextWrapper {
     }
 
     public Geofence getGeofence(String ID, LatLng latLng, float radius, int transitionTypes){
+
+        System.out.println("Get Geofencing Request");
+
         //Transition types: enter, dwell and exit
         return new Geofence.Builder()
                 .setCircularRegion(latLng.latitude, latLng.longitude, radius)
@@ -52,8 +56,10 @@ public class GeofenceHelper extends ContextWrapper {
             return pendingIntent;
         }
 
+        System.out.println("10");
         Intent intent = new Intent(this, GeofenceBroadcastReceiver.class);
 
+        System.out.println("11");
         //Check the build version of android, if greater than android 12, then a mutable flag is needed when a pending
         //intent is needed
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S){
@@ -63,6 +69,7 @@ public class GeofenceHelper extends ContextWrapper {
             pendingIntent = PendingIntent.getBroadcast(this,0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
 
+        System.out.println("12");
         return pendingIntent;
     }
 

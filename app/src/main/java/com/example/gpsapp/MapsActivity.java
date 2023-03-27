@@ -2,12 +2,16 @@ package com.example.gpsapp;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -42,10 +47,8 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,26 +61,28 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    private static final int RUNNABLE_TIME = 6000;
+    public static final int RUNNABLE_TIME = 6000;
     private static final String TAG = "MapsActivity";
+    private static final String CHANNEL_ID = "my_channel";
     public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false;
     public static String movingStatus;
-    private GoogleMap mMap;
-    private LocationManager mLocationManager;
+    public static GoogleMap mMap;
+    public static LocationManager mLocationManager;
     private TextView name, speedAdminTextView, movingStatusTextView;
-    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    private String username, parkedBestOption, parkedUser;
-    private final List<Polygon> parkingSpaces = new ArrayList<>();
-    private final List<String> parkingSpacesDocIDs = new ArrayList<>();
+    public static FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    public static String username, parkedBestOption, parkedUser;
+    public static final List<Polygon> parkingSpaces = new ArrayList<>();
+    public static final List<String> parkingSpacesDocIDs = new ArrayList<>();
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
-    public Button findMyCarButton;
+    public static Button findMyCarButton;
+    public static Context this_context;
 
     //To be used for EULA
 //    public boolean acceptedTerms;
 
     public static Handler parkedHandler = new Handler();
-    Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
+    public static Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
         @Override
         public void run() {
             // If the moving status is driving, then the user was leaving their parked spot, otherwise if they were
@@ -90,13 +95,35 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         parkedUser = Objects.requireNonNull(task.getResult().getDocuments().get(1).get("user")).toString();
                 });
 
-                if (Boolean.TRUE.equals(isAdmin))
-                    Toast.makeText(getApplicationContext(), "Parked user: " + parkedUser, Toast.LENGTH_SHORT).show();
+                if (Boolean.TRUE.equals(isAdmin)) {
+                    Toast.makeText(this_context, "Parked user: " + parkedUser, Toast.LENGTH_SHORT).show();
+
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_launcher_foreground)
+                            .setContentTitle("Parking Spotter")
+                            .setContentText("Parked User:" + parkedUser)
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+                    int notificationId = 14;
+                    notificationManager.notify(notificationId, builder.build());
+                }
 
                 // Check to make sure it is this users parking spot we are removing
                 if (parkedUser.equals(username)) {
-                    if (Boolean.TRUE.equals(isAdmin))
-                        Toast.makeText(getApplicationContext(), "Clearing Parking Space", Toast.LENGTH_SHORT).show();
+                    if (Boolean.TRUE.equals(isAdmin)) {
+                        Toast.makeText(this_context, "Clearing Parking Space", Toast.LENGTH_SHORT).show();
+
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                                .setContentTitle("Parking Spotter")
+                                .setContentText("Clearing Parking Space")
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+                        int notificationId = 13;
+                        notificationManager.notify(notificationId, builder.build());
+                    }
 
                     // Set the parking space to empty
                     firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", "");
@@ -118,8 +145,19 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     }
                 }
             } else if (movingStatus.equals("Walking")) {
-                if (Boolean.TRUE.equals(isAdmin))
-                    Toast.makeText(getApplicationContext(), "Filling Parking Space", Toast.LENGTH_SHORT).show();
+                if (Boolean.TRUE.equals(isAdmin)) {
+                    Toast.makeText(this_context, "Filling Parking Space", Toast.LENGTH_SHORT).show();
+
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_launcher_foreground)
+                            .setContentTitle("Parking Spotter")
+                            .setContentText("Clearing Parking Space")
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+                    int notificationId = 12;
+                    notificationManager.notify(notificationId, builder.build());
+                }
 
                 // Set the firebase to be occupied by current user
                 firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", username);
@@ -131,8 +169,19 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     findMyCarButton.setVisibility(View.VISIBLE);
                 }
             } else {
-                if (Boolean.TRUE.equals(isAdmin))
-                    Toast.makeText(getApplicationContext(), "Runnable Restarting", Toast.LENGTH_SHORT).show();
+                if (Boolean.TRUE.equals(isAdmin)) {
+                    Toast.makeText(this_context, "Runnable Restarting", Toast.LENGTH_SHORT).show();
+
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_launcher_foreground)
+                            .setContentTitle("Parking Spotter")
+                            .setContentText("Runnable Restarting")
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+                    int notificationId = 11;
+                    notificationManager.notify(notificationId, builder.build());
+                }
 
                 // If we are still stopped, we want to restart this and keep polling
                 restartRunnable();
@@ -143,7 +192,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     /**
      * Restarts the runnable to continue to poll
      */
-    private void restartRunnable() {
+    private static void restartRunnable() {
         // Stop current runnable
         parkedHandler.removeCallbacks(parkedRunnable);
 
@@ -162,6 +211,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        System.out.println("beforenotificaiton channel");
+        createNotificationChannel();
+
+        System.out.println("afternoptification channel");
+
+        this_context = getApplicationContext();
 
         // Get a reference to the location manager
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -371,9 +427,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         LatLng Lot = new LatLng(48.42101, -89.25828);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17.5f));       // Need to figure out a way to not reset this everytime we enter the map I feel
 
+        System.out.println("addinggeofence");
         //Insert a geofence at time of map creation centered around the parking lot with a radius of 500
         float GEOFENCE_RADIUS = 500;
         addGeofence(Lot, GEOFENCE_RADIUS);
+
+        System.out.println("after addGeoFence Function");
     }
 
     /**
@@ -409,7 +468,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      * @param polygon The polygon to get the center of
      * @return the center LatLng of the polygon
      */
-    public Location getPolygonCenter(Polygon polygon) {
+    public static Location getPolygonCenter(Polygon polygon) {
         // Get the points of this polygon
         List<LatLng> points = polygon.getPoints();
         double latSum = 0, lngSum = 0;
@@ -484,7 +543,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     my_spot = false;
 
                     // Go through the hashmap and check if the lowest spot is empty
-                    for(Map.Entry<Polygon, Double> possibleSpace : possibleParkedSpaces.entrySet()) {
+                    for (Map.Entry<Polygon, Double> possibleSpace : possibleParkedSpaces.entrySet()) {
                         // Get the parking space id and distance for comparisons
                         String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
                         double polyDistance = possibleSpace.getValue();
@@ -497,7 +556,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                                 .get()
                                 .addOnCompleteListener(task -> {
                                     if (task.isSuccessful()) {
-                                        if(!Objects.equals(task.getResult().getString("user"), ""))
+                                        if (!Objects.equals(task.getResult().getString("user"), ""))
                                             available_spot = false;
                                         else if (Objects.equals(task.getResult().getString("user"), username))
                                             my_spot = true;
@@ -543,7 +602,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public void onLocationChanged(Location location) {
         // Have the camera follow the user if the follow boolean is set to true
         if (follow) {
-            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(mMap.getCameraPosition().zoom).build();
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(18).build();
             CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
             mMap.animateCamera(cameraUpdate);
         }
@@ -582,29 +641,29 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     }
 
 
-    private void styleParkingEmptySpace(Polygon polygon) {
+    private static void styleParkingEmptySpace(Polygon polygon) {
         polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this, R.color.green));
+        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.green));
     }
 
     private void styleParkingFilledSpace(Polygon polygon) {
         polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this, R.color.red));
+        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.red));
     }
 
-    private void styleParkingYourSpace(Polygon polygon) {
+    private static void styleParkingYourSpace(Polygon polygon) {
         polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this, R.color.your_car_blue));
+        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.your_car_blue));
     }
 
-    private void styleEVParkingSpace(Polygon polygon) {
+    private static void styleEVParkingSpace(Polygon polygon) {
         polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this, R.color.ev_spot));
+        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.ev_spot));
     }
 
-    private void styleMeterParkingSpace(Polygon polygon) {
+    private static void styleMeterParkingSpace(Polygon polygon) {
         polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this, R.color.meter_spot));
+        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.meter_spot));
     }
 
     private void styleParkingSubLot(Polygon polygon){
@@ -643,18 +702,37 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
+        System.out.println("added geofence");
 
         //If permissions are not given, request for access to location
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         } else {
-            //Add geofence if permissions are accepted, add listeners to see if succesfully created
+            //Add geofence if permissions are accepted, add listeners to see if successfully created
             geofencingClient.addGeofences(geofencingRequest, pendingIntent)
                     .addOnSuccessListener(unused -> Log.d(TAG, "onSuccess: Geofence Added..."))
                     .addOnFailureListener(e -> {
                         String errorMessage = geofenceHelper.getErrorString(e);
                         Log.d(TAG, "onFailure: " + errorMessage);
                     });
+        }
+
+        System.out.println("after geofence if");
+    }
+
+    /**
+     * Creates the notification to show the user that we are tracking their location in the background
+     */
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Foreground Service Channel",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            serviceChannel.setShowBadge(false);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
         }
     }
 }
