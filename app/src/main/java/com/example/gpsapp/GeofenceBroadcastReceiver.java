@@ -43,6 +43,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             if (MapsActivity.isAdmin)
                 Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
 
+            //Enable the geofence status
             MapsActivity.geoFenceStatus = true;
             //Enable recenter button when inside the geofence
             //MapsActivity.centerButton.setVisibility(View.VISIBLE);
@@ -54,6 +55,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             if (MapsActivity.isAdmin)
                 Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
 
+            //Disable the geofence status
             MapsActivity.geoFenceStatus = false;
             //Disable recenter button when outside the geofence
             //MapsActivity.centerButton.setVisibility(View.INVISIBLE);

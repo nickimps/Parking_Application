@@ -25,22 +25,22 @@ public class GeofenceHelper extends ContextWrapper {
     public GeofenceHelper(Context base) {
         super(base);
     }
-
+    //Create a new geofence given the specified parameters
     public GeofencingRequest getGeofencingRequest(Geofence geofence){
         return new GeofencingRequest.Builder()
                 .addGeofence(geofence)
-                //maybe set to dwell cuz it triggers when entered because idk if it will trigger if ur inside when opening app
+                //Set the initial trigger to enter
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                 .build();
     }
 
     public Geofence getGeofence(String ID, LatLng latLng, float radius, int transitionTypes){
-        //transition types: enter, dwell and exit
+        //Transition types: enter, dwell and exit
         return new Geofence.Builder()
                 .setCircularRegion(latLng.latitude, latLng.longitude, radius)
-                .setRequestId(ID) //each geofence has unique id
+                .setRequestId(ID) //each geofence has a unique id
                 .setTransitionTypes(transitionTypes)
-                .setLoiteringDelay(10) //set 0 so no delay when entering
+                .setLoiteringDelay(0) //set 0 so no delay when entering
                 .setExpirationDuration(Geofence.NEVER_EXPIRE) //dont want it to expire
                 .build();
     }
@@ -54,6 +54,8 @@ public class GeofenceHelper extends ContextWrapper {
 
         Intent intent = new Intent(this, GeofenceBroadcastReceiver.class);
 
+        //Check the build version of android, if greater than android 12, then a mutable flag is needed when a pending
+        //intent is needed
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S){
             pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE);
         }

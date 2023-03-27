@@ -23,6 +23,7 @@ public class eulaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_eula);
 
+        //Set field equal to the user terms text
         TextView textView = findViewById(R.id.eulaText);
         String eula = "END USER LICENSE AGREEMENT (EULA) FOR SMART PARKING APPLICATION\n" +
                 "\n" +
@@ -59,9 +60,9 @@ public class eulaActivity extends AppCompatActivity {
                 "This EULA constitutes the entire agreement between you and Company regarding the use of the Application and supersedes all prior agreements and understandings, whether written or oral, regarding the subject matter of this EULA.\n" +
                 "\n" +
                 "By using the Smart Parking Application, you acknowledge that you have read this EULA, understand it, and agree to be bound by its terms and conditions. If you do not agree to the terms and conditions of this EULA, do not use the Application.\n";
-
         textView.setText(eula);
 
+        //If the user accepts terms and conditions, navigate them to the registration screen and display popup
         Button acceptButton = findViewById(R.id.agreeButton);
         acceptButton.setOnClickListener(view -> {
             Intent intent = new Intent(eulaActivity.this, RegisterActivity.class);
@@ -69,6 +70,7 @@ public class eulaActivity extends AppCompatActivity {
             startActivity((intent));
         });
 
+        //If the user does not accept terms and conditions, navigate them back to login screen and display popup
         Button doNotAcceptButton = findViewById(R.id.doNotAgreeButton);
         doNotAcceptButton.setOnClickListener(view -> {
             Intent intent = new Intent(eulaActivity.this, LoginActivity.class);
@@ -77,6 +79,8 @@ public class eulaActivity extends AppCompatActivity {
         });
 
     }
+    //The user will not be able to access our application without first agreeing to the terms and conditions, this is due to
+    //copyright and proprietary rights.
         //If click I Agree, then toast saying account created, go to login
         //If click I Do Not Agree, then toast saying account not created, go to login
         //Keep track of whether they have agreed before or not, shared preference is probably the way to go, or we can just do it when they register

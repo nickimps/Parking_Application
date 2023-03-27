@@ -204,6 +204,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
+        //Create a listener to navigate to the settings screen when clicked
         Button settingsButton = findViewById(R.id.settingsButton);
         settingsButton.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
 
@@ -518,7 +519,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      */
     @Override
     public void onLocationChanged(Location location) {
-        // Have the camera follow the user
+        // Have the camera follow the user if the follow boolean is set to true
         if (follow) {
             CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(mMap.getCameraPosition().zoom).build();
             CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
@@ -595,6 +596,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
      */
     @SuppressLint("SetTextI18n")
     private void getGPSData() {
+        //Request permissions if they have not already been accepted
         if (ActivityCompat.checkSelfPermission(MapsActivity.this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
@@ -620,10 +622,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
 
-        // PRETTY SURE THIS CODE BELOW IS USELESS, IT WORKS WITHOUT THIS CODE BTW
+        //If permissions are not given, request for access to location
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         } else {
+            //Add geofence if permissions are accepted, add listeners to see if succesfully created
             geofencingClient.addGeofences(geofencingRequest, pendingIntent)
                     .addOnSuccessListener(unused -> Log.d(TAG, "onSuccess: Geofence Added..."))
                     .addOnFailureListener(e -> {
