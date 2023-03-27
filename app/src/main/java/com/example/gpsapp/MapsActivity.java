@@ -41,6 +41,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -72,6 +74,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
     public Button findMyCarButton;
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser mCurrentUser;
 
     //To be used for EULA
 //    public boolean acceptedTerms;
@@ -245,6 +250,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 }
             }
         }));
+
+        //create an instance of the user authentication object
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        mCurrentUser = mAuth.getCurrentUser();
+
+        System.out.println(mAuth.getUid());
+
     }
 
     /**

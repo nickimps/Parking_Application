@@ -25,8 +25,14 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 
@@ -38,6 +44,10 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText usernameEditText, passwordEditText;
     private TextInputLayout usernameLayout, passwordLayout;
     //Fetch the stored information when the app is loaded, this function is called when the app is opened again
+
+    //firebase authentication
+    private FirebaseAuth mAuth;
+    private FirebaseUser mCurrentUser;
 
     @Override
     protected void onResume() {
@@ -172,7 +182,33 @@ public class LoginActivity extends AppCompatActivity {
         // LOGIN BUTTON
         Button logButton = findViewById(R.id.loginButton);
         logButton.setOnClickListener(v -> login());
+
+        //create an instance of the user authentication object
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        mCurrentUser = mAuth.getCurrentUser();
+
+        //System.out.println(mAuth.getUid());
+
+        //if auth user not signed in
+        if(mCurrentUser == null){
+            mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if(task.isSuccessful()){
+                        System.out.println("Anonymously signed in");
+                    } else {
+                        System.out.println("Anonymous sign in failed");
+                    }
+                }
+            });
+        }
+
+        //put this in the logout section
+        //mAuth.signOut();
+
     }
+
 
     private void getAllPermissions() {
         if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
