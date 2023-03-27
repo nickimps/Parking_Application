@@ -42,8 +42,10 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,13 +60,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final int REQUEST_LOCATION = 1;
     private static final int RUNNABLE_TIME = 6000;
     private static final String TAG = "MapsActivity";
-    public static boolean geoFenceStatus, available_spot, isAdmin, follow = false;
+    public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false;
     public static String movingStatus;
     private GoogleMap mMap;
     private LocationManager mLocationManager;
     private TextView name, speedAdminTextView, movingStatusTextView;
     FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    private String username, parkedBestOption;
+    private String username, parkedBestOption, parkedUser;
     private final List<Polygon> parkingSpaces = new ArrayList<>();
     private final List<String> parkingSpacesDocIDs = new ArrayList<>();
     private GeofencingClient geofencingClient;
@@ -81,26 +83,39 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             // If the moving status is driving, then the user was leaving their parked spot, otherwise if they were
             // were walking, we can assume that they parked in their spot.
             if (movingStatus.equals("Driving")) {
+                // Get the user that has parked in that parking space
+                parkedUser = "";
+                firestore.collection("ParkingSpaces").get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful())
+                        parkedUser = Objects.requireNonNull(task.getResult().getDocuments().get(1).get("user")).toString();
+                });
+
                 if (Boolean.TRUE.equals(isAdmin))
-                    Toast.makeText(getApplicationContext(), "Clearing Parking Space", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Parked user: " + parkedUser, Toast.LENGTH_SHORT).show();
 
-                // Set the parking space to empty
-                firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", "");
+                // Check to make sure it is this users parking spot we are removing
+                if (parkedUser.equals(username)) {
+                    if (Boolean.TRUE.equals(isAdmin))
+                        Toast.makeText(getApplicationContext(), "Clearing Parking Space", Toast.LENGTH_SHORT).show();
 
-                // Hide the find my car button
-                findMyCarButton.setVisibility(View.INVISIBLE);
+                    // Set the parking space to empty
+                    firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", "");
 
-                // parking space ID and its polygon
-                String id = parkingSpacesDocIDs.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
-                Polygon parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
+                    // Hide the find my car button
+                    findMyCarButton.setVisibility(View.INVISIBLE);
 
-                // Restore the style depending on what type of parking space it is
-                if (id.startsWith("EV")) {
-                    styleEVParkingSpace(parking_space);
-                } else if (id.startsWith("METER")) {
-                    styleMeterParkingSpace(parking_space);
-                } else {
-                    styleParkingEmptySpace(parking_space);
+                    // parking space ID and its polygon
+                    String id = parkingSpacesDocIDs.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
+                    Polygon parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
+
+                    // Restore the style depending on what type of parking space it is
+                    if (id.startsWith("EV")) {
+                        styleEVParkingSpace(parking_space);
+                    } else if (id.startsWith("METER")) {
+                        styleMeterParkingSpace(parking_space);
+                    } else {
+                        styleParkingEmptySpace(parking_space);
+                    }
                 }
             } else if (movingStatus.equals("Walking")) {
                 if (Boolean.TRUE.equals(isAdmin))
@@ -466,6 +481,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 if (stoppedStatus.equals("Parked")) {
                     String bestOption = "";
                     double lowestDistance = 10000;
+                    my_spot = false;
 
                     // Go through the hashmap and check if the lowest spot is empty
                     for(Map.Entry<Polygon, Double> possibleSpace : possibleParkedSpaces.entrySet()) {
@@ -483,11 +499,17 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                                     if (task.isSuccessful()) {
                                         if(!Objects.equals(task.getResult().getString("user"), ""))
                                             available_spot = false;
+                                        else if (Objects.equals(task.getResult().getString("user"), username))
+                                            my_spot = true;
                                     }
                                 });
 
-                        // If the new distance is lower and the spot is available, make it the current best option
-                        if (polyDistance < lowestDistance && available_spot) {
+
+                        // We want to secure our spot if we are close to it
+                        if (my_spot) {
+                            bestOption = docID;
+                            break;
+                        } else if (polyDistance < lowestDistance && available_spot) {  // If the new distance is lower and the spot is available, make it the current best option
                             lowestDistance = polyDistance;
                             bestOption = docID;
                         }
