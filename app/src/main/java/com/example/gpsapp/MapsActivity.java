@@ -46,6 +46,11 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -68,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public static String movingStatus;
     public static GoogleMap mMap;
     public static LocationManager mLocationManager;
-    private TextView name, speedAdminTextView, movingStatusTextView;
+    public static TextView name, speedAdminTextView, movingStatusTextView;
     public static FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     public static String username, parkedBestOption, parkedUser;
     public static final List<Polygon> parkingSpaces = new ArrayList<>();
@@ -77,6 +82,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private GeofenceHelper geofenceHelper;
     public static Button findMyCarButton;
     public static Context this_context;
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser mCurrentUser;
 
     public boolean animationInProgress;
 
@@ -300,6 +308,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 }
             }
         }));
+
     }
 
     /**

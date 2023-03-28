@@ -15,6 +15,8 @@ import android.widget.Toast;
 import android.util.Log;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -25,11 +27,18 @@ public class InfoActivity extends AppCompatActivity {
 
     TextInputEditText nameEditText, permitEditText;
     TextInputLayout nameLayout, permitLayout;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mCurrentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
+
+        //create an instance of the user authentication object
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        mCurrentUser = mAuth.getCurrentUser();
 
         getSupportActionBar().setTitle("Settings");
 
@@ -135,6 +144,9 @@ public class InfoActivity extends AppCompatActivity {
             editor.putString("username", null);
             editor.putString("password", null);
             editor.apply();
+
+            //put this in the logout section
+            mAuth.signOut();
 
             // Send the user to the login screen.
             Intent intent = new Intent(InfoActivity.this, LoginActivity.class);
