@@ -27,11 +27,11 @@ public class eulaActivity extends AppCompatActivity {
         TextView textView = findViewById(R.id.eulaText);
         String eula = "END USER LICENSE AGREEMENT (EULA) FOR SMART PARKING APPLICATION\n" +
                 "\n" +
-                "PLEASE READ THIS END USER LICENSE AGREEMENT (\"EULA\") CAREFULLY BEFORE USING THE SMART PARKING APPLICATION.\n" +
+                "PLEASE READ THIS END USER LICENSE AGREEMENT (\"EULA\") CAREFULLY BEFORE USING THE SMART PARKING APPLICATION: LINK & PARK.\n" +
                 "\n" +
                 "1. GENERAL TERMS\n" +
-                "This EULA is a legal agreement between you, as either an individual or a single entity, and [Tsang, Imperius, " +
-                "and Tomassini Software] (hereafter referred to as \"Company\"), the developer of the Smart Parking Application " +
+                "This EULA is a legal agreement between you, as either an individual or a single entity, and [MNJ Software Solutions]" +
+                " (hereafter referred to as \"Company\"), the developer of the Link & Park " +
                 "(hereafter referred to as the \"Application\"). By using the Application, you agree to be bound by the terms of this" +
                 " EULA. If you do not agree to the terms of this EULA, do not use the Application.\n" +
                 "\n" +
