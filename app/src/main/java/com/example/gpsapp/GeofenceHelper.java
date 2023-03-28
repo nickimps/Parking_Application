@@ -41,7 +41,7 @@ public class GeofenceHelper extends ContextWrapper {
                 .setRequestId(ID) //each geofence has a unique id
                 .setTransitionTypes(transitionTypes)
                 .setLoiteringDelay(0) //set 0 so no delay when entering
-                .setExpirationDuration(Geofence.NEVER_EXPIRE) //dont want it to expire
+                .setExpirationDuration(Geofence.NEVER_EXPIRE) //don't want it to expire
                 .build();
     }
 

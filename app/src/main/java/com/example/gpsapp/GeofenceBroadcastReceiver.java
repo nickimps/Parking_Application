@@ -13,7 +13,8 @@ import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingEvent;
 
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
-    //MapsActivity mapsActivity = new MapsActivity();
+    public static final String ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE";
+    public static final String ACTION_STOP_FOREGROUND_SERVICE = "ACTION_STOP_FOREGROUND_SERVICE";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -43,10 +44,13 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             if (MapsActivity.isAdmin)
                 Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
 
+            // Start foreground tracking
+            Intent service_intent = new Intent(context, MapsLocationService.class);
+            service_intent.setAction(ACTION_START_FOREGROUND_SERVICE);
+            context.startService(service_intent);
+
             //Enable the geofence status
             MapsActivity.geoFenceStatus = true;
-            //Enable recenter button when inside the geofence
-            //MapsActivity.centerButton.setVisibility(View.VISIBLE);
             MapsActivity.follow = true;
 
         }
@@ -55,10 +59,13 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             if (MapsActivity.isAdmin)
                 Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
 
+            // Stop foreground tracking
+            Intent service_intent = new Intent(context, MapsLocationService.class);
+            service_intent.setAction(ACTION_STOP_FOREGROUND_SERVICE);
+            context.startService(service_intent);
+
             //Disable the geofence status
             MapsActivity.geoFenceStatus = false;
-            //Disable recenter button when outside the geofence
-            //MapsActivity.centerButton.setVisibility(View.INVISIBLE);
             MapsActivity.follow = false;
 
         }

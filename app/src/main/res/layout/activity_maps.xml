@@ -144,7 +144,7 @@
                 android:id="@+id/layoutTop"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:paddingHorizontal="5dp">
 
@@ -220,8 +220,8 @@
                 android:id="@+id/layoutBottom"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
                 android:gravity="center"
                 android:paddingHorizontal="5dp">
 
