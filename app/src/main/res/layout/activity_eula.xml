@@ -84,7 +84,6 @@
                     android:scrollbars="vertical"
                     android:text="Placeholder"
                     android:textSize="12dp"
-
                     />
             </ScrollView>
 
@@ -112,6 +111,7 @@
                 android:enabled="true"
                 android:layout_alignParentBottom="true"
                 android:fontFamily="@font/dm_sans"
+                android:layout_marginBottom="10dp"
                 android:text="I Do Not Accept"
                 android:textSize="15sp" />
         </RelativeLayout>

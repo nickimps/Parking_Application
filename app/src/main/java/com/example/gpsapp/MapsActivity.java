@@ -78,6 +78,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public static Button findMyCarButton;
     public static Context this_context;
 
+    public boolean animationInProgress;
+
     //To be used for EULA
 //    public boolean acceptedTerms;
 
@@ -603,9 +605,23 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public void onLocationChanged(Location location) {
         // Have the camera follow the user if the follow boolean is set to true
         if (follow) {
-            CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(18).build();
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-            mMap.animateCamera(cameraUpdate);
+            GoogleMap.CancelableCallback cancelableCallback = new GoogleMap.CancelableCallback() {
+                @Override
+                public void onCancel() {
+                    animationInProgress = false;
+                }
+
+                @Override
+                public void onFinish() {
+                    animationInProgress = false;
+                }
+            };
+            if(!animationInProgress) {
+                animationInProgress = true;
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(18).build();
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+                mMap.animateCamera(cameraUpdate, cancelableCallback);
+            }
         }
 
 //        // Update the speed on the card view on the screen
