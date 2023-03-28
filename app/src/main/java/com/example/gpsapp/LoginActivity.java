@@ -204,9 +204,6 @@ public class LoginActivity extends AppCompatActivity {
             });
         }
 
-        //put this in the logout section
-        //mAuth.signOut();
-
     }
 
 
@@ -292,6 +289,24 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         if (!task.getResult().isEmpty()) {
                             findViewById(R.id.loginButton).setEnabled(true);
+                            //create an instance of the user authentication object
+                            mAuth = FirebaseAuth.getInstance();
+                            FirebaseUser currentUser = mAuth.getCurrentUser();
+                            mCurrentUser = mAuth.getCurrentUser();
+
+                            //if auth user not signed in
+                            if(mCurrentUser == null){
+                                mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        if(task.isSuccessful()){
+                                            System.out.println("Anonymously signed in");
+                                        } else {
+                                            System.out.println("Anonymous sign in failed");
+                                        }
+                                    }
+                                });
+                            }
                             // Send the user to the maps activity
                             Intent intentToMap = new Intent(LoginActivity.this, MapsActivity.class);
                             startActivity((intentToMap));
