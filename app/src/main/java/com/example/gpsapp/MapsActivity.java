@@ -192,7 +192,17 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         notificationManager.notify(notificationId, builder.build());
                     }
 
-                    // Set the firebase to be occupied by current user
+                    // Remove any parking spaces if they have any
+                    firestore.collection("ParkingSpaces")
+                            .whereEqualTo("user", username)
+                            .get()
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful())
+                                    for (QueryDocumentSnapshot document : task.getResult())
+                                        firestore.collection("ParkingSpaces").document(document.getId()).update("user", "");
+                            });
+
+                    // Set the parking space to be occupied by current user
                     firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", username);
 
                     // Check to see if we already have a parked car, we do not want to parked cars right
