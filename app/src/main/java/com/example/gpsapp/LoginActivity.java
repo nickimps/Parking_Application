@@ -35,8 +35,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-
-
 public class LoginActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_CODE = 0;
     private static final int BACKGROUND_LOCATION_PERMISSION_CODE = 2;

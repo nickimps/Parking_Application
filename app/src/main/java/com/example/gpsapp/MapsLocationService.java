@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polygon;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -246,20 +247,6 @@ public class MapsLocationService extends Service implements LocationListener {
     }
 
     /**
-     * This function will change the speed label on the admin card view to the current speed in
-     * real-time.
-     *
-     * @param location The location parameter
-     * @return The speed to be set in the TextView
-     */
-    public static float updateSpeedTextView(Location location) {
-        if (location.hasSpeed())
-            return location.getSpeed();
-        else
-            return 0.0f;
-    }
-
-    /**
      * Called when the location changes, this just gathers the moving status to append to the data
      *
      * @param location the current location of user
@@ -267,7 +254,12 @@ public class MapsLocationService extends Service implements LocationListener {
     @Override
     public void onLocationChanged(@NonNull Location location) {
         // Update the speed on the card view on the screen
-        float speed = updateSpeedTextView(location);
+        float speed = 0.0f;
+        if (location.hasSpeed())
+            speed = location.getSpeed();
+        else
+            speed = 0.0f;
+
         MapsActivity.movingStatus = "Stopped";
 
         // Get the label based on the speed
@@ -291,10 +283,12 @@ public class MapsLocationService extends Service implements LocationListener {
             int notificationId = 8;
             notificationManager.notify(notificationId, builder.build());
 
+            String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
+            MapsActivity.speedAdminTextView.setText(speedString);
+
 
             MapsActivity.movingStatusTextView.setText(MapsActivity.movingStatus);
         }
-
     }
 
     /**
