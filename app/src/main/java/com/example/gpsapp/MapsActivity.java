@@ -274,7 +274,14 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         });
 
         // Disable follow if the map is moved
-        mMap.setOnCameraMoveStartedListener(reason -> follow = false);
+        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+            @Override
+            public void onCameraMoveStarted(int i) {
+                if(i == 1) {
+                    follow = false;
+                }
+            }
+        });
 
         // Relocate the center location button on the mapview
         mMap.setPadding(0, 255, 15, 0);
@@ -670,6 +677,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     });
         }
     }
+
 }
 
 
