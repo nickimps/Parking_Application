@@ -42,8 +42,9 @@
                 android:fontFamily="@font/dm_sans_bold"
                 android:text="USER AGREEMENT"
                 android:textColor="@color/grey_fromImage"
-
-                android:textSize="35sp" />
+                android:textSize="35sp"
+                android:autoSizeTextType="uniform"
+                />
 
             <TextView
                 android:id="@+id/warningText"
@@ -57,7 +58,9 @@
                 android:textAlignment="textStart"
                 android:textColor="@color/grey"
                 android:textColorLink="@color/LU_blue"
-                android:textSize="15sp"/>
+                android:textSize="15sp"
+                android:autoSizeTextType="uniform"
+                />
 
             <ScrollView
                 android:id="@+id/eulaScroll"
