@@ -279,15 +279,22 @@ public class MapsLocationService extends Service implements LocationListener {
             MapsActivity.movingStatus = "Driving";
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(MapsActivity.this_context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("Parking Spotter")
-                .setContentText(MapsActivity.movingStatus)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        // If we are admin, adjust the banner
+        if (MapsActivity.isAdmin) {
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(MapsActivity.this_context, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle("Parking Spotter")
+                    .setContentText(MapsActivity.movingStatus)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MapsActivity.this_context);
-        int notificationId = 8;
-        notificationManager.notify(notificationId, builder.build());
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MapsActivity.this_context);
+            int notificationId = 8;
+            notificationManager.notify(notificationId, builder.build());
+
+
+            MapsActivity.movingStatusTextView.setText(MapsActivity.movingStatus);
+        }
+
     }
 
     /**

@@ -68,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public static String movingStatus;
     public static GoogleMap mMap;
     public static LocationManager mLocationManager;
-    private TextView name, speedAdminTextView, movingStatusTextView;
+    public static TextView name, speedAdminTextView, movingStatusTextView;
     public static FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     public static String username, parkedBestOption, parkedUser;
     public static final List<Polygon> parkingSpaces = new ArrayList<>();
