@@ -212,10 +212,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        System.out.println("beforenotificaiton channel");
         createNotificationChannel();
-
-        System.out.println("afternoptification channel");
 
         this_context = getApplicationContext();
 
@@ -434,12 +431,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         LatLng Lot = new LatLng(48.42101, -89.25828);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17.5f));       // Need to figure out a way to not reset this everytime we enter the map I feel
 
-        System.out.println("addinggeofence");
         //Insert a geofence at time of map creation centered around the parking lot with a radius of 500
         float GEOFENCE_RADIUS = 500;
         addGeofence(Lot, GEOFENCE_RADIUS);
-
-        System.out.println("after addGeoFence Function");
     }
 
     /**
@@ -614,18 +608,18 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             mMap.animateCamera(cameraUpdate);
         }
 
-        // Update the speed on the card view on the screen
-        float speed = updateSpeedTextView(location);
-        movingStatus = "Stopped";
-
-        // Get the label based on the speed
-        if (speed <= 0.05) {
-            movingStatus = checkStop(location);
-        } else if (speed > 0.05 && speed <= 2) {
-            movingStatus = "Walking";
-        } else if (speed > 2) {
-            movingStatus = "Driving";
-        }
+//        // Update the speed on the card view on the screen
+//        float speed = updateSpeedTextView(location);
+//        movingStatus = "Stopped";
+//
+//        // Get the label based on the speed
+//        if (speed <= 0.05) {
+//            movingStatus = checkStop(location);
+//        } else if (speed > 0.05 && speed <= 2) {
+//            movingStatus = "Walking";
+//        } else if (speed > 2) {
+//            movingStatus = "Driving";
+//        }
 
         // If we are admin, adjust the banner
         if (isAdmin)
@@ -646,7 +640,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public void onStatusChanged(String provider, int status, Bundle extras) {
         // Called when the status of the GPS provider changes
     }
-
 
     private static void styleParkingEmptySpace(Polygon polygon) {
         polygon.setStrokeWidth(3);
@@ -709,8 +702,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
-        System.out.println("added geofence");
-
         //If permissions are not given, request for access to location
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
@@ -723,8 +714,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         Log.d(TAG, "onFailure: " + errorMessage);
                     });
         }
-
-        System.out.println("after geofence if");
     }
 
     /**

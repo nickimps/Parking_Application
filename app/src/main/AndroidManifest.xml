@@ -91,6 +91,7 @@
             android:parentActivityName=".MapsActivity" />
 
         <service android:name=".AdminLocationService" android:foregroundServiceType="location"/>
+        <service android:name=".MapsLocationService" android:foregroundServiceType="location"/>
 
     </application>
 
