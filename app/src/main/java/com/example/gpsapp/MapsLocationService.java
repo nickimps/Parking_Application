@@ -37,6 +37,8 @@ public class MapsLocationService extends Service implements LocationListener {
     private static final int NOTIFICATION_ID = 6;
     private static final String CHANNEL_ID = "my_channel";
 
+    public static Location last_known_location_runnable;
+
     /**
      * Called when the service is created, default
      */
@@ -160,9 +162,6 @@ public class MapsLocationService extends Service implements LocationListener {
 
         // Check permissions first
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Get the current location of the user
-            Location currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
             // Hashmap to store a key-value pair of the possible parking spaces that we may be occupying
             HashMap<Polygon, Double> possibleParkedSpaces = new HashMap<>();
 
@@ -180,7 +179,7 @@ public class MapsLocationService extends Service implements LocationListener {
                     // Check if the user's location is inside the bounds of the polygon
                     if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
                         // Get the new distance
-                        double distance = currentLocation.distanceTo(getPolygonCenter(polygon));
+                        double distance = location.distanceTo(getPolygonCenter(polygon));
 
                         // Save the parking spaces and their distance to the users current location.
                         possibleParkedSpaces.put(polygon, distance);
@@ -231,7 +230,7 @@ public class MapsLocationService extends Service implements LocationListener {
                     // If we have a best option, then start the runnable to tell if we have parked or not
                     if (!bestOption.equals("")) {
                         if (Boolean.TRUE.equals(MapsActivity.isAdmin))
-                            Toast.makeText(getApplicationContext(), "Check Stop Runnable Starting", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "CheckStop() Runnable Starting", Toast.LENGTH_SHORT).show();
 
                         // Get best parked option and run the runnable to check if we need to style a new parking space
                         MapsActivity.parkedBestOption = bestOption;
@@ -262,6 +261,8 @@ public class MapsLocationService extends Service implements LocationListener {
 
         MapsActivity.movingStatus = "Stopped";
 
+        last_known_location_runnable = location;
+
         // Get the label based on the speed
         if (speed <= 0.05) {
             MapsActivity.movingStatus = checkStop(location);
@@ -285,7 +286,6 @@ public class MapsLocationService extends Service implements LocationListener {
 
             String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
             MapsActivity.speedAdminTextView.setText(speedString);
-
 
             MapsActivity.movingStatusTextView.setText(MapsActivity.movingStatus);
         }

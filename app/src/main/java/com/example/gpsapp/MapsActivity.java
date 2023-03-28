@@ -66,7 +66,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    public static final int RUNNABLE_TIME = 6000;
+    public static final int RUNNABLE_TIME = 3000;
     private static final String TAG = "MapsActivity";
     private static final String CHANNEL_ID = "my_channel";
     public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false;
@@ -82,6 +82,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private GeofenceHelper geofenceHelper;
     public static Button findMyCarButton;
     public static Context this_context;
+
+    public Polygon campus;
 
     private FirebaseAuth mAuth;
     private FirebaseUser mCurrentUser;
@@ -119,8 +121,29 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         notificationManager.notify(notificationId, builder.build());
                     }
 
+                    // Get the polygon
+                    Polygon parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
+
+                    // Get the distance to polygon center to see if we are even close to our own parking space
+                    double distance = MapsLocationService.last_known_location_runnable.distanceTo(MapsLocationService.getPolygonCenter(parking_space));
+                    boolean inVicinity = distance < 6;
+
+                    if (Boolean.TRUE.equals(isAdmin)) {
+                        Toast.makeText(this_context, "Vicinity Distance: " + distance, Toast.LENGTH_SHORT).show();
+
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                                .setContentTitle("Parking Spotter")
+                                .setContentText("Vicinity Distance: " + distance)
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+                        int notificationId = 15;
+                        notificationManager.notify(notificationId, builder.build());
+                    }
+
                     // Check to make sure it is this users parking spot we are removing
-                    if (parkedUser.equals(username)) {
+                    if (parkedUser.equals(username) || inVicinity) {
                         if (Boolean.TRUE.equals(isAdmin)) {
                             Toast.makeText(this_context, "Clearing Parking Space", Toast.LENGTH_SHORT).show();
 
@@ -143,7 +166,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
                         // parking space ID and its polygon
                         String id = parkingSpacesDocIDs.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
-                        Polygon parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
 
                         // Restore the style depending on what type of parking space it is
                         if (id.startsWith("EV")) {
@@ -360,6 +382,20 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Style it as a parking sub lot
         styleParkingSubLot(r9);
 
+        campus = googleMap.addPolygon(new PolygonOptions()
+                .add(
+                        new LatLng(48.422068652386756, -89.25903004659057),
+                        new LatLng(48.421790245113186, -89.25873683680199),
+                        new LatLng(48.42146393787311, -89.25875036956144),
+                        new LatLng(48.419916195185614, -89.26029761506119),
+                        new LatLng(48.42016168169639, -89.2614343668569),
+                        new LatLng(48.419628794825826, -89.26209296116528),
+                        new LatLng(48.42131724862186, -89.26422211535001),
+                        new LatLng(48.42293380075808, -89.26041940991185)
+                ));
+        campus.setTag("campus");
+        styleParkingSubLot(campus);
+
         // Make it clickable to zoom in on the chosen sub lot
         mMap.setOnPolygonClickListener(polygon -> {
             if ("R9".equals(polygon.getTag()))
@@ -471,10 +507,36 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             };
             if(!animationInProgress) {
                 animationInProgress = true;
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(18).build();
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(mMap.getCameraPosition().zoom).build();
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
                 mMap.animateCamera(cameraUpdate, cancelableCallback);
             }
+        }
+
+        // Check if we are on campus boundaries to stop service or start it if we are back on ya know
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (LatLng latLng : campus.getPoints()) {
+            builder.include(latLng);
+        }
+        LatLngBounds bounds = builder.build();
+
+        // Check if the user's location is inside the bounds of the polygon
+        if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
+            // Stop foreground tracking
+            Intent service_intent = new Intent(this, MapsLocationService.class);
+            service_intent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
+            startService(service_intent);
+
+            if(isAdmin)
+                Toast.makeText(this_context, "On Campus - service stopped", Toast.LENGTH_SHORT).show();
+        } else if (geoFenceStatus) {
+            // Start foreground tracking
+            Intent service_intent = new Intent(this, MapsLocationService.class);
+            service_intent.setAction(MapsLocationService.ACTION_START_FOREGROUND_SERVICE);
+            startService(service_intent);
+
+            if(isAdmin)
+                Toast.makeText(this_context, "Off Campus - service started", Toast.LENGTH_SHORT).show();
         }
     }
 
