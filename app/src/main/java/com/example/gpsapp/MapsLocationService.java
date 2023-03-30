@@ -289,6 +289,50 @@ public class MapsLocationService extends Service implements LocationListener {
 
             MapsActivity.movingStatusTextView.setText(MapsActivity.movingStatus);
         }
+
+        // Check if we are on campus boundaries to stop service or start it if we are back on ya know
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (LatLng latLng : MapsActivity.campus.getPoints()) {
+            builder.include(latLng);
+        }
+        LatLngBounds bounds = builder.build();
+
+        // Check if the user's location is inside the bounds of the polygon
+        if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
+            if (MapsActivity.inPolygon) {
+                // Stop foreground tracking
+                Intent service_intent = new Intent(this, MapsLocationService.class);
+                service_intent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
+                startService(service_intent);
+
+                // Toggle flag
+                MapsActivity.inPolygon = false;
+
+                if(MapsActivity.isAdmin)
+                    Toast.makeText(MapsActivity.this_context, "On Campus - service stopped", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            if (!MapsActivity.inPolygon) {
+                // Start foreground tracking
+                Intent service_intent = new Intent(this, MapsLocationService.class);
+                service_intent.setAction(MapsLocationService.ACTION_START_FOREGROUND_SERVICE);
+                startService(service_intent);
+
+                // Toggle flag
+                MapsActivity.inPolygon = true;
+
+                if(MapsActivity.isAdmin)
+                    Toast.makeText(MapsActivity.this_context, "In Parking Lot - service started", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+
+//        if (MapsActivity.geoFenceStatus) {
+//
+//
+////            if(isAdmin)
+////                Toast.makeText(this_context, "Off Campus - service started", Toast.LENGTH_SHORT).show();
+//        }
     }
 
     /**

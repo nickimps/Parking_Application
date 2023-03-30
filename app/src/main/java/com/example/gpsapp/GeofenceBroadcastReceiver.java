@@ -52,6 +52,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             //Enable the geofence status
             MapsActivity.geoFenceStatus = true;
             MapsActivity.follow = true;
+            MapsActivity.inPolygon = false;
 
         }
         //If they leave the geofence
@@ -67,7 +68,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             //Disable the geofence status
             MapsActivity.geoFenceStatus = false;
             MapsActivity.follow = false;
-
+            MapsActivity.inPolygon = false;
         }
     }
 }

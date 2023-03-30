@@ -67,10 +67,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    public static final int RUNNABLE_TIME = 7000;
+    public static final int RUNNABLE_TIME = 5000;
     private static final String TAG = "MapsActivity";
     private static final String CHANNEL_ID = "my_channel";
-    public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false;
+    public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false, inPolygon;
     public static String movingStatus;
     public static GoogleMap mMap;
     public static LocationManager mLocationManager;
@@ -84,12 +84,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public static Button findMyCarButton;
     public static Context this_context;
 
-    public Polygon campus;
+    public static Polygon campus;
 
     private FirebaseAuth mAuth;
     private FirebaseUser mCurrentUser;
 
-    public boolean animationInProgress, toast_stopper_starter;
+    public boolean animationInProgress;
 
     //To be used for EULA
 //    public boolean acceptedTerms;
@@ -213,9 +213,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         findMyCarButton.setVisibility(View.VISIBLE);
                     }
                     break;
-                default:
+                case "Parked":
                     if (Boolean.TRUE.equals(isAdmin)) {
-                        Toast.makeText(this_context, "Runnable Restarting", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this_context, "Parked - Runnable Restarting", Toast.LENGTH_SHORT).show();
 
 //                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
 //                                .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -228,7 +228,25 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 //                        notificationManager.notify(notificationId, builder.build());
                     }
 
-                    // If we are still stopped, we want to restart this and keep polling
+                    // If we are still parked, we want to restart this and keep polling
+                    restartRunnable();
+                    break;
+                default:
+                    if (Boolean.TRUE.equals(isAdmin)) {
+                        Toast.makeText(this_context, "Stopped - Runnable Restarting", Toast.LENGTH_SHORT).show();
+
+//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                                .setContentTitle("Parking Spotter")
+//                                .setContentText("Runnable Restarting")
+//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+//                        int notificationId = 11;
+//                        notificationManager.notify(notificationId, builder.build());
+                    }
+
+                    // If we are still parked, we want to restart this and keep polling
                     restartRunnable();
             }
         }
@@ -532,32 +550,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
                 mMap.animateCamera(cameraUpdate, cancelableCallback);
             }
-        }
-
-        // Check if we are on campus boundaries to stop service or start it if we are back on ya know
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (LatLng latLng : campus.getPoints()) {
-            builder.include(latLng);
-        }
-        LatLngBounds bounds = builder.build();
-
-        // Check if the user's location is inside the bounds of the polygon
-        if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
-            // Stop foreground tracking
-            Intent service_intent = new Intent(this, MapsLocationService.class);
-            service_intent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
-            startService(service_intent);
-
-//            if(isAdmin)
-//                Toast.makeText(this_context, "On Campus - service stopped", Toast.LENGTH_SHORT).show();
-        } else if (geoFenceStatus) {
-            // Start foreground tracking
-            Intent service_intent = new Intent(this, MapsLocationService.class);
-            service_intent.setAction(MapsLocationService.ACTION_START_FOREGROUND_SERVICE);
-            startService(service_intent);
-
-//            if(isAdmin)
-//                Toast.makeText(this_context, "Off Campus - service started", Toast.LENGTH_SHORT).show();
         }
     }
 
