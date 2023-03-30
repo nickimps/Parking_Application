@@ -46,6 +46,7 @@
             android:name=".RegisterActivity"
             android:exported="false"
             android:parentActivityName=".LoginActivity"
+            android:finishOnTaskLaunch="true"
             android:theme="@style/Theme.GPSApp.NoActionBar">
             <meta-data
                 android:name="android.app.lib_name"
@@ -55,6 +56,7 @@
             android:name=".LoginActivity"
             android:exported="true"
             android:parentActivityName=".LoginActivity"
+            android:finishOnTaskLaunch="true"
             android:theme="@style/Theme.GPSApp.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
