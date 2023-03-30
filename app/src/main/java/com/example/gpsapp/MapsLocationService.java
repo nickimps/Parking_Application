@@ -77,7 +77,7 @@ public class MapsLocationService extends Service implements LocationListener {
                     startForeground(NOTIFICATION_ID, builder.build());
 
                     if (MapsActivity.isAdmin)
-                        Toast.makeText(this, "Vehicle Tracking Started", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Vehicle Tracking Service Started", Toast.LENGTH_SHORT).show();
 
                     getLocation();
                     break;
@@ -274,15 +274,15 @@ public class MapsLocationService extends Service implements LocationListener {
 
         // If we are admin, adjust the banner
         if (MapsActivity.isAdmin) {
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(MapsActivity.this_context, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle("Parking Spotter")
-                    .setContentText(MapsActivity.movingStatus)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MapsActivity.this_context);
-            int notificationId = 8;
-            notificationManager.notify(notificationId, builder.build());
+//            NotificationCompat.Builder builder = new NotificationCompat.Builder(MapsActivity.this_context, CHANNEL_ID)
+//                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                    .setContentTitle("Parking Spotter")
+//                    .setContentText(MapsActivity.movingStatus)
+//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MapsActivity.this_context);
+//            int notificationId = 8;
+//            notificationManager.notify(notificationId, builder.build());
 
             String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
             MapsActivity.speedAdminTextView.setText(speedString);

@@ -1,5 +1,6 @@
 package com.example.gpsapp;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -66,7 +67,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    public static final int RUNNABLE_TIME = 3000;
+    public static final int RUNNABLE_TIME = 7000;
     private static final String TAG = "MapsActivity";
     private static final String CHANNEL_ID = "my_channel";
     public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false;
@@ -88,7 +89,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private FirebaseAuth mAuth;
     private FirebaseUser mCurrentUser;
 
-    public boolean animationInProgress;
+    public boolean animationInProgress, toast_stopper_starter;
 
     //To be used for EULA
 //    public boolean acceptedTerms;
@@ -98,7 +99,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         @Override
         public void run() {
             // do something depending on the status
-            switch(movingStatus) {
+            switch (movingStatus) {
                 case "Driving":
                     // Get the user that has parked in that parking space
                     parkedUser = "";
@@ -110,15 +111,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     if (Boolean.TRUE.equals(isAdmin)) {
                         Toast.makeText(this_context, "Parked user: " + parkedUser, Toast.LENGTH_SHORT).show();
 
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                                .setContentTitle("Parking Spotter")
-                                .setContentText("Parked User: " + parkedUser)
-                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-                        int notificationId = 14;
-                        notificationManager.notify(notificationId, builder.build());
+//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                                .setContentTitle("Parking Spotter")
+//                                .setContentText("Parked User: " + parkedUser)
+//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+//                        int notificationId = 14;
+//                        notificationManager.notify(notificationId, builder.build());
                     }
 
                     // Get the polygon
@@ -131,15 +132,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     if (Boolean.TRUE.equals(isAdmin)) {
                         Toast.makeText(this_context, "Vicinity Distance: " + distance, Toast.LENGTH_SHORT).show();
 
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                                .setContentTitle("Parking Spotter")
-                                .setContentText("Vicinity Distance: " + distance)
-                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-                        int notificationId = 15;
-                        notificationManager.notify(notificationId, builder.build());
+//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                                .setContentTitle("Parking Spotter")
+//                                .setContentText("Vicinity Distance: " + distance)
+//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+//                        int notificationId = 15;
+//                        notificationManager.notify(notificationId, builder.build());
                     }
 
                     // Check to make sure it is this users parking spot we are removing
@@ -147,15 +148,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                         if (Boolean.TRUE.equals(isAdmin)) {
                             Toast.makeText(this_context, "Clearing Parking Space", Toast.LENGTH_SHORT).show();
 
-                            NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-                                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                                    .setContentTitle("Parking Spotter")
-                                    .setContentText("Clearing Parking Space")
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-                            int notificationId = 13;
-                            notificationManager.notify(notificationId, builder.build());
+//                            NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+//                                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                                    .setContentTitle("Parking Spotter")
+//                                    .setContentText("Clearing Parking Space")
+//                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+//                            int notificationId = 13;
+//                            notificationManager.notify(notificationId, builder.build());
                         }
 
                         // Set the parking space to empty
@@ -181,15 +182,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     if (Boolean.TRUE.equals(isAdmin)) {
                         Toast.makeText(this_context, "Filling Parking Space", Toast.LENGTH_SHORT).show();
 
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                                .setContentTitle("Parking Spotter")
-                                .setContentText("Filling Parking Space")
-                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-                        int notificationId = 12;
-                        notificationManager.notify(notificationId, builder.build());
+//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                                .setContentTitle("Parking Spotter")
+//                                .setContentText("Filling Parking Space")
+//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+//                        int notificationId = 12;
+//                        notificationManager.notify(notificationId, builder.build());
                     }
 
                     // Remove any parking spaces if they have any
@@ -216,15 +217,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     if (Boolean.TRUE.equals(isAdmin)) {
                         Toast.makeText(this_context, "Runnable Restarting", Toast.LENGTH_SHORT).show();
 
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                                .setContentTitle("Parking Spotter")
-                                .setContentText("Runnable Restarting")
-                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-                        int notificationId = 11;
-                        notificationManager.notify(notificationId, builder.build());
+//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
+//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+//                                .setContentTitle("Parking Spotter")
+//                                .setContentText("Runnable Restarting")
+//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
+//                        int notificationId = 11;
+//                        notificationManager.notify(notificationId, builder.build());
                     }
 
                     // If we are still stopped, we want to restart this and keep polling
@@ -537,16 +538,16 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             service_intent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
             startService(service_intent);
 
-            if(isAdmin)
-                Toast.makeText(this_context, "On Campus - service stopped", Toast.LENGTH_SHORT).show();
+//            if(isAdmin)
+//                Toast.makeText(this_context, "On Campus - service stopped", Toast.LENGTH_SHORT).show();
         } else if (geoFenceStatus) {
             // Start foreground tracking
             Intent service_intent = new Intent(this, MapsLocationService.class);
             service_intent.setAction(MapsLocationService.ACTION_START_FOREGROUND_SERVICE);
             startService(service_intent);
 
-            if(isAdmin)
-                Toast.makeText(this_context, "Off Campus - service started", Toast.LENGTH_SHORT).show();
+//            if(isAdmin)
+//                Toast.makeText(this_context, "Off Campus - service started", Toast.LENGTH_SHORT).show();
         }
     }
 
