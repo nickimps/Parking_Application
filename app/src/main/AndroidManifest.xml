@@ -30,7 +30,7 @@
             android:name=".eulaActivity"
             android:exported="false"
             android:theme="@style/Theme.GPSApp.NoActionBar"
-            />
+            android:screenOrientation="portrait" />
 
         <receiver
             android:name=".GeofenceBroadcastReceiver"
@@ -41,13 +41,15 @@
             android:name=".AdminActivity"
             android:exported="false"
             android:parentActivityName=".InfoActivity"
-            android:theme="@style/Theme.GPSApp" />
+            android:theme="@style/Theme.GPSApp"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".RegisterActivity"
             android:exported="false"
             android:parentActivityName=".LoginActivity"
             android:finishOnTaskLaunch="true"
-            android:theme="@style/Theme.GPSApp.NoActionBar">
+            android:theme="@style/Theme.GPSApp.NoActionBar"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -57,7 +59,8 @@
             android:exported="true"
             android:parentActivityName=".LoginActivity"
             android:finishOnTaskLaunch="true"
-            android:theme="@style/Theme.GPSApp.NoActionBar">
+            android:theme="@style/Theme.GPSApp.NoActionBar"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -67,7 +70,8 @@
             android:exported="false"
             android:label="@string/title_activity_info"
             android:parentActivityName=".MapsActivity"
-            android:theme="@style/Theme.GPSApp">
+            android:theme="@style/Theme.GPSApp"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -84,7 +88,8 @@
             android:name=".MapsActivity"
             android:exported="true"
             android:label="@string/title_activity_maps"
-            android:parentActivityName=".MapsActivity" >
+            android:parentActivityName=".MapsActivity"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
