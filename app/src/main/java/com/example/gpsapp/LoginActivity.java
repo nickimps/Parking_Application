@@ -308,6 +308,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Send the user to the maps activity
                             Intent intentToMap = new Intent(LoginActivity.this, MapsActivity.class);
                             startActivity((intentToMap));
+                            finish();
                             findViewById(R.id.loginButton).setEnabled(false);
                         } else if (username.isEmpty() && password.isEmpty()) {
                             usernameLayout.setError("Required");
@@ -352,6 +353,7 @@ public class LoginActivity extends AppCompatActivity {
                 // Go to register screen on click
                 Intent intent = new Intent(LoginActivity.this, eulaActivity.class);
                 startActivity((intent));
+                finish();
             }
         };
 

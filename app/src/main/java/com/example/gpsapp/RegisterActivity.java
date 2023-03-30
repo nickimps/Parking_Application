@@ -178,6 +178,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 //Change the activity to the maps activity screen
                                 Intent intent = new Intent(RegisterActivity.this, MapsActivity.class);
                                 startActivity((intent));
+                                finish();
 
                                 //Create message to let user know the creation was successful
                                 Toast.makeText(getApplicationContext(),"Account successfully created!",Toast.LENGTH_SHORT).show();
