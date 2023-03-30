@@ -77,7 +77,7 @@ public class MapsLocationService extends Service implements LocationListener {
                     startForeground(NOTIFICATION_ID, builder.build());
 
                     if (MapsActivity.isAdmin)
-                        Toast.makeText(this, "Vehicle Tracking Service Started", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Service Start Function", Toast.LENGTH_SHORT).show();
 
                     getLocation();
                     break;
@@ -93,7 +93,7 @@ public class MapsLocationService extends Service implements LocationListener {
      * This stopped the foreground service and lets the user know that is has stopped
      */
     private void stopForegroundService() {
-        Toast.makeText(this, "Tracking Stopped", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Service Stop Function", Toast.LENGTH_SHORT).show();
 
         // Stop the foreground service.
         stopSelf();
@@ -230,7 +230,7 @@ public class MapsLocationService extends Service implements LocationListener {
                     // If we have a best option, then start the runnable to tell if we have parked or not
                     if (!bestOption.equals("")) {
                         if (Boolean.TRUE.equals(MapsActivity.isAdmin))
-                            Toast.makeText(getApplicationContext(), "CheckStop() Runnable Starting", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Runnable Initial Start", Toast.LENGTH_SHORT).show();
 
                         // Get best parked option and run the runnable to check if we need to style a new parking space
                         MapsActivity.parkedBestOption = bestOption;

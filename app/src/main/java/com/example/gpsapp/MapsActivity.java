@@ -544,6 +544,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     animationInProgress = false;
                 }
             };
+
             if(!animationInProgress) {
                 animationInProgress = true;
                 CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(mMap.getCameraPosition().zoom).build();
