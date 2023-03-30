@@ -20,6 +20,7 @@ import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -35,6 +36,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 public class LoginActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_CODE = 0;
     private static final int BACKGROUND_LOCATION_PERMISSION_CODE = 2;
@@ -47,6 +59,15 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser mCurrentUser;
 
+    //Encryption and Decryption
+    private static final String ALGORITHM = "Blowfish";
+    private static final String MODE = "Blowfish/CBC/PKCS5Padding";
+    private static final String IV = "abcdefgh";
+    private static final String Key = "jnansdbhi1j23-0390fhia'p;qaenfpoa828";
+    private static String passTest = "";
+    private static String decryptedPassword = "";
+    private static String encryptedPassword = "";
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -58,6 +79,14 @@ public class LoginActivity extends AppCompatActivity {
             // Get stored username and password for the logged in user
             String username = sharedPref.getString("username", null);
             String password = sharedPref.getString("password", null);
+
+            //decrypts the password
+            try {
+                //decrypts the password
+                decryptedPassword = decrypt(password);
+            } catch (Exception e) {
+                //above action ran into error
+            }
 
             // Bypass login if login details exist
             if (username != null && password != null) {
@@ -73,7 +102,7 @@ public class LoginActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 if (!task.getResult().isEmpty()) {
                                     usernameEditText.setText(username);
-                                    passwordEditText.setText(password);
+                                    passwordEditText.setText(decryptedPassword);
                                 }
                             } else {
                                 Log.d(TAG, "Error getting documents: ", task.getException());
@@ -93,11 +122,18 @@ public class LoginActivity extends AppCompatActivity {
         // Create an editor that allows us to impute information into the shared preference
         SharedPreferences.Editor editor = sharedPref.edit();
 
+
         // Only save the text fields if there is information in them.
         if (!usernameEditText.getText().toString().isEmpty() && !passwordEditText.getText().toString().isEmpty()) {
+            //encrypt password before storing
+            try {
+                encryptedPassword = encrypt(passwordEditText.getText().toString().trim());
+            } catch (Exception e) {
+                //above action ran into error
+            }
             // Store information from the text fields
             editor.putString("username", usernameEditText.getText().toString().trim());
-            editor.putString("password", passwordEditText.getText().toString().trim());
+            editor.putString("password", encryptedPassword);
 
             // Commit the changes to the editor
             editor.apply();
@@ -110,6 +146,18 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        //Testing Encrypt and Decrypt
+        try {
+            passTest = "password123";
+            String encryptedPass = encrypt(passTest);
+            String decryptedPass = decrypt(encrypt(passTest));
+            System.out.println(passTest);
+            System.out.println(encryptedPass);
+            System.out.println(decryptedPass);
+        } catch (Exception e) {
+
+        }
 
         //Have user accept location permissions
         getAllPermissions();
@@ -204,6 +252,25 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    //CODE MODIFIED FROM: https://github.com/Everyday-Programmer/Encryption-Decryption-Android/blob/main/app/src/main/java/com/example/encryptiondecryption/EncryptDecrypt.java
+    //Create Encryption function
+    public static String encrypt(String value) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        SecretKeySpec secretKeySpec = new SecretKeySpec(Key.getBytes(), ALGORITHM); //specifies algorithm using set key
+        Cipher cipher = Cipher.getInstance(MODE); //specifies the set mode of blowfish
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, new IvParameterSpec(IV.getBytes())); //sets it to encryption mode using initialization vector IV
+        byte[] values = cipher.doFinal(value.getBytes()); //value converted into byte array
+        return Base64.encodeToString(values, Base64.DEFAULT); //byte array is then encrypted and returned
+    }
+
+    //Create Decryption Function
+    public static String decrypt(String value) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        byte[] values = Base64.decode(value, Base64.DEFAULT); //creates byte array for the value
+        SecretKeySpec secretKeySpec = new SecretKeySpec(Key.getBytes(), ALGORITHM); //specifies algorithm using set key
+        Cipher cipher = Cipher.getInstance(MODE); //specifies the set mode of blowfish
+        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(IV.getBytes())); //sets it to decryption mode using initialization vector IV
+        return new String(cipher.doFinal(values)); //decrypts the info and returns it
+    }
+
 
     private void getAllPermissions() {
         if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -278,10 +345,17 @@ public class LoginActivity extends AppCompatActivity {
         // Database Instance
         firestore = FirebaseFirestore.getInstance();
 
+        //get the encryptedPassword
+        try {
+            encryptedPassword = encrypt(password);
+        } catch (Exception e) {
+            //above action ran into error
+        }
+
         // Perform query to get the user that has matching username and password so that we can log in the user
         firestore.collection("Users")
                 .whereEqualTo("username", username)
-                .whereEqualTo("password", password)
+                .whereEqualTo("password", encryptedPassword)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {

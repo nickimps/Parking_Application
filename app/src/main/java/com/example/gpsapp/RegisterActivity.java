@@ -13,6 +13,7 @@ import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.util.Log;
@@ -28,6 +29,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -39,12 +51,30 @@ public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser mCurrentUser;
 
+    //Encryption and Decryption
+    private static final String ALGORITHM = "Blowfish";
+    private static final String MODE = "Blowfish/CBC/PKCS5Padding";
+    private static final String IV = "abcdefgh";
+    private static final String Key = "jnansdbhi1j23-0390fhia'p;qaenfpoa828";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
         findViewById(R.id.registerButton).setEnabled(false);
+
+        //Testing Encrypt and Decrypt
+        try {
+            String passTest = "password123";
+            String encryptedPass = encrypt(passTest);
+            String decryptedPass = decrypt(encrypt(passTest));
+            System.out.println(passTest);
+            System.out.println(encryptedPass);
+            System.out.println(decryptedPass);
+        } catch (Exception e) {
+
+        }
 
         // Save the text field and layout ids
         usernameEditText = findViewById(R.id.regUsernameTextInputEditText);
@@ -145,16 +175,25 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // If the user exists and the fields were not empty, then add the user
                             if(task.getResult().isEmpty() && !username.isEmpty() && !password.isEmpty() && !name.isEmpty()) {
-                                // Create new user object, with the user's information, then add to database (default admin privileges are false)
-                                User user = new User(username, password, name, permit, false);
-                                firestore.collection("Users").add(user);
 
-                                //Add user information to local shared preferences
-                                SharedPreferences sharedPrefBack = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
-                                SharedPreferences.Editor editor = sharedPrefBack.edit();
-                                editor.putString("username", username);
-                                editor.putString("password", password);
-                                editor.apply();
+                                //encrypts the password before sending to DB and shared preferences
+                                try {
+                                    String encryptedPassword = encrypt(password);
+
+                                    // Create new user object, with the user's information, then add to database (default admin privileges are false)
+                                    User user = new User(username, encryptedPassword, name, permit, false);
+                                    firestore.collection("Users").add(user);
+
+                                    //Add user information to local shared preferences
+                                    SharedPreferences sharedPrefBack = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sharedPrefBack.edit();
+                                    editor.putString("username", username);
+                                    editor.putString("password", encryptedPassword);
+                                    editor.apply();
+
+                                } catch (Exception e) {
+                                    //above action ran into error
+                                }
 
                                 //create an instance of the user authentication object
                                 mAuth = FirebaseAuth.getInstance();
@@ -174,6 +213,7 @@ public class RegisterActivity extends AppCompatActivity {
                                         }
                                     });
                                 }
+
 
                                 //Change the activity to the maps activity screen
                                 Intent intent = new Intent(RegisterActivity.this, MapsActivity.class);
@@ -202,6 +242,25 @@ public class RegisterActivity extends AppCompatActivity {
                         }
                     });
         });
+    }
+
+    //CODE MODIFIED FROM: https://github.com/Everyday-Programmer/Encryption-Decryption-Android/blob/main/app/src/main/java/com/example/encryptiondecryption/EncryptDecrypt.java
+    //Create Encryption function
+    public static String encrypt(String value) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        SecretKeySpec secretKeySpec = new SecretKeySpec(Key.getBytes(), ALGORITHM); //specifies algorithm using set key
+        Cipher cipher = Cipher.getInstance(MODE); //specifies the set mode of blowfish
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, new IvParameterSpec(IV.getBytes())); //sets it to encryption mode using initialization vector IV
+        byte[] values = cipher.doFinal(value.getBytes()); //value converted into byte array
+        return Base64.encodeToString(values, Base64.DEFAULT); //byte array is then encrypted and returned
+    }
+
+    //Create Decryption Function
+    public static String decrypt(String value) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        byte[] values = Base64.decode(value, Base64.DEFAULT); //creates byte array for the value
+        SecretKeySpec secretKeySpec = new SecretKeySpec(Key.getBytes(), ALGORITHM); //specifies algorithm using set key
+        Cipher cipher = Cipher.getInstance(MODE); //specifies the set mode of blowfish
+        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(IV.getBytes())); //sets it to decryption mode using initialization vector IV
+        return new String(cipher.doFinal(values)); //decrypts the info and returns it
     }
 
     /**
