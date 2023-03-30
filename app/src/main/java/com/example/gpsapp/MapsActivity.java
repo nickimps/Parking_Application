@@ -254,11 +254,25 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        // Get the stored information within the shared preference
+        SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
 
+        // Get the username of the current logged in user
+        username = sharedPref.getString("username", null);
+
+        // If the user is not logged in, go to login screen, otherwise go to maps activity like normal
+        if (username == null || sharedPref.getString("password", null) == null) {
+            startActivity(new Intent(MapsActivity.this, LoginActivity.class));
+            finish();
+        } else {
+            ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
+            setContentView(binding.getRoot());
+        }
+
+        // For foreground notifications
         createNotificationChannel();
 
+        // To use context in other scenarios
         this_context = getApplicationContext();
 
         // Get a reference to the location manager
@@ -282,10 +296,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // For the admin speed card view
         speedAdminTextView = findViewById(R.id.speedAdminTextView);
         movingStatusTextView = findViewById(R.id.movingStatusTextView);
-
-        // Get the username of the current logged in user
-        SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
-        username = sharedPref.getString("username", null);
 
         // Gets user administrator access
         firestore.collection("Users")
