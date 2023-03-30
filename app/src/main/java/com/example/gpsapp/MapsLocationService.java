@@ -305,6 +305,9 @@ public class MapsLocationService extends Service implements LocationListener {
                 service_intent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
                 startService(service_intent);
 
+                // Stop the runnable if there is one in progress
+                MapsActivity.parkedHandler.removeCallbacks(MapsActivity.parkedRunnable);
+
                 // Toggle flag
                 MapsActivity.inPolygon = false;
 
