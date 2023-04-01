@@ -1,10 +1,7 @@
 package com.example.gpsapp;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
@@ -43,13 +40,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
@@ -57,43 +50,34 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int REQUEST_LOCATION = 1;
-    public static final int RUNNABLE_TIME = 5000;
+    public static final int RUNNABLE_TIME = 2500;
     private static final String TAG = "MapsActivity";
     private static final String CHANNEL_ID = "my_channel";
     public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false, inPolygon;
-    public static String movingStatus;
     public static GoogleMap mMap;
     public static LocationManager mLocationManager;
+    @SuppressLint("StaticFieldLeak")
     public static TextView name, speedAdminTextView, movingStatusTextView;
+    @SuppressLint("StaticFieldLeak")
     public static FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    public static String username, parkedBestOption, parkedUser;
+    public static String username, parkedBestOption, parkedUser, movingStatus;
     public static final List<Polygon> parkingSpaces = new ArrayList<>();
     public static final List<String> parkingSpacesDocIDs = new ArrayList<>();
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
+    @SuppressLint("StaticFieldLeak")
     public static Button findMyCarButton;
+    @SuppressLint("StaticFieldLeak")
     public static Context this_context;
-
     public static Polygon campus;
-
-    private FirebaseAuth mAuth;
-    private FirebaseUser mCurrentUser;
-
     public boolean animationInProgress;
-
-    //To be used for EULA
-//    public boolean acceptedTerms;
-
     public static Handler parkedHandler = new Handler();
     public static Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
         @Override
@@ -104,149 +88,72 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     // Get the user that has parked in that parking space
                     parkedUser = "";
                     firestore.collection("ParkingSpaces").get().addOnCompleteListener(task -> {
-                        if (task.isSuccessful())
+                        if (task.isSuccessful()) {
                             parkedUser = Objects.requireNonNull(task.getResult().getDocuments().get(1).get("user")).toString();
+
+                            if (Boolean.TRUE.equals(isAdmin))
+                                Toast.makeText(this_context, "Parked user: " + parkedUser, Toast.LENGTH_SHORT).show();
+                        }
                     });
 
-                    if (Boolean.TRUE.equals(isAdmin)) {
-                        Toast.makeText(this_context, "Parked user: " + parkedUser, Toast.LENGTH_SHORT).show();
-
-//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-//                                .setContentTitle("Parking Spotter")
-//                                .setContentText("Parked User: " + parkedUser)
-//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//
-//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-//                        int notificationId = 14;
-//                        notificationManager.notify(notificationId, builder.build());
-                    }
-
-                    // Get the polygon
+                    // Get the polygon for the parking space being driven away from
                     Polygon parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
 
                     // Get the distance to polygon center to see if we are even close to our own parking space
                     double distance = MapsLocationService.last_known_location_runnable.distanceTo(MapsLocationService.getPolygonCenter(parking_space));
                     boolean inVicinity = distance < 6;
 
-                    if (Boolean.TRUE.equals(isAdmin)) {
+                    // Print the vicinity distance as a toast message
+                    if (Boolean.TRUE.equals(isAdmin))
                         Toast.makeText(this_context, "Vicinity Distance: " + distance, Toast.LENGTH_SHORT).show();
-
-//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-//                                .setContentTitle("Parking Spotter")
-//                                .setContentText("Vicinity Distance: " + distance)
-//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//
-//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-//                        int notificationId = 15;
-//                        notificationManager.notify(notificationId, builder.build());
-                    }
 
                     // Check to make sure it is this users parking spot we are removing
                     if (parkedUser.equals(username) || inVicinity) {
-                        if (Boolean.TRUE.equals(isAdmin)) {
+                        if (Boolean.TRUE.equals(isAdmin))
                             Toast.makeText(this_context, "Clearing Parking Space", Toast.LENGTH_SHORT).show();
-
-//                            NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-//                                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-//                                    .setContentTitle("Parking Spotter")
-//                                    .setContentText("Clearing Parking Space")
-//                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//
-//                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-//                            int notificationId = 13;
-//                            notificationManager.notify(notificationId, builder.build());
-                        }
 
                         // Set the parking space to empty
                         firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", "");
-
-                        // Hide the find my car button
-                        findMyCarButton.setVisibility(View.INVISIBLE);
-
-                        // parking space ID and its polygon
-                        String id = parkingSpacesDocIDs.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
-
-                        // Restore the style depending on what type of parking space it is
-                        if (id.startsWith("EV")) {
-                            styleEVParkingSpace(parking_space);
-                        } else if (id.startsWith("METER")) {
-                            styleMeterParkingSpace(parking_space);
-                        } else {
-                            styleParkingEmptySpace(parking_space);
-                        }
                     }
                     break;
                 case "Walking":
-                    if (Boolean.TRUE.equals(isAdmin)) {
-                        Toast.makeText(this_context, "Filling Parking Space", Toast.LENGTH_SHORT).show();
-
-//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-//                                .setContentTitle("Parking Spotter")
-//                                .setContentText("Filling Parking Space")
-//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//
-//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-//                        int notificationId = 12;
-//                        notificationManager.notify(notificationId, builder.build());
-                    }
-
                     // Remove any parking spaces if they have any
                     firestore.collection("ParkingSpaces")
                             .whereEqualTo("user", username)
                             .get()
                             .addOnCompleteListener(task -> {
-                                if (task.isSuccessful())
+                                if (task.isSuccessful()) {
+                                    // Loop through and erase any parking spots the user may have already as we can't be parked in two spots at once
                                     for (QueryDocumentSnapshot document : task.getResult())
-                                        firestore.collection("ParkingSpaces").document(document.getId()).update("user", "");
+                                        if (!document.getId().equals(parkedBestOption))
+                                            firestore.collection("ParkingSpaces").document(document.getId()).update("user", "");
+
+                                    // Set the new parking space to be occupied by current user
+                                    firestore.collection("ParkingSpaces").document(parkedBestOption)
+                                            .update("user", username)
+                                            .addOnFailureListener(e -> {
+                                                if (Boolean.TRUE.equals(isAdmin))
+                                                    Toast.makeText(this_context, "Failed to Fill Parking Space", Toast.LENGTH_SHORT).show();
+                                            })
+                                            .addOnSuccessListener(e -> {
+                                                if (Boolean.TRUE.equals(isAdmin))
+                                                    Toast.makeText(this_context, "Filled Parking Space", Toast.LENGTH_SHORT).show();
+                                            });
+                                }
                             });
-
-                    // Set the parking space to be occupied by current user
-                    firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", username);
-
-                    // Check to see if we already have a parked car, we do not want to parked cars right
-                    if (findMyCarButton.getVisibility() != View.VISIBLE) {
-                        // Get index of the parking space and then change the colour of that polygon
-                        styleParkingYourSpace(parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption)));
-                        findMyCarButton.setVisibility(View.VISIBLE);
-                    }
                     break;
                 case "Parked":
-                    if (Boolean.TRUE.equals(isAdmin)) {
+                    if (Boolean.TRUE.equals(isAdmin))
                         Toast.makeText(this_context, "Parked - Runnable Restarting", Toast.LENGTH_SHORT).show();
-
-//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-//                                .setContentTitle("Parking Spotter")
-//                                .setContentText("Runnable Restarting")
-//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//
-//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-//                        int notificationId = 11;
-//                        notificationManager.notify(notificationId, builder.build());
-                    }
 
                     // If we are still parked, we want to restart this and keep polling
                     restartRunnable();
                     break;
                 default:
-                    if (Boolean.TRUE.equals(isAdmin)) {
+                    if (Boolean.TRUE.equals(isAdmin))
                         Toast.makeText(this_context, "Stopped - Runnable Restarting", Toast.LENGTH_SHORT).show();
 
-//                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this_context, CHANNEL_ID)
-//                                .setSmallIcon(R.drawable.ic_launcher_foreground)
-//                                .setContentTitle("Parking Spotter")
-//                                .setContentText("Runnable Restarting")
-//                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//
-//                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this_context);
-//                        int notificationId = 11;
-//                        notificationManager.notify(notificationId, builder.build());
-                    }
-
-                    // If we are still parked, we want to restart this and keep polling
+                    // If we are still stopped, we want to restart this and keep polling
                     restartRunnable();
             }
         }
@@ -274,7 +181,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
         // Get the stored information within the shared preference
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
-
         // Get the username of the current logged in user
         username = sharedPref.getString("username", null);
 
@@ -286,6 +192,34 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
             setContentView(binding.getRoot());
         }
+
+        // Get ID if name TextView
+        name = findViewById(R.id.welcomeText);
+
+        // Gets user administrator access
+        firestore.collection("Users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            isAdmin = Boolean.TRUE.equals(document.getBoolean("isAdmin"));
+                            String newName = "Welcome " + document.getString("name");
+                            name.setText(newName);
+                        }
+
+                        // Display admin information accordingly
+                        if (Boolean.TRUE.equals(isAdmin)) {
+                            findViewById(R.id.adminText).setVisibility(View.VISIBLE);
+                            findViewById(R.id.adminBannerCardView).setVisibility(View.VISIBLE);
+                        } else {
+                            findViewById(R.id.adminText).setVisibility(View.GONE);
+                            findViewById(R.id.adminBannerCardView).setVisibility(View.GONE);
+                        }
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                });
 
         // For foreground notifications
         createNotificationChannel();
@@ -306,72 +240,39 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             getGPSData();
         }
 
-        //Geofencing Code --------------------------------------------------------
+        // Geofencing Code
         geofencingClient = LocationServices.getGeofencingClient(this);
         geofenceHelper = new GeofenceHelper(this);
-        // -----------------------------------------------------------------------
 
         // For the admin speed card view
         speedAdminTextView = findViewById(R.id.speedAdminTextView);
         movingStatusTextView = findViewById(R.id.movingStatusTextView);
-
-        // Gets user administrator access
-        firestore.collection("Users")
-                .whereEqualTo("username", username)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            isAdmin = Boolean.TRUE.equals(document.getBoolean("isAdmin"));
-                            name = findViewById(R.id.welcomeText);
-                            String newName = "Welcome " + document.getString("name");
-                            name.setText(newName);
-                        }
-                        if (Boolean.TRUE.equals(isAdmin)) {
-                            findViewById(R.id.adminText).setVisibility(View.VISIBLE);
-                            findViewById(R.id.adminBannerCardView).setVisibility(View.VISIBLE);
-                        } else {
-                            findViewById(R.id.adminText).setVisibility(View.GONE);
-                            findViewById(R.id.adminBannerCardView).setVisibility(View.GONE);
-                        }
-                    } else {
-                        Log.d(TAG, "Error getting documents: ", task.getException());
-                    }
-                });
-
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
-        //Create a listener to navigate to the settings screen when clicked
+        // Create a listener to navigate to the settings screen when clicked
         Button settingsButton = findViewById(R.id.settingsButton);
         settingsButton.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
 
-        // Default the button to invisible
+        // Get ID of find my car button
         findMyCarButton = findViewById(R.id.findMyCarButton);
-        findMyCarButton.setVisibility(View.INVISIBLE);
-
-        // Show the button if they have a parked car
-        firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful())
-                if (!task.getResult().isEmpty())
-                    findMyCarButton.setVisibility(View.VISIBLE);
-        });
-
         // Set the onClick listener for the center button to zoom in the users parked car
-        findMyCarButton.setOnClickListener(view -> firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x3")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x3")).getLongitude());
-                    CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(18.5f).build();
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-                    mMap.animateCamera(cameraUpdate);
-                }
-            }
-        }));
-
+        findMyCarButton.setOnClickListener(view -> firestore.collection("ParkingSpaces")
+                .whereEqualTo("user", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x3")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x3")).getLongitude());
+                            CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(18.5f).build();
+                            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+                            mMap.animateCamera(cameraUpdate);
+                        }
+                    }
+                }));
     }
 
     /**
@@ -381,65 +282,34 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
+        // Move the camera to default position
+        LatLng Lot = new LatLng(48.42151037144106, -89.25831461845203);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17.8f));
+
+        // Insert a geofence at time of map creation centered around the parking lot with a radius of 500
+        float GEOFENCE_RADIUS = 500;
+        addGeofence(Lot, GEOFENCE_RADIUS);
+
         // Set a listener for the maps current location button
         mMap.setOnMyLocationButtonClickListener(() -> {
             follow = true;
-            return false; // Need this here don't remove or change this line
+            return false; // Need this here
         });
 
         // Disable follow if the map is moved
-        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
-            @Override
-            public void onCameraMoveStarted(int i) {
-                if(i == 1) {
-                    follow = false;
-                }
-            }
+        mMap.setOnCameraMoveStartedListener(i -> {
+            if(i == 1)
+                follow = false;
         });
 
         // Relocate the center location button on the mapview
         mMap.setPadding(0, 255, 15, 0);
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_map));
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
-        } else
+        else
             mMap.setMyLocationEnabled(true);
-
-        // Create sub lot R9
-        Polygon r9 = googleMap.addPolygon(new PolygonOptions()  // could possibly store this in the DB too I think but we need to figure out how to check for different number of vertices
-                .clickable(true)
-                .add(
-                        new LatLng(48.422224, -89.259120),
-                        new LatLng(48.421916, -89.258169),
-                        new LatLng(48.422527, -89.257643),
-                        new LatLng(48.422590, -89.257864),
-                        new LatLng(48.422444, -89.258527)
-                ));
-        // Set the tag for clicking
-        r9.setTag("R9");
-        // Style it as a parking sub lot
-        styleParkingSubLot(r9);
-
-        campus = googleMap.addPolygon(new PolygonOptions()
-                .add(
-                        new LatLng(48.422068652386756, -89.25903004659057),
-                        new LatLng(48.421790245113186, -89.25873683680199),
-                        new LatLng(48.42146393787311, -89.25875036956144),
-                        new LatLng(48.419916195185614, -89.26029761506119),
-                        new LatLng(48.42016168169639, -89.2614343668569),
-                        new LatLng(48.419628794825826, -89.26209296116528),
-                        new LatLng(48.42131724862186, -89.26422211535001),
-                        new LatLng(48.42293380075808, -89.26041940991185)
-                ));
-        campus.setTag("campus");
-        styleParkingSubLot(campus);
-
-        // Make it clickable to zoom in on the chosen sub lot
-        mMap.setOnPolygonClickListener(polygon -> {
-            if ("R9".equals(polygon.getTag()))
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(48.42232555839978, -89.25824351676498), 18.5f));
-        });
 
         // Get the parking spaces from the database and dynamically load them in
         firestore.collection("ParkingSpaces")
@@ -462,15 +332,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             assert parkedUsername != null;
                             if (parkedUsername.equals(""))
                                 if (document.getId().startsWith("EV"))
-                                    styleEVParkingSpace(polygon);
+                                    stylePolygon(polygon, "EV");
                                 else if (document.getId().startsWith("METER"))
-                                    styleMeterParkingSpace(polygon);
+                                    stylePolygon(polygon, "Meter");
                                 else
-                                    styleParkingEmptySpace(polygon);
+                                    stylePolygon(polygon, "Empty");
                             else if (parkedUsername.equalsIgnoreCase(username))
-                                styleParkingYourSpace(polygon);
+                                stylePolygon(polygon, "Yours");
                             else
-                                styleParkingFilledSpace(polygon);
+                                stylePolygon(polygon, "Filled");
                         }
                     } else {
                         Log.d(TAG, "Error getting documents: ", task.getException());
@@ -498,29 +368,45 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                             // Also, show or hide the find my car button
                             if (newUser.equals("")) {
                                 if (dc.getDocument().getId().startsWith("EV"))
-                                    styleEVParkingSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "EV");
                                 else if (dc.getDocument().getId().startsWith("METER"))
-                                    styleMeterParkingSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Meter");
                                 else
-                                    styleParkingEmptySpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Empty");
                                 findMyCarButton.setVisibility(View.INVISIBLE);
                             } else if (newUser.equals(username)) {
-                                styleParkingYourSpace(parkingSpaces.get(parkingSpacePolygonIndex));
+                                stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Yours");
                                 findMyCarButton.setVisibility(View.VISIBLE);
                             } else
-                                styleParkingFilledSpace(parkingSpaces.get(parkingSpacePolygonIndex));
-
+                                stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Filled");
                         }
                     }
                 });
 
-        // move the camera to default position
-        LatLng Lot = new LatLng(48.42101, -89.25828);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17.5f));       // Need to figure out a way to not reset this everytime we enter the map I feel
+        // Show the button if they have a parked car
+        firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful())
+                if (!task.getResult().isEmpty())
+                    findMyCarButton.setVisibility(View.VISIBLE);
+        });
 
-        //Insert a geofence at time of map creation centered around the parking lot with a radius of 500
-        float GEOFENCE_RADIUS = 500;
-        addGeofence(Lot, GEOFENCE_RADIUS);
+        // Get the polygon for the campus so we can use this to tell if we are in the parking or not
+        campus = googleMap.addPolygon(new PolygonOptions()
+                .add(
+                        new LatLng(48.42176462322088, -89.25887980779537),
+                        new LatLng(48.42149778468855, -89.25886084171513),
+                        new LatLng(48.421364364897094, -89.25918705829504),
+                        new LatLng(48.42101445095027, -89.25937292588127),
+                        new LatLng(48.420772782357716, -89.25990018291158),
+                        new LatLng(48.42016105359544, -89.26063986005005),
+                        new LatLng(48.42021895416382, -89.26116711708035),
+                        new LatLng(48.421213323198685, -89.26180817059202),
+                        new LatLng(48.422373815372865, -89.26070055150677),
+                        new LatLng(48.421978596501226, -89.25953603418084),
+                        new LatLng(48.42196349253433, -89.25909222790354)
+                ));
+        campus.setTag("campus");
+        stylePolygon(campus, "Sub Lot");
     }
 
     /**
@@ -552,6 +438,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                 mMap.animateCamera(cameraUpdate, cancelableCallback);
             }
         }
+
+        if (!geoFenceStatus) {
+            String speed_text = "N/A";
+            MapsActivity.speedAdminTextView.setText(speed_text);
+            String moving_test = "Outside Geofence";
+            MapsActivity.movingStatusTextView.setText(moving_test);
+        }
     }
 
     @Override
@@ -569,34 +462,28 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Called when the status of the GPS provider changes
     }
 
-    private static void styleParkingEmptySpace(Polygon polygon) {
+    private void stylePolygon(Polygon polygon, String style) {
         polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.green));
-    }
-
-    private void styleParkingFilledSpace(Polygon polygon) {
-        polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.red));
-    }
-
-    private static void styleParkingYourSpace(Polygon polygon) {
-        polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.your_car_blue));
-    }
-
-    private static void styleEVParkingSpace(Polygon polygon) {
-        polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.ev_spot));
-    }
-
-    private static void styleMeterParkingSpace(Polygon polygon) {
-        polygon.setStrokeWidth(3);
-        polygon.setFillColor(ContextCompat.getColor(this_context, R.color.meter_spot));
-    }
-
-    private void styleParkingSubLot(Polygon polygon){
-        polygon.setStrokeWidth(0);
-        //polygon.setFillColor(ContextCompat.getColor(this, R.color.parking_space_purple));
+        switch (style) {
+            case "Empty":
+                polygon.setFillColor(ContextCompat.getColor(this_context, R.color.green));
+                break;
+            case "Filled":
+                polygon.setFillColor(ContextCompat.getColor(this_context, R.color.red));
+                break;
+            case "Yours":
+                polygon.setFillColor(ContextCompat.getColor(this_context, R.color.your_car_blue));
+                break;
+            case "EV":
+                polygon.setFillColor(ContextCompat.getColor(this_context, R.color.ev_spot));
+                break;
+            case "Meter":
+                polygon.setFillColor(ContextCompat.getColor(this_context, R.color.meter_spot));
+                break;
+            case "Sub Lot":
+                polygon.setStrokeWidth(0);
+                break;
+        }
     }
 
     /**

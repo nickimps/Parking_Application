@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -68,7 +66,6 @@ public class MapsLocationService extends Service implements LocationListener {
                     // Create a notification
                     NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                             .setSmallIcon(R.drawable.ic_launcher_foreground)
-                            .setContentTitle("Parking Spotter")
                             .setContentText("Background GPS tracking active.")
                             .setSilent(true)
                             .setPriority(NotificationCompat.PRIORITY_LOW);
@@ -252,90 +249,76 @@ public class MapsLocationService extends Service implements LocationListener {
      */
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        // Update the speed on the card view on the screen
-        float speed = 0.0f;
-        if (location.hasSpeed())
-            speed = location.getSpeed();
-        else
-            speed = 0.0f;
+        // Do things when we are inside the geofence, help lower battery consumption
+        if(MapsActivity.geoFenceStatus) {
+            // Update the speed on the card view on the screen
+            float speed;
+            if (location.hasSpeed())
+                speed = location.getSpeed();
+            else
+                speed = 0.0f;
 
-        MapsActivity.movingStatus = "Stopped";
+            MapsActivity.movingStatus = "Stopped";
 
-        last_known_location_runnable = location;
+            last_known_location_runnable = location;
 
-        // Get the label based on the speed
-        if (speed <= 0.05) {
-            MapsActivity.movingStatus = checkStop(location);
-        } else if (speed > 0.05 && speed <= 2) {
-            MapsActivity.movingStatus = "Walking";
-        } else if (speed > 2) {
-            MapsActivity.movingStatus = "Driving";
-        }
-
-        // If we are admin, adjust the banner
-        if (MapsActivity.isAdmin) {
-//            NotificationCompat.Builder builder = new NotificationCompat.Builder(MapsActivity.this_context, CHANNEL_ID)
-//                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-//                    .setContentTitle("Parking Spotter")
-//                    .setContentText(MapsActivity.movingStatus)
-//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//
-//            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MapsActivity.this_context);
-//            int notificationId = 8;
-//            notificationManager.notify(notificationId, builder.build());
-
-            String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
-            MapsActivity.speedAdminTextView.setText(speedString);
-
-            MapsActivity.movingStatusTextView.setText(MapsActivity.movingStatus);
-        }
-
-        // Check if we are on campus boundaries to stop service or start it if we are back on ya know
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (LatLng latLng : MapsActivity.campus.getPoints()) {
-            builder.include(latLng);
-        }
-        LatLngBounds bounds = builder.build();
-
-        // Check if the user's location is inside the bounds of the polygon
-        if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
-            if (MapsActivity.inPolygon) {
-                // Stop foreground tracking
-                Intent service_intent = new Intent(this, MapsLocationService.class);
-                service_intent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
-                startService(service_intent);
-
-                // Stop the runnable if there is one in progress
-                MapsActivity.parkedHandler.removeCallbacks(MapsActivity.parkedRunnable);
-
-                // Toggle flag
-                MapsActivity.inPolygon = false;
-
-                if(MapsActivity.isAdmin)
-                    Toast.makeText(MapsActivity.this_context, "On Campus - service stopped", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            if (!MapsActivity.inPolygon) {
-                // Start foreground tracking
-                Intent service_intent = new Intent(this, MapsLocationService.class);
-                service_intent.setAction(MapsLocationService.ACTION_START_FOREGROUND_SERVICE);
-                startService(service_intent);
-
-                // Toggle flag
-                MapsActivity.inPolygon = true;
-
-                if(MapsActivity.isAdmin)
-                    Toast.makeText(MapsActivity.this_context, "In Parking Lot - service started", Toast.LENGTH_SHORT).show();
+            // Get the label based on the speed
+            if (speed <= 0.05) {
+                MapsActivity.movingStatus = checkStop(location);
+            } else if (speed > 0.05 && speed <= 2) {
+                MapsActivity.movingStatus = "Walking";
+            } else if (speed > 2) {
+                MapsActivity.movingStatus = "Driving";
             }
 
-        }
+            // If we are admin, adjust the banner
+            if (MapsActivity.isAdmin) {
+                String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
+                MapsActivity.speedAdminTextView.setText(speedString);
 
-//        if (MapsActivity.geoFenceStatus) {
-//
-//
-////            if(isAdmin)
-////                Toast.makeText(this_context, "Off Campus - service started", Toast.LENGTH_SHORT).show();
-//        }
+                MapsActivity.movingStatusTextView.setText(MapsActivity.movingStatus);
+            }
+
+            // Check if we are on campus boundaries to stop service or start it if we are back on ya know
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for (LatLng latLng : MapsActivity.campus.getPoints()) {
+                builder.include(latLng);
+            }
+            LatLngBounds bounds = builder.build();
+
+            // Check if the user's location is inside the bounds of the polygon
+            if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
+                if (MapsActivity.inPolygon) {
+                    // Stop foreground tracking
+                    Intent service_intent = new Intent(this, MapsLocationService.class);
+                    service_intent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
+                    startService(service_intent);
+
+                    // Stop the runnable if there is one in progress
+                    MapsActivity.parkedHandler.removeCallbacks(MapsActivity.parkedRunnable);
+
+                    // Toggle flag
+                    MapsActivity.inPolygon = false;
+
+                    if(MapsActivity.isAdmin)
+                        Toast.makeText(MapsActivity.this_context, "On Campus - service stopped", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                if (!MapsActivity.inPolygon) {
+                    // Start foreground tracking
+                    Intent service_intent = new Intent(this, MapsLocationService.class);
+                    service_intent.setAction(MapsLocationService.ACTION_START_FOREGROUND_SERVICE);
+                    startService(service_intent);
+
+                    // Toggle flag
+                    MapsActivity.inPolygon = true;
+
+                    if(MapsActivity.isAdmin)
+                        Toast.makeText(MapsActivity.this_context, "In Parking Lot - service started", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        }
     }
 
     /**

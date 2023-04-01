@@ -46,7 +46,7 @@
     <string name="current_speed_xx_m_s">0.000000 m/s</string>
     <string name="stopped">Stopped</string>
     <string name="admin">ADMIN</string>
-    <string name="welcome_name">Welcome Name</string>
+    <string name="welcome_name">Welcome</string>
     <string name="your_car">Your Car</string>
     <string name="available">Available</string>
     <string name="occupied">Occupied</string>
