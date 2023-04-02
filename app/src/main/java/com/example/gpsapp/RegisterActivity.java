@@ -32,6 +32,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -164,6 +166,12 @@ public class RegisterActivity extends AppCompatActivity {
             String name = nameEditText.getText().toString().trim();
             String permit = permitEditText.getText().toString().trim();
 
+            String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{4,}$";
+            Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
+            Matcher matcher = pattern.matcher(password);
+
+            Boolean passwordRequirements = matcher.matches();
+
             //Database instance
             firestore = FirebaseFirestore.getInstance();
 
@@ -174,7 +182,7 @@ public class RegisterActivity extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             // If the user exists and the fields were not empty, then add the user
-                            if(task.getResult().isEmpty() && !username.isEmpty() && !password.isEmpty() && !name.isEmpty()) {
+                            if(task.getResult().isEmpty() && !username.isEmpty() && username.contains("@") && !password.isEmpty() && !name.isEmpty() && passwordRequirements) {
 
                                 //encrypts the password before sending to DB and shared preferences
                                 try {
@@ -237,6 +245,10 @@ public class RegisterActivity extends AppCompatActivity {
                             } else if(password.isEmpty() && name.isEmpty()) {
                                 passwordLayout.setError("Required");
                                 nameLayout.setError("Required");
+                            } else if(!(username.contains("@"))) {
+                                usernameLayout.setError("Must contain @");
+                            } else if(!passwordRequirements) {
+                                passwordLayout.setError("Must contain upper/lower case letters, numbers, and special characters");
                             }
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
