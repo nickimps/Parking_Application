@@ -66,7 +66,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             context.startService(service_intent);
 
             // Stop the runnable if there is one in progress
-            MapsActivity.parkedHandler.removeCallbacks(MapsActivity.parkedRunnable);
+            MapsLocationService.parkedHandler.removeCallbacks(MapsLocationService.parkedRunnable);
 
             //Disable the geofence status
             MapsActivity.geoFenceStatus = false;

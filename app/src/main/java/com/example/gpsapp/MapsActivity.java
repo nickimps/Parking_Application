@@ -7,26 +7,16 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.gpsapp.databinding.ActivityMapsBinding;
 import com.google.android.gms.location.Geofence;
@@ -43,8 +33,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -53,16 +41,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
-    private static final long POLLING_SPEED = 500L;
-    private static final float POLLING_DISTANCE = (float) 0.0001;
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final int REQUEST_LOCATION = 1;
-    public static final int RUNNABLE_TIME = 2500;
     private static final String TAG = "MapsActivity";
-    private static final String CHANNEL_ID = "my_channel";
-    public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false, inPolygon;
+    public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false, inPolygon, animationInProgress;
     public static GoogleMap mMap;
-    public static LocationManager mLocationManager;
     @SuppressLint("StaticFieldLeak")
     public static TextView name, speedAdminTextView, movingStatusTextView;
     @SuppressLint("StaticFieldLeak")
@@ -77,98 +60,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     @SuppressLint("StaticFieldLeak")
     public static Context this_context;
     public static Polygon campus;
-    public boolean animationInProgress;
-    public static Handler parkedHandler = new Handler();
-    public static Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
-        @Override
-        public void run() {
-            // do something depending on the status
-            switch (movingStatus) {
-                case "Driving":
-                    // Get the user that has parked in that parking space
-                    parkedUser = "";
-                    firestore.collection("ParkingSpaces").get().addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            parkedUser = Objects.requireNonNull(task.getResult().getDocuments().get(1).get("user")).toString();
-
-                            if (Boolean.TRUE.equals(isAdmin))
-                                Toast.makeText(this_context, "Parked user: " + parkedUser, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-                    // Get the polygon for the parking space being driven away from
-                    Polygon parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
-
-                    // Get the distance to polygon center to see if we are even close to our own parking space
-                    double distance = MapsLocationService.last_known_location_runnable.distanceTo(MapsLocationService.getPolygonCenter(parking_space));
-                    boolean inVicinity = distance < 6;
-
-                    // Print the vicinity distance as a toast message
-                    if (Boolean.TRUE.equals(isAdmin))
-                        Toast.makeText(this_context, "Vicinity Distance: " + distance, Toast.LENGTH_SHORT).show();
-
-                    // Check to make sure it is this users parking spot we are removing
-                    if (parkedUser.equals(username) || inVicinity) {
-                        if (Boolean.TRUE.equals(isAdmin))
-                            Toast.makeText(this_context, "Clearing Parking Space", Toast.LENGTH_SHORT).show();
-
-                        // Set the parking space to empty
-                        firestore.collection("ParkingSpaces").document(parkedBestOption).update("user", "");
-                    }
-                    break;
-                case "Walking":
-                    // Remove any parking spaces if they have any
-                    firestore.collection("ParkingSpaces")
-                            .whereEqualTo("user", username)
-                            .get()
-                            .addOnCompleteListener(task -> {
-                                if (task.isSuccessful()) {
-                                    // Loop through and erase any parking spots the user may have already as we can't be parked in two spots at once
-                                    for (QueryDocumentSnapshot document : task.getResult())
-                                        if (!document.getId().equals(parkedBestOption))
-                                            firestore.collection("ParkingSpaces").document(document.getId()).update("user", "");
-
-                                    // Set the new parking space to be occupied by current user
-                                    firestore.collection("ParkingSpaces").document(parkedBestOption)
-                                            .update("user", username)
-                                            .addOnFailureListener(e -> {
-                                                if (Boolean.TRUE.equals(isAdmin))
-                                                    Toast.makeText(this_context, "Failed to Fill Parking Space", Toast.LENGTH_SHORT).show();
-                                            })
-                                            .addOnSuccessListener(e -> {
-                                                if (Boolean.TRUE.equals(isAdmin))
-                                                    Toast.makeText(this_context, "Filled Parking Space", Toast.LENGTH_SHORT).show();
-                                            });
-                                }
-                            });
-                    break;
-                case "Parked":
-                    if (Boolean.TRUE.equals(isAdmin))
-                        Toast.makeText(this_context, "Parked - Runnable Restarting", Toast.LENGTH_SHORT).show();
-
-                    // If we are still parked, we want to restart this and keep polling
-                    restartRunnable();
-                    break;
-                default:
-                    if (Boolean.TRUE.equals(isAdmin))
-                        Toast.makeText(this_context, "Stopped - Runnable Restarting", Toast.LENGTH_SHORT).show();
-
-                    // If we are still stopped, we want to restart this and keep polling
-                    restartRunnable();
-            }
-        }
-    };
-
-    /**
-     * Restarts the runnable to continue to poll
-     */
-    private static void restartRunnable() {
-        // Stop current runnable
-        parkedHandler.removeCallbacks(parkedRunnable);
-
-        // Start a new runnable
-        parkedHandler.postDelayed(parkedRunnable, RUNNABLE_TIME);
-    }
 
     /**
      * Called on activity creation, many things initialize and happen here.
@@ -224,24 +115,8 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     }
                 });
 
-        // For foreground notifications
-        createNotificationChannel();
-
         // To use context in other scenarios
         this_context = getApplicationContext();
-
-        // Get a reference to the location manager
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            // Need permissions to be good
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("No", (dialog, which) -> dialog.cancel());
-            final AlertDialog alertDialog = builder.create();
-            alertDialog.show();
-        } else {
-            // Get Location and start requesting updates
-            getGPSData();
-        }
 
         // Geofencing Code
         geofencingClient = LocationServices.getGeofencingClient(this);
@@ -309,9 +184,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         mMap.setPadding(0, 255, 15, 0);
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_map));
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
-        else
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             mMap.setMyLocationEnabled(true);
 
         // Get the parking spaces from the database and dynamically load them in
@@ -412,59 +285,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         stylePolygon(campus, "Sub Lot");
     }
 
-    /**
-     * When the user moves, this function is called. It checks the speed, if we have determined the user as being stopped, we call the
-     * checkStop() function. Otherwise, we determine if the user is walking or driving and display that label and the speed accordingly.
-     *
-     * @param location The location parameter
-     */
-    @Override
-    public void onLocationChanged(Location location) {
-        // Have the camera follow the user if the follow boolean is set to true
-        if (follow) {
-            GoogleMap.CancelableCallback cancelableCallback = new GoogleMap.CancelableCallback() {
-                @Override
-                public void onCancel() {
-                    animationInProgress = false;
-                }
-
-                @Override
-                public void onFinish() {
-                    animationInProgress = false;
-                }
-            };
-
-            if(!animationInProgress) {
-                animationInProgress = true;
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(mMap.getCameraPosition().zoom).build();
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-                mMap.animateCamera(cameraUpdate, cancelableCallback);
-            }
-        }
-
-        if (!geoFenceStatus) {
-            String speed_text = "N/A";
-            MapsActivity.speedAdminTextView.setText(speed_text);
-            String moving_test = "Outside Geofence";
-            MapsActivity.movingStatusTextView.setText(moving_test);
-        }
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        // Called when the user enables the GPS provider
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        // Called when the user disables the GPS provider
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        // Called when the status of the GPS provider changes
-    }
-
     private void stylePolygon(Polygon polygon, String style) {
         polygon.setStrokeWidth(3);
         switch (style) {
@@ -486,23 +306,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             case "Sub Lot":
                 polygon.setStrokeWidth(0);
                 break;
-        }
-    }
-
-    /**
-     * Populates the textfield with the location
-     * Also starts the .requestLocationUpdates for the onLocationChanged function
-     */
-    @SuppressLint("SetTextI18n")
-    private void getGPSData() {
-        //Request permissions if they have not already been accepted
-        if (ActivityCompat.checkSelfPermission(MapsActivity.this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
-        } else {
-            // Start the listener to manage location updates
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, POLLING_SPEED, POLLING_DISTANCE, this);
         }
     }
 
@@ -533,23 +336,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
                     });
         }
     }
-
-    /**
-     * Creates the notification to show the user that we are tracking their location in the background
-     */
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Foreground Service Channel",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            serviceChannel.setShowBadge(false);
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(serviceChannel);
-        }
-    }
-
 }
 
 
