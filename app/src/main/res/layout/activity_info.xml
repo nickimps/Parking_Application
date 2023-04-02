@@ -87,6 +87,7 @@
         android:backgroundTint="@color/orange"
         android:text="@string/go_to_admin_screen"
         android:fontFamily="@font/dm_sans"
+        android:visibility="gone"
         android:layout_centerHorizontal="true"/>
 
     <Button
