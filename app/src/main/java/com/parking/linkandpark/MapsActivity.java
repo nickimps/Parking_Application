@@ -1,4 +1,4 @@
-package com.android.linkandpark;
+package com.parking.linkandpark;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -18,8 +18,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.android.linkandpark.R;
-import com.android.linkandpark.databinding.ActivityMapsBinding;
+import com.parking.linkandpark.R;
+import com.parking.linkandpark.databinding.ActivityMapsBinding;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;

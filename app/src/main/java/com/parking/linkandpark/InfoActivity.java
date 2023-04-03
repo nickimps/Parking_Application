@@ -1,4 +1,4 @@
-package com.android.linkandpark;
+package com.parking.linkandpark;
 
 import static android.content.ContentValues.TAG;
 import android.content.Intent;
@@ -13,7 +13,7 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.util.Log;
 
-import com.android.linkandpark.R;
+import com.parking.linkandpark.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:padding="25sp"
     android:screenOrientation="portrait"
-    tools:context="com.android.linkandpark.AdminActivity">
+    tools:context="com.parking.linkandpark.AdminActivity">
 
     <TextView
         android:id="@+id/locationTextView"

@@ -9,7 +9,7 @@
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:screenOrientation="portrait"
-    tools:context="com.android.linkandpark.InfoActivity">
+    tools:context="com.parking.linkandpark.InfoActivity">
 
     <TextView
         android:id="@+id/messageTextView"

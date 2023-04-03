@@ -1,4 +1,4 @@
-package com.android.linkandpark;
+package com.parking.linkandpark;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;

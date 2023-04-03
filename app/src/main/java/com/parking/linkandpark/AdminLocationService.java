@@ -1,4 +1,4 @@
-package com.android.linkandpark;
+package com.parking.linkandpark;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -19,7 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
-import com.android.linkandpark.R;
+import com.parking.linkandpark.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

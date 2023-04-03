@@ -1,4 +1,4 @@
-package com.android.linkandpark;
+package com.parking.linkandpark;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -22,7 +22,7 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
-import com.android.linkandpark.R;
+import com.parking.linkandpark.R;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
@@ -214,7 +214,7 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
      */
     private void saveLocationToFile(String data, String filename) {
         try {
-            /*    Saves to: /data/data/com.android.linkandpark/files/Location_Data/    */
+            /*    Saves to: /data/data/com.parking.linkandpark/files/Location_Data/    */
 
             // Creates directory to store data into called Location_Data
             File file = new File(AdminActivity.this.getFilesDir(), "Location_Data");

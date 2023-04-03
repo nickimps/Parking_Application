@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:screenOrientation="portrait"
-    tools:context="com.android.linkandpark.eulaActivity">
+    tools:context="com.parking.linkandpark.eulaActivity">
 
     <ImageView
         android:id="@+id/background"
