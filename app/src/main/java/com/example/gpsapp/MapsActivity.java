@@ -76,8 +76,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         username = sharedPref.getString("username", null);
         String password = sharedPref.getString("password", null);
 
-        System.out.println(username + " " + password);
-
         // If the user is not logged in, go to login screen, otherwise go to maps activity like normal
         if (username == null || password == null) {
             startActivity(new Intent(MapsActivity.this, LoginActivity.class));
@@ -86,6 +84,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
             setContentView(binding.getRoot());
         }
+
+        MapsLocationService.runnableRunning = false;
 
         // Get ID if name TextView
         name = findViewById(R.id.welcomeText);

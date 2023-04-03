@@ -116,7 +116,7 @@ public class eulaActivity extends AppCompatActivity {
         Button acceptButton = findViewById(R.id.agreeButton);
         acceptButton.setOnClickListener(view -> {
             Intent intent = new Intent(eulaActivity.this, RegisterActivity.class);
-            Toast.makeText(getApplicationContext(), "User Agreement Accepted, Moving to Registration", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "User Agreement Accepted, Moving to Registration", Toast.LENGTH_SHORT).show();
             startActivity((intent));
         });
 
@@ -124,7 +124,7 @@ public class eulaActivity extends AppCompatActivity {
         Button doNotAcceptButton = findViewById(R.id.doNotAgreeButton);
         doNotAcceptButton.setOnClickListener(view -> {
             Intent intent = new Intent(eulaActivity.this, LoginActivity.class);
-            Toast.makeText(getApplicationContext(), "User Agreement Denied, Returning to Homepage", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Must accept terms in order to register.", Toast.LENGTH_SHORT).show();
             startActivity((intent));
         });
 

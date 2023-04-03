@@ -62,7 +62,7 @@ public class MapsLocationService extends Service implements LocationListener {
     private static String current_shared_spot;
     LocationManager mLocationManager;
     private static Location last_known_location_runnable;
-    private static boolean runnableRunning;
+    public static boolean runnableRunning;
     public static final Handler parkedHandler = new Handler();
     public static final Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
         @Override
@@ -158,7 +158,10 @@ public class MapsLocationService extends Service implements LocationListener {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        current_shared_spot = task.getResult().getDocuments().get(0).getId();
+                        if (task.getResult().isEmpty())
+                            current_shared_spot = "";
+                        else
+                            current_shared_spot = task.getResult().getDocuments().get(0).getId();
                     } else {
                         current_shared_spot = "";
                     }
