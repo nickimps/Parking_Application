@@ -44,7 +44,7 @@ import java.util.Objects;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final int REQUEST_LOCATION = 1;
     private static final String TAG = "MapsActivity";
-    public static boolean geoFenceStatus, available_spot, my_spot, isAdmin, follow = false, inPolygon, animationInProgress;
+    public static boolean geoFenceStatus, isAdmin, follow = false, inPolygon, animationInProgress;
     public static GoogleMap mMap;
     @SuppressLint("StaticFieldLeak")
     public static TextView name, speedAdminTextView, movingStatusTextView;
