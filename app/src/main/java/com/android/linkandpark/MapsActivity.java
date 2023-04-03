@@ -1,4 +1,4 @@
-package com.example.gpsapp;
+package com.android.linkandpark;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -18,7 +18,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.gpsapp.databinding.ActivityMapsBinding;
+import com.android.linkandpark.R;
+import com.android.linkandpark.databinding.ActivityMapsBinding;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;

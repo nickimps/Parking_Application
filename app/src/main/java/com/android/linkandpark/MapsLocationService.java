@@ -1,17 +1,17 @@
-package com.example.gpsapp;
+package com.android.linkandpark;
 
-import static com.example.gpsapp.MapsActivity.animationInProgress;
-import static com.example.gpsapp.MapsActivity.firestore;
-import static com.example.gpsapp.MapsActivity.follow;
-import static com.example.gpsapp.MapsActivity.geoFenceStatus;
-import static com.example.gpsapp.MapsActivity.isAdmin;
-import static com.example.gpsapp.MapsActivity.mMap;
-import static com.example.gpsapp.MapsActivity.movingStatus;
-import static com.example.gpsapp.MapsActivity.parkedBestOption;
-import static com.example.gpsapp.MapsActivity.parkingSpaces;
-import static com.example.gpsapp.MapsActivity.parkingSpacesDocIDs;
-import static com.example.gpsapp.MapsActivity.this_context;
-import static com.example.gpsapp.MapsActivity.username;
+import static com.android.linkandpark.MapsActivity.animationInProgress;
+import static com.android.linkandpark.MapsActivity.firestore;
+import static com.android.linkandpark.MapsActivity.follow;
+import static com.android.linkandpark.MapsActivity.geoFenceStatus;
+import static com.android.linkandpark.MapsActivity.isAdmin;
+import static com.android.linkandpark.MapsActivity.mMap;
+import static com.android.linkandpark.MapsActivity.movingStatus;
+import static com.android.linkandpark.MapsActivity.parkedBestOption;
+import static com.android.linkandpark.MapsActivity.parkingSpaces;
+import static com.android.linkandpark.MapsActivity.parkingSpacesDocIDs;
+import static com.android.linkandpark.MapsActivity.this_context;
+import static com.android.linkandpark.MapsActivity.username;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -34,6 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
+import com.android.linkandpark.R;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;

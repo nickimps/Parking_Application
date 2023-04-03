@@ -1,20 +1,14 @@
-package com.example.gpsapp;
-
-import static android.content.ContentValues.TAG;
+package com.android.linkandpark;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.android.linkandpark.R;
 
 public class eulaActivity extends AppCompatActivity {
 

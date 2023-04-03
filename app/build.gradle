@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.gpsapp'
+    namespace 'com.android.linkandpark'
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.example.gpsapp"
+        applicationId "com.android.linkandpark"
         minSdk 21
         targetSdk 32
         versionCode 1

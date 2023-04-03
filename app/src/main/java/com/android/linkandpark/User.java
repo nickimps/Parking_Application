@@ -1,4 +1,4 @@
-package com.example.gpsapp;
+package com.android.linkandpark;
 
 
 public class User {

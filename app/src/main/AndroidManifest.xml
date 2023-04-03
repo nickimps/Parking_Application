@@ -27,26 +27,26 @@
         android:screenOrientation="portrait"
         tools:targetApi="31">
         <activity
-            android:name=".eulaActivity"
+            android:name="com.android.linkandpark.eulaActivity"
             android:exported="false"
             android:theme="@style/Theme.GPSApp.NoActionBar"
             android:screenOrientation="portrait" />
 
         <receiver
-            android:name=".GeofenceBroadcastReceiver"
+            android:name="com.android.linkandpark.GeofenceBroadcastReceiver"
             android:enabled="true"
             android:exported="true" />
 
         <activity
-            android:name=".AdminActivity"
+            android:name="com.android.linkandpark.AdminActivity"
             android:exported="false"
-            android:parentActivityName=".InfoActivity"
+            android:parentActivityName="com.android.linkandpark.InfoActivity"
             android:theme="@style/Theme.GPSApp"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".RegisterActivity"
+            android:name="com.android.linkandpark.RegisterActivity"
             android:exported="false"
-            android:parentActivityName=".LoginActivity"
+            android:parentActivityName="com.android.linkandpark.LoginActivity"
             android:finishOnTaskLaunch="true"
             android:theme="@style/Theme.GPSApp.NoActionBar"
             android:screenOrientation="portrait" >
@@ -55,9 +55,9 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".LoginActivity"
+            android:name="com.android.linkandpark.LoginActivity"
             android:exported="true"
-            android:parentActivityName=".LoginActivity"
+            android:parentActivityName="com.android.linkandpark.LoginActivity"
             android:finishOnTaskLaunch="true"
             android:theme="@style/Theme.GPSApp.NoActionBar"
             android:screenOrientation="portrait" >
@@ -66,10 +66,10 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".InfoActivity"
+            android:name="com.android.linkandpark.InfoActivity"
             android:exported="false"
             android:label="@string/title_activity_info"
-            android:parentActivityName=".MapsActivity"
+            android:parentActivityName="com.android.linkandpark.MapsActivity"
             android:theme="@style/Theme.GPSApp"
             android:screenOrientation="portrait" >
             <meta-data
@@ -85,10 +85,10 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity
-            android:name=".MapsActivity"
+            android:name="com.android.linkandpark.MapsActivity"
             android:exported="true"
             android:label="@string/title_activity_maps"
-            android:parentActivityName=".MapsActivity"
+            android:parentActivityName="com.android.linkandpark.MapsActivity"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -97,8 +97,8 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".AdminLocationService" android:foregroundServiceType="location"/>
-        <service android:name=".MapsLocationService" android:foregroundServiceType="location"/>
+        <service android:name="com.android.linkandpark.AdminLocationService" android:foregroundServiceType="location"/>
+        <service android:name="com.android.linkandpark.MapsLocationService" android:foregroundServiceType="location"/>
 
     </application>
 

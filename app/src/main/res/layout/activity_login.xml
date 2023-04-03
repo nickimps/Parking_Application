@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:gravity="bottom"
     android:visibility="visible"
-    tools:context=".LoginActivity"
+    tools:context="com.android.linkandpark.LoginActivity"
     android:screenOrientation="portrait"
     tools:visibility="visible">
 

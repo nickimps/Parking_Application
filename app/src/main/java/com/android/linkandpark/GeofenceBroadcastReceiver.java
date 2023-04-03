@@ -1,4 +1,4 @@
-package com.example.gpsapp;
+package com.android.linkandpark;
 
 import static android.content.ContentValues.TAG;
 

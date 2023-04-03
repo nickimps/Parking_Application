@@ -1,4 +1,4 @@
-package com.example.gpsapp;
+package com.android.linkandpark;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -18,6 +18,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+
+import com.android.linkandpark.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
