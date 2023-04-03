@@ -1,5 +1,6 @@
 package com.parking.linkandpark;
 
+import static com.parking.linkandpark.MapsLocationService.current_shared_spot;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parking.linkandpark.R;
 import com.parking.linkandpark.databinding.ActivityMapsBinding;
@@ -152,6 +154,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }
                 }));
+
+        // Save user's parking space on startup if there is one
+        firestore.collection("ParkingSpaces")
+                .whereEqualTo("user", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (task.getResult().isEmpty())
+                            current_shared_spot = "";
+                        else
+                            current_shared_spot = task.getResult().getDocuments().get(0).getId();
+                    } else {
+                        current_shared_spot = "";
+                    }
+                });
     }
 
     /**
@@ -228,7 +245,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         firestore.collection("ParkingSpaces")
                 .addSnapshotListener((snapshots, error) -> {
                     if (error != null) {
-                        Log.w(TAG, "Listen failed.", error);
+                        Toast.makeText(this, "Parking Space Update Failed", Toast.LENGTH_SHORT).show();
                         return;
                     }
 

@@ -60,7 +60,7 @@ public class MapsLocationService extends Service implements LocationListener {
     private static final String CHANNEL_ID = "my_channel";
     private static final String TAG = "MapsActivity";
 
-    private static String current_shared_spot;
+    public static String current_shared_spot;
     LocationManager mLocationManager;
     private static Location last_known_location_runnable;
     public static boolean runnableRunning;
@@ -105,22 +105,31 @@ public class MapsLocationService extends Service implements LocationListener {
                                     // Loop through and erase any parking spots the user may have already as we can't be parked in two spots at once
                                     for (QueryDocumentSnapshot document : task.getResult())
                                         if (!document.getId().equals(parkedBestOption))
-                                            firestore.collection("ParkingSpaces").document(document.getId()).update("user", "");
+                                            firestore.collection("ParkingSpaces")
+                                                    .document(document.getId())
+                                                    .update("user", "")
+                                                    .addOnCompleteListener(task_up -> {
+                                                        if (task_up.isSuccessful()) {
+                                                            // Set the new parking space to be occupied by current user
+                                                            firestore.collection("ParkingSpaces").document(parkedBestOption)
+                                                                    .update("user", username)
+                                                                    .addOnFailureListener(e -> {
+                                                                        if (Boolean.TRUE.equals(isAdmin))
+                                                                            Toast.makeText(this_context, "Failed to Fill Parking Space", Toast.LENGTH_SHORT).show();
+                                                                    })
+                                                                    .addOnSuccessListener(e -> {
+                                                                        if (Boolean.TRUE.equals(isAdmin))
+                                                                            Toast.makeText(this_context, "Filled Parking Space", Toast.LENGTH_SHORT).show();
 
-                                    // Set the new parking space to be occupied by current user
-                                    firestore.collection("ParkingSpaces").document(parkedBestOption)
-                                            .update("user", username)
-                                            .addOnFailureListener(e -> {
-                                                if (Boolean.TRUE.equals(isAdmin))
-                                                    Toast.makeText(this_context, "Failed to Fill Parking Space", Toast.LENGTH_SHORT).show();
-                                            })
-                                            .addOnSuccessListener(e -> {
-                                                if (Boolean.TRUE.equals(isAdmin))
-                                                    Toast.makeText(this_context, "Filled Parking Space", Toast.LENGTH_SHORT).show();
-                                            });
+                                                                        // Save current parked spot
+                                                                        current_shared_spot = parkedBestOption;
+                                                                    });
+                                                        }
+                                                    });
 
-                                    // Save current parked spot
-                                    current_shared_spot = parkedBestOption;
+
+
+
                                 }
                             });
                     break;
@@ -153,20 +162,20 @@ public class MapsLocationService extends Service implements LocationListener {
 
         movingStatus = "Stopped";
 
-        // Save user's parking space on startup if there is one
-        firestore.collection("ParkingSpaces")
-                .whereEqualTo("user", username)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        if (task.getResult().isEmpty())
-                            current_shared_spot = "";
-                        else
-                            current_shared_spot = task.getResult().getDocuments().get(0).getId();
-                    } else {
-                        current_shared_spot = "";
-                    }
-                });
+//        // Save user's parking space on startup if there is one
+//        firestore.collection("ParkingSpaces")
+//                .whereEqualTo("user", username)
+//                .get()
+//                .addOnCompleteListener(task -> {
+//                    if (task.isSuccessful()) {
+//                        if (task.getResult().isEmpty())
+//                            current_shared_spot = "";
+//                        else
+//                            current_shared_spot = task.getResult().getDocuments().get(0).getId();
+//                    } else {
+//                        current_shared_spot = "";
+//                    }
+//                });
 
 
         // Get a reference to the location manager
@@ -383,8 +392,8 @@ public class MapsLocationService extends Service implements LocationListener {
 
             // Get the label based on the speed
             if (speed <= 0.05) {
-                if(!runnableRunning)
-                    movingStatus = checkStop(location);
+                //if(!runnableRunning)
+                movingStatus = checkStop(location);
             } else if (speed > 0.05 && speed <= 2) {
                 movingStatus = "Walking";
             } else if (speed > 2) {
