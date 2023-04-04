@@ -143,7 +143,7 @@ public class AdminLocationService extends Service implements LocationListener {
         String movingStatus = "Stopped";
 
         if (speed <= 0.05)
-            movingStatus = MapsActivity.movingStatus;
+            movingStatus = MapsLocationService.movingStatus;
         else if (speed > 0.05 && speed <= 2)
             movingStatus = "Walking";
         else if (speed > 2)

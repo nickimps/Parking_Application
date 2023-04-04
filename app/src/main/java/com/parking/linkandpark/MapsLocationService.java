@@ -6,7 +6,6 @@ import static com.parking.linkandpark.MapsActivity.follow;
 import static com.parking.linkandpark.MapsActivity.geoFenceStatus;
 import static com.parking.linkandpark.MapsActivity.isAdmin;
 import static com.parking.linkandpark.MapsActivity.mMap;
-import static com.parking.linkandpark.MapsActivity.movingStatus;
 import static com.parking.linkandpark.MapsActivity.parkedBestOption;
 import static com.parking.linkandpark.MapsActivity.parkingSpaces;
 import static com.parking.linkandpark.MapsActivity.parkingSpacesDocIDs;
@@ -28,6 +27,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -55,20 +55,22 @@ public class MapsLocationService extends Service implements LocationListener {
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
     private static final int RUNNABLE_TIME = 5000;
-    private static final int RUNNABLE_TIME_SHORT = 2000;
+    private static final int RUNNABLE_TIME_SHORT = 3000;
+    private static final int RUNNABLE_TIME_PAUSE = 300000;
     private static final int NOTIFICATION_ID = 6;
     private static final String CHANNEL_ID = "my_channel";
     private static final String TAG = "MapsActivity";
-
     public static String current_shared_spot;
     LocationManager mLocationManager;
     private static Location last_known_location_runnable;
-    public static boolean runnableRunning;
+    private static boolean runnableRunning = false;
+    public static String movingStatus;
     public static final Handler parkedHandler = new Handler();
     public static final Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
         @Override
         public void run() {
             // do something depending on the status
+            movingStatus = "Driving";
             switch (movingStatus) {
                 case "Driving":
                     // Get the polygon for the parking space being driven away from
@@ -94,6 +96,7 @@ public class MapsLocationService extends Service implements LocationListener {
                         // Update current parked spot
                         current_shared_spot = "";
                     }
+                    runnableRunning = false;
                     break;
                 case "Walking":
                     // Remove any parking spaces if they have any
@@ -126,19 +129,16 @@ public class MapsLocationService extends Service implements LocationListener {
                                                                     });
                                                         }
                                                     });
-
-
-
-
                                 }
                             });
+                    runnableRunning = false;
                     break;
                 default:
+                    if (Boolean.TRUE.equals(isAdmin))
+                        Toast.makeText(this_context, "Restarting", Toast.LENGTH_SHORT).show();
                     // If we are still stopped, we want to restart this and keep polling
                     restartRunnable();
             }
-
-            runnableRunning = false;
         }
     };
 
@@ -148,7 +148,6 @@ public class MapsLocationService extends Service implements LocationListener {
     private static void restartRunnable() {
         // Stop current runnable
         parkedHandler.removeCallbacks(parkedRunnable);
-
         // Start a new runnable
         parkedHandler.postDelayed(parkedRunnable, RUNNABLE_TIME_SHORT);
     }
@@ -161,22 +160,6 @@ public class MapsLocationService extends Service implements LocationListener {
         super.onCreate();
 
         movingStatus = "Stopped";
-
-//        // Save user's parking space on startup if there is one
-//        firestore.collection("ParkingSpaces")
-//                .whereEqualTo("user", username)
-//                .get()
-//                .addOnCompleteListener(task -> {
-//                    if (task.isSuccessful()) {
-//                        if (task.getResult().isEmpty())
-//                            current_shared_spot = "";
-//                        else
-//                            current_shared_spot = task.getResult().getDocuments().get(0).getId();
-//                    } else {
-//                        current_shared_spot = "";
-//                    }
-//                });
-
 
         // Get a reference to the location manager
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -342,8 +325,6 @@ public class MapsLocationService extends Service implements LocationListener {
                         String docID = parkingSpacesDocIDs.get(parkingSpaces.indexOf(possibleSpace.getKey()));
                         double polyDistance = possibleSpace.getValue();
 
-//                        available_spot = true;
-
                         if (docID.equals(current_shared_spot)) {
                             bestOption = docID;
                             break;
@@ -356,13 +337,14 @@ public class MapsLocationService extends Service implements LocationListener {
                     // If we have a best option, then start the runnable to tell if we have parked or not
                     if (!bestOption.equals("")) {
                         if (Boolean.TRUE.equals(isAdmin))
-                            Toast.makeText(getApplicationContext(), "Runnable Initial Start", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this_context, "Runnable Initial Start", Toast.LENGTH_SHORT).show();
 
                         // Get best parked option and run the runnable to check if we need to style a new parking space
                         runnableRunning = true;
                         parkedBestOption = bestOption;
                         parkedHandler.removeCallbacks(parkedRunnable);
                         parkedHandler.postDelayed(parkedRunnable, RUNNABLE_TIME);
+
                     } else
                         stoppedStatus = "Stopped";
                 }
@@ -388,11 +370,11 @@ public class MapsLocationService extends Service implements LocationListener {
             else
                 speed = 0.0f;
 
-            last_known_location_runnable = location;
+            if (!runnableRunning)
+                last_known_location_runnable = location;
 
             // Get the label based on the speed
             if (speed <= 0.05) {
-                //if(!runnableRunning)
                 movingStatus = checkStop(location);
             } else if (speed > 0.05 && speed <= 2) {
                 movingStatus = "Walking";
@@ -424,13 +406,13 @@ public class MapsLocationService extends Service implements LocationListener {
                     mMap.animateCamera(cameraUpdate, cancelableCallback);
                 }
             }
-
-            if (!geoFenceStatus) {
-                String speed_text = "N/A";
-                MapsActivity.speedAdminTextView.setText(speed_text);
-                String moving_test = "Outside Geofence";
-                MapsActivity.movingStatusTextView.setText(moving_test);
-            }
+//
+//            if (!geoFenceStatus) {
+//                String speed_text = "N/A";
+//                MapsActivity.speedAdminTextView.setText(speed_text);
+//                String moving_test = "Outside Geofence";
+//                MapsActivity.movingStatusTextView.setText(moving_test);
+//            }
 
 //            // Check if we are on campus boundaries to stop service or start it if we are back on ya know
 //            LatLngBounds.Builder builder = new LatLngBounds.Builder();

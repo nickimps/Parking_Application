@@ -1,6 +1,8 @@
 package com.parking.linkandpark;
 
 import static com.parking.linkandpark.MapsLocationService.current_shared_spot;
+import static com.parking.linkandpark.MapsLocationService.movingStatus;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -53,7 +55,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static TextView name, speedAdminTextView, movingStatusTextView;
     @SuppressLint("StaticFieldLeak")
     public static FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    public static String username, parkedBestOption, parkedUser, movingStatus;
+    public static String username, parkedBestOption, parkedUser;
     public static final List<Polygon> parkingSpaces = new ArrayList<>();
     public static final List<String> parkingSpacesDocIDs = new ArrayList<>();
     private GeofencingClient geofencingClient;
@@ -87,8 +89,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
             setContentView(binding.getRoot());
         }
-
-        MapsLocationService.runnableRunning = false;
 
         // Get ID if name TextView
         name = findViewById(R.id.welcomeText);
@@ -253,6 +253,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     assert snapshots != null;
                     for (DocumentChange dc : snapshots.getDocumentChanges()) {
                         if (dc.getType() == DocumentChange.Type.MODIFIED) {
+                            if (isAdmin)
+                                Toast.makeText(this, "Updating", Toast.LENGTH_SHORT).show();
+
                             // Get the index of the polygon that we are wanting to change the style of
                             int parkingSpacePolygonIndex = parkingSpacesDocIDs.indexOf(dc.getDocument().getId());
                             // Get the new value from the user field that has been updated
