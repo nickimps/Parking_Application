@@ -23,6 +23,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.nfc.Tag;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -54,23 +55,21 @@ public class MapsLocationService extends Service implements LocationListener {
     private static final String ACTION_STOP_FOREGROUND_SERVICE = "ACTION_STOP_FOREGROUND_SERVICE";
     private static final long POLLING_SPEED = 500L;
     private static final float POLLING_DISTANCE = (float) 0.0001;
-    private static final int RUNNABLE_TIME = 5000;
-    private static final int RUNNABLE_TIME_SHORT = 3000;
-    private static final int RUNNABLE_TIME_PAUSE = 300000;
+    private static final int RUNNABLE_TIME = 8000;
+    private static final int RUNNABLE_TIME_SHORT = 6000;
     private static final int NOTIFICATION_ID = 6;
     private static final String CHANNEL_ID = "my_channel";
     private static final String TAG = "MapsActivity";
     public static String current_shared_spot;
     LocationManager mLocationManager;
     private static Location last_known_location_runnable;
-    private static boolean runnableRunning = false;
+    static boolean runnableRunning = false;
     public static String movingStatus;
     public static final Handler parkedHandler = new Handler();
     public static final Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
         @Override
         public void run() {
             // do something depending on the status
-            movingStatus = "Driving";
             switch (movingStatus) {
                 case "Driving":
                     // Get the polygon for the parking space being driven away from
@@ -99,43 +98,76 @@ public class MapsLocationService extends Service implements LocationListener {
                     runnableRunning = false;
                     break;
                 case "Walking":
+                    Log.d(TAG, "Walking");
                     // Remove any parking spaces if they have any
                     firestore.collection("ParkingSpaces")
                             .whereEqualTo("user", username)
                             .get()
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
-                                    // Loop through and erase any parking spots the user may have already as we can't be parked in two spots at once
-                                    for (QueryDocumentSnapshot document : task.getResult())
-                                        if (!document.getId().equals(parkedBestOption))
-                                            firestore.collection("ParkingSpaces")
-                                                    .document(document.getId())
-                                                    .update("user", "")
-                                                    .addOnCompleteListener(task_up -> {
-                                                        if (task_up.isSuccessful()) {
-                                                            // Set the new parking space to be occupied by current user
-                                                            firestore.collection("ParkingSpaces").document(parkedBestOption)
-                                                                    .update("user", username)
-                                                                    .addOnFailureListener(e -> {
-                                                                        if (Boolean.TRUE.equals(isAdmin))
-                                                                            Toast.makeText(this_context, "Failed to Fill Parking Space", Toast.LENGTH_SHORT).show();
-                                                                    })
-                                                                    .addOnSuccessListener(e -> {
-                                                                        if (Boolean.TRUE.equals(isAdmin))
-                                                                            Toast.makeText(this_context, "Filled Parking Space", Toast.LENGTH_SHORT).show();
+                                    // Need to check if it is empty, then we just simply assign
+                                    if (task.getResult().isEmpty()) {
+                                        firestore.collection("ParkingSpaces").document(parkedBestOption)
+                                                .update("user", username)
+                                                .addOnFailureListener(e -> {
+                                                    if (Boolean.TRUE.equals(isAdmin))
+                                                        Toast.makeText(this_context, "Failed to Fill Parking Space", Toast.LENGTH_SHORT).show();
+                                                })
+                                                .addOnSuccessListener(e -> {
+                                                    if (Boolean.TRUE.equals(isAdmin))
+                                                        Toast.makeText(this_context, "Filled Parking Space", Toast.LENGTH_SHORT).show();
 
-                                                                        // Save current parked spot
-                                                                        current_shared_spot = parkedBestOption;
-                                                                    });
-                                                        }
-                                                    });
+                                                    Log.d(TAG, "Filled");
+                                                    // Save current parked spot
+                                                    current_shared_spot = parkedBestOption;
+                                                });
+                                    } else {
+                                        // Loop through and erase any parking spots the user may have already as we can't be parked in two spots at once
+                                        for (QueryDocumentSnapshot document : task.getResult()) {
+                                            Log.d(TAG, "For " + document.getId());
+                                            if (!document.getId().equals(parkedBestOption)) {
+                                                Log.d(TAG, "If " + document.getId());
+                                                firestore.collection("ParkingSpaces")
+                                                        .document(document.getId())
+                                                        .update("user", "")
+                                                        .addOnCompleteListener(task_up -> {
+                                                            if (task_up.isSuccessful()) {
+                                                                Log.d(TAG, "Cleared");
+                                                                // Set the new parking space to be occupied by current user
+                                                                firestore.collection("ParkingSpaces").document(parkedBestOption)
+                                                                        .update("user", username)
+                                                                        .addOnFailureListener(e -> {
+                                                                            if (Boolean.TRUE.equals(isAdmin))
+                                                                                Toast.makeText(this_context, "Failed to Fill Parking Space", Toast.LENGTH_SHORT).show();
+                                                                        })
+                                                                        .addOnSuccessListener(e -> {
+                                                                            if (Boolean.TRUE.equals(isAdmin))
+                                                                                Toast.makeText(this_context, "Filled Parking Space", Toast.LENGTH_SHORT).show();
+
+                                                                            Log.d(TAG, "Filled");
+                                                                            // Save current parked spot
+                                                                            current_shared_spot = parkedBestOption;
+                                                                        });
+                                                            }
+                                                        });
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    Log.d(TAG, "Else printed");
                                 }
+                            })
+                            .addOnFailureListener(t -> {
+                                Log.d(TAG, "FAILURE");
+
                             });
                     runnableRunning = false;
                     break;
                 default:
                     if (Boolean.TRUE.equals(isAdmin))
                         Toast.makeText(this_context, "Restarting", Toast.LENGTH_SHORT).show();
+
+                    runnableRunning = true;
                     // If we are still stopped, we want to restart this and keep polling
                     restartRunnable();
             }
@@ -311,6 +343,8 @@ public class MapsLocationService extends Service implements LocationListener {
 
                         // Set the status to 'parked'
                         stoppedStatus = "Parked";
+
+                        Log.d(TAG, "Option: " + parkingSpacesDocIDs.get(parkingSpaces.indexOf(polygon)));
                     }
                 }
 
@@ -334,10 +368,13 @@ public class MapsLocationService extends Service implements LocationListener {
                         }
                     }
 
+                    Log.d(TAG, "Best Option: " + bestOption);
+
                     // If we have a best option, then start the runnable to tell if we have parked or not
                     if (!bestOption.equals("")) {
                         if (Boolean.TRUE.equals(isAdmin))
                             Toast.makeText(this_context, "Runnable Initial Start", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Runnable Initial Start");
 
                         // Get best parked option and run the runnable to check if we need to style a new parking space
                         runnableRunning = true;
@@ -375,7 +412,8 @@ public class MapsLocationService extends Service implements LocationListener {
 
             // Get the label based on the speed
             if (speed <= 0.05) {
-                movingStatus = checkStop(location);
+                if (!runnableRunning)
+                    movingStatus = checkStop(location);
             } else if (speed > 0.05 && speed <= 2) {
                 movingStatus = "Walking";
             } else if (speed > 2) {

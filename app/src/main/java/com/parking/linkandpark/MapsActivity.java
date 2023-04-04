@@ -121,6 +121,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // To use context in other scenarios
         this_context = getApplicationContext();
 
+        MapsLocationService.runnableRunning = false;
+
         // Geofencing Code
         geofencingClient = LocationServices.getGeofencingClient(this);
         geofenceHelper = new GeofenceHelper(this);
