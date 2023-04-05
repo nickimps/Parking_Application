@@ -36,9 +36,10 @@ This application will be technologically quite different from other parking appl
 4. Park and enjoy!
 
 ## Requirements
-- Android 5.0 or later
+- Android 7.1 or later
 - Active internet connection
 - GPS enabled
+- Notifications enanled
 
 ## Supporting Documents
 Documents related to the development of this project are listed below:
