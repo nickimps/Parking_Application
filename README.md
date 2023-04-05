@@ -39,8 +39,8 @@ This application will be technologically quite different from other parking appl
 ## Requirements
 - Android 7.1 or later
 - Active internet connection
-- GPS enabled
-- Notifications enanled
+- GPS enabled (background use required)
+- Notifications enabled
 
 ## Supporting Documents
 Documents related to the development of this project are listed below:
