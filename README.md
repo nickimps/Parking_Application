@@ -20,11 +20,11 @@ This application will be technologically quite different from other parking appl
   <div style="flex:1;padding-right:10px;">
     <img src="/Screen_Captures/Login.png" width="20%">
     <img src="/Screen_Captures/EULA.png" width="20%">
-    <img src="/Screen_Captures/reigster.png" width="20%">
+    <img src="/Screen_Captures/register.png" width="20%">
   </div>
   <div style="flex:1;padding-right:10px;">
     <img src="/Screen_Captures/MainMaps.png" width="20%">
-    <img src="/Screen_Captures/InfoActivity.png" width="20%">
+    <img src="/Screen_Captures/info_screen.png" width="20%">
     <img src="/Screen_Captures/adminActivity.png" width="20%">
   </div>
 </div>
