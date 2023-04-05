@@ -18,14 +18,14 @@ This application will be technologically quite different from other parking appl
 ## User Interface
 <div style="display:flex">
   <div style="flex:1;padding-right:10px;">
-    <img src="/Screen_Captures/Picture1.png" width="20%">
-    <img src="/Screen_Captures/Picture2.png" width="20%">
-    <img src="/Screen_Captures/Picture3.png" width="20%">
+    <img src="/Screen_Captures/Login.png" width="20%">
+    <img src="/Screen_Captures/EULA.png" width="20%">
+    <img src="/Screen_Captures/reigster.png" width="20%">
   </div>
   <div style="flex:1;padding-right:10px;">
-    <img src="/Screen_Captures/Picture4.png" width="20%">
-    <img src="/Screen_Captures/Picture5.png" width="20%">
-    <img src="/Screen_Captures/Picture6.png" width="20%">
+    <img src="/Screen_Captures/MainMaps.png" width="20%">
+    <img src="/Screen_Captures/InfoActivity.png" width="20%">
+    <img src="/Screen_Captures/adminActivity.png" width="20%">
   </div>
 </div>
 
