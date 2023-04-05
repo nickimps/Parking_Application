@@ -12,6 +12,7 @@ This application will be technologically quite different from other parking appl
 ## Features
 - Locate available parking spots closest to your destination on campus
 - Find the position of your parked car
+- Automatic tracking of position and camera movement to provide a hands-free experience
 - Automatic detection of parking so that other users can see the spot has been occupied, no need to specify you have parked
 - Storage of parking permits to help parking services
 
