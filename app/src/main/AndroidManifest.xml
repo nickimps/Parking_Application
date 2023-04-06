@@ -89,7 +89,8 @@
             android:exported="true"
             android:label="@string/title_activity_maps"
             android:parentActivityName="com.parking.linkandpark.MapsActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

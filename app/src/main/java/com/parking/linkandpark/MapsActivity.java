@@ -1,7 +1,8 @@
 package com.parking.linkandpark;
 
 import static com.parking.linkandpark.MapsLocationService.current_shared_spot;
-import static com.parking.linkandpark.MapsLocationService.movingStatus;
+import static com.parking.linkandpark.LoginActivity.mAuth;
+import static com.parking.linkandpark.LoginActivity.mCurrentUser;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -21,8 +22,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.parking.linkandpark.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.parking.linkandpark.databinding.ActivityMapsBinding;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -54,8 +55,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @SuppressLint("StaticFieldLeak")
     public static TextView name, speedAdminTextView, movingStatusTextView;
     @SuppressLint("StaticFieldLeak")
-    public static FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    public static String username, parkedBestOption, parkedUser;
+    public static FirebaseFirestore firestore;
+    public static String username, parkedBestOption;
     public static final List<Polygon> parkingSpaces = new ArrayList<>();
     public static final List<String> parkingSpacesDocIDs = new ArrayList<>();
     private GeofencingClient geofencingClient;
@@ -66,29 +67,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static Context this_context;
     public static Polygon campus;
 
-    /**
-     * Called on activity creation, many things initialize and happen here.
-     *
-     * @param savedInstanceState The instance state
-     */
+    private ListenerRegistration modifyListener;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onResume() {
+        super.onResume();
+        Log.v(TAG, "OnResume Called");
+
+        // Show the button if they have a parked car
+        firestore.collection("ParkingSpaces")
+                .whereEqualTo("user", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful())
+                        if (!task.getResult().isEmpty())
+                            findMyCarButton.setVisibility(View.VISIBLE);
+        });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.v(TAG, "OnStop Called");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.v(TAG, "OnPause Called");
+
+        modifyListener.remove();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.v(TAG, "OnStart Called");
 
         // Get the stored information within the shared preference
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
         // Get the username of the current logged in user
         username = sharedPref.getString("username", null);
-        String password = sharedPref.getString("password", null);
 
-        // If the user is not logged in, go to login screen, otherwise go to maps activity like normal
-        if (username == null || password == null) {
-            startActivity(new Intent(MapsActivity.this, LoginActivity.class));
-            finish();
-        } else {
-            ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
-            setContentView(binding.getRoot());
-        }
+        Log.i(TAG, "onStart username: " + username);
 
         // Get ID if name TextView
         name = findViewById(R.id.welcomeText);
@@ -118,45 +139,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
 
-        // To use context in other scenarios
-        this_context = getApplicationContext();
-
-        MapsLocationService.runnableRunning = false;
-
-        // Geofencing Code
-        geofencingClient = LocationServices.getGeofencingClient(this);
-        geofenceHelper = new GeofenceHelper(this);
-
-        // For the admin speed card view
-        speedAdminTextView = findViewById(R.id.speedAdminTextView);
-        movingStatusTextView = findViewById(R.id.movingStatusTextView);
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        assert mapFragment != null;
-        mapFragment.getMapAsync(this);
-
-        // Create a listener to navigate to the settings screen when clicked
-        Button settingsButton = findViewById(R.id.settingsButton);
-        settingsButton.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
-
-        // Get ID of find my car button
-        findMyCarButton = findViewById(R.id.findMyCarButton);
-        // Set the onClick listener for the center button to zoom in the users parked car
-        findMyCarButton.setOnClickListener(view -> firestore.collection("ParkingSpaces")
-                .whereEqualTo("user", username)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x3")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x3")).getLongitude());
-                            CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(18.5f).build();
-                            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
-                            mMap.animateCamera(cameraUpdate);
-                        }
-                    }
-                }));
-
         // Save user's parking space on startup if there is one
         firestore.collection("ParkingSpaces")
                 .whereEqualTo("user", username)
@@ -170,7 +152,156 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     } else {
                         current_shared_spot = "";
                     }
+
+                    if (current_shared_spot.equals("")) {
+                        findMyCarButton.setVisibility(View.INVISIBLE);
+
+                    }
                 });
+
+        // Create a listener to respond to database updates in real time
+        modifyListener = firestore.collection("ParkingSpaces")
+                .addSnapshotListener((snapshots, error) -> {
+                    Log.d(TAG, "modifyListenerActivated");
+
+                    if (error != null) {
+                        Log.e(TAG, "listen:error", error);
+                        return;
+                    }
+
+                    // Get which documents have been updated
+                    assert snapshots != null;
+                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                        if (dc.getType() == DocumentChange.Type.MODIFIED) {
+                            // Get the index of the polygon that we are wanting to change the style of
+                            int parkingSpacePolygonIndex = parkingSpacesDocIDs.indexOf(dc.getDocument().getId());
+                            // Get the new value from the user field that has been updated
+                            String newUser = Objects.requireNonNull(dc.getDocument().get("user")).toString();
+
+                            // Check if the new user is empty, current user, or someone else and style appropriately
+                            // Also, show or hide the find my car button
+                            if (newUser.equals("")) {
+                                if (dc.getDocument().getId().startsWith("EV"))
+                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "EV");
+                                else if (dc.getDocument().getId().startsWith("METER"))
+                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Meter");
+                                else
+                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Empty");
+
+                                // Save user's parking space on startup if there is one
+                                firestore.collection("ParkingSpaces")
+                                        .whereEqualTo("user", username)
+                                        .get()
+                                        .addOnCompleteListener(task -> {
+                                            if (task.isSuccessful()) {
+                                                if (task.getResult().isEmpty())
+                                                    findMyCarButton.setVisibility(View.INVISIBLE);
+                                                else
+                                                    findMyCarButton.setVisibility(View.VISIBLE);
+                                            } else {
+                                                findMyCarButton.setVisibility(View.INVISIBLE);
+                                            }
+                                        });
+                            } else if (newUser.equals(username)) {
+                                stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Yours");
+                                findMyCarButton.setVisibility(View.VISIBLE);
+                            } else
+                                stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Filled");
+
+                            Log.d(TAG, String.valueOf(parkingSpaces.get(parkingSpacePolygonIndex)));
+
+                            if (isAdmin)
+                                Toast.makeText(this, "Updating", Toast.LENGTH_SHORT).show();
+                            Log.i(TAG, "Updating parking space colouring");
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Called on activity creation, many things initialize and happen here.
+     *
+     * @param savedInstanceState The instance state
+     */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.v(TAG, "OnCreate Called");
+
+        // Get single instance onCreate - used throughout all activities
+        firestore = FirebaseFirestore.getInstance();
+
+        //create an instance of the user authentication object
+        mAuth = FirebaseAuth.getInstance();
+
+        // Get the stored information within the shared preference
+        SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+        // Get the username of the current logged in user
+        username = sharedPref.getString("username", null);
+        String password = sharedPref.getString("password", null);
+
+        Log.i(TAG, "onCreate username: " + username);
+
+        // If the user is not logged in, go to login screen, otherwise go to maps activity like normal
+        if (username == null || password == null) {
+            startActivity(new Intent(MapsActivity.this, LoginActivity.class));
+            finish();
+        } else {
+            ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
+            setContentView(binding.getRoot());
+
+            mCurrentUser = mAuth.getCurrentUser();
+
+            //if auth user not signed in
+            if(mCurrentUser == null){
+                mAuth.signInAnonymously()
+                        .addOnCompleteListener(task -> {
+                            if(task.isSuccessful())
+                                Log.d(TAG, "Signed in anonymously");
+                            else
+                                Log.d(TAG, "Anonymous sign in failed");
+                        });
+            }
+
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+            assert mapFragment != null;
+            mapFragment.getMapAsync(this);
+
+            // To use context in other scenarios
+            this_context = getApplicationContext();
+
+            MapsLocationService.runnableRunning = false;
+
+            // Geofencing Code
+            geofencingClient = LocationServices.getGeofencingClient(this);
+            geofenceHelper = new GeofenceHelper(this);
+
+            // For the admin speed card view
+            speedAdminTextView = findViewById(R.id.speedAdminTextView);
+            movingStatusTextView = findViewById(R.id.movingStatusTextView);
+
+            // Create a listener to navigate to the settings screen when clicked
+            Button settingsButton = findViewById(R.id.settingsButton);
+            settingsButton.setOnClickListener(view -> startActivity(new Intent(MapsActivity.this, InfoActivity.class)));
+
+            // Get ID of find my car button
+            findMyCarButton = findViewById(R.id.findMyCarButton);
+            // Set the onClick listener for the center button to zoom in the users parked car
+            findMyCarButton.setOnClickListener(view -> firestore.collection("ParkingSpaces")
+                    .whereEqualTo("user", username)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                LatLng whereIParked = new LatLng(Objects.requireNonNull(document.getGeoPoint("x3")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x3")).getLongitude());
+                                CameraPosition cameraPosition = new CameraPosition.Builder().target(whereIParked).zoom(18.5f).build();
+                                CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPosition);
+                                mMap.animateCamera(cameraUpdate);
+                            }
+                        }
+                    }));
+        }
     }
 
     /**
@@ -178,11 +309,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
+        Log.v(TAG, "onMapReady Called");
         mMap = googleMap;
 
         // Move the camera to default position
         LatLng Lot = new LatLng(48.42151037144106, -89.25831461845203);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17.8f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Lot, 17.8f));
 
         // Insert a geofence at time of map creation centered around the parking lot with a radius of 500
         float GEOFENCE_RADIUS = 500;
@@ -214,7 +346,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             // Load in the spaces from the DB and create the polygon
-                            Polygon polygon = googleMap.addPolygon(new PolygonOptions().add(
+                            Polygon polygon = mMap.addPolygon(new PolygonOptions().add(
                                     new LatLng(Objects.requireNonNull(document.getGeoPoint("x1")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x1")).getLongitude()),
                                     new LatLng(Objects.requireNonNull(document.getGeoPoint("x2")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x2")).getLongitude()),
                                     new LatLng(Objects.requireNonNull(document.getGeoPoint("x3")).getLatitude(), Objects.requireNonNull(document.getGeoPoint("x3")).getLongitude()),
@@ -243,54 +375,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
 
-        // Create a listener to respond to database updates in real time
-        firestore.collection("ParkingSpaces")
-                .addSnapshotListener((snapshots, error) -> {
-                    if (error != null) {
-                        Toast.makeText(this, "Parking Space Update Failed", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    // Get which documents have been updated
-                    assert snapshots != null;
-                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                        if (dc.getType() == DocumentChange.Type.MODIFIED) {
-                            if (isAdmin)
-                                Toast.makeText(this, "Updating", Toast.LENGTH_SHORT).show();
-
-                            // Get the index of the polygon that we are wanting to change the style of
-                            int parkingSpacePolygonIndex = parkingSpacesDocIDs.indexOf(dc.getDocument().getId());
-                            // Get the new value from the user field that has been updated
-                            String newUser = Objects.requireNonNull(dc.getDocument().get("user")).toString();
-
-                            // Check if the new user is empty, current user, or someone else and style appropriately
-                            // Also, show or hide the find my car button
-                            if (newUser.equals("")) {
-                                if (dc.getDocument().getId().startsWith("EV"))
-                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "EV");
-                                else if (dc.getDocument().getId().startsWith("METER"))
-                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Meter");
-                                else
-                                    stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Empty");
-                                findMyCarButton.setVisibility(View.INVISIBLE);
-                            } else if (newUser.equals(username)) {
-                                stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Yours");
-                                findMyCarButton.setVisibility(View.VISIBLE);
-                            } else
-                                stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Filled");
-                        }
-                    }
-                });
-
-        // Show the button if they have a parked car
-        firestore.collection("ParkingSpaces").whereEqualTo("user", username).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful())
-                if (!task.getResult().isEmpty())
-                    findMyCarButton.setVisibility(View.VISIBLE);
-        });
-
         // Get the polygon for the campus so we can use this to tell if we are in the parking or not
-        campus = googleMap.addPolygon(new PolygonOptions()
+        campus = mMap.addPolygon(new PolygonOptions()
                 .add(
                         new LatLng(48.42176462322088, -89.25887980779537),
                         new LatLng(48.42149778468855, -89.25886084171513),

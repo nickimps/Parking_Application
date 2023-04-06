@@ -1,6 +1,8 @@
 package com.parking.linkandpark;
 
 import static android.content.ContentValues.TAG;
+import static com.parking.linkandpark.MapsActivity.firestore;
+import static com.parking.linkandpark.LoginActivity.mAuth;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,33 +15,19 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.util.Log;
 
-import com.parking.linkandpark.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class InfoActivity extends AppCompatActivity {
-
-    FirebaseFirestore firestore;
     Boolean isAdmin = false, permitChanged = false;
-
     TextInputEditText nameEditText, permitEditText;
     TextInputLayout nameLayout, permitLayout;
-    private FirebaseAuth mAuth;
-    private FirebaseUser mCurrentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
-
-        //create an instance of the user authentication object
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        mCurrentUser = mAuth.getCurrentUser();
 
         getSupportActionBar().setTitle("Settings");
 
@@ -92,9 +80,6 @@ public class InfoActivity extends AppCompatActivity {
         // Get username of the user from the shared preference
         String username = sharedPref.getString("username", null);
 
-        // Database instance
-        firestore = FirebaseFirestore.getInstance();
-
         // Load the hint information from the user collection in the database
         if (username != null) {
             firestore.collection("Users")
@@ -118,7 +103,6 @@ public class InfoActivity extends AppCompatActivity {
         }
 
         // Gets user's administrator access
-        firestore = FirebaseFirestore.getInstance();
         firestore.collection("Users")
                 .whereEqualTo("username", username)
                 .get()
@@ -152,6 +136,7 @@ public class InfoActivity extends AppCompatActivity {
             // Send the user to the login screen.
             Intent intent = new Intent(InfoActivity.this, LoginActivity.class);
             startActivity((intent));
+            finish();
         });
 
 

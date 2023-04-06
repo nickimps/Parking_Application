@@ -1,6 +1,8 @@
 package com.parking.linkandpark;
 
 import static android.content.ContentValues.TAG;
+import static com.parking.linkandpark.MapsActivity.firestore;
+import static com.parking.linkandpark.LoginActivity.mAuth;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -19,13 +21,9 @@ import android.widget.Button;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.parking.linkandpark.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -43,13 +41,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 
 public class RegisterActivity extends AppCompatActivity {
-
-    FirebaseFirestore firestore;
-
     private TextInputEditText usernameEditText, passwordEditText, nameEditText, permitEditText;
-    public static TextInputLayout usernameLayout, passwordLayout, nameLayout;
-
-    private FirebaseAuth mAuth;
+    public TextInputLayout usernameLayout, passwordLayout, nameLayout;
     private FirebaseUser mCurrentUser;
 
     //Encryption and Decryption
@@ -160,9 +153,6 @@ public class RegisterActivity extends AppCompatActivity {
 
             Boolean passwordRequirements = matcher.matches();
 
-            //Database instance
-            firestore = FirebaseFirestore.getInstance();
-
             //Perform query to get the user by username lookup
             firestore.collection("Users")
                     .whereEqualTo("username", username)
@@ -170,7 +160,7 @@ public class RegisterActivity extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             // If the user exists and the fields were not empty, then add the user
-                            if(task.getResult().isEmpty() && !username.isEmpty() && username.contains("@") && !password.isEmpty() && !name.isEmpty() && passwordRequirements) {
+                            if(task.getResult().isEmpty() && username.contains("@") && !password.isEmpty() && !name.isEmpty() && passwordRequirements) {
 
                                 // Encrypts the password before sending to DB and shared preferences
                                 try {
@@ -192,8 +182,6 @@ public class RegisterActivity extends AppCompatActivity {
                                 }
 
                                 // Create an instance of the user authentication object
-                                mAuth = FirebaseAuth.getInstance();
-                                FirebaseUser currentUser = mAuth.getCurrentUser();
                                 mCurrentUser = mAuth.getCurrentUser();
 
                                 // If auth user not signed in
@@ -253,17 +241,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * Create Decryption Function
-     */
-    public static String decrypt(String value) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        byte[] values = Base64.decode(value, Base64.DEFAULT);                                   //creates byte array for the value
-        SecretKeySpec secretKeySpec = new SecretKeySpec(Key.getBytes(), ALGORITHM);             //specifies algorithm using set key
-        Cipher cipher = Cipher.getInstance(MODE);                                               //specifies the set mode of blowfish
-        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(IV.getBytes()));    //sets it to decryption mode using initialization vector IV
-        return new String(cipher.doFinal(values));                                              //decrypts the info and returns it
-    }
-
-    /**
      * Create a clickable textview to bring the user to the register screen
      */
     public void createClickableLoginText() {
@@ -288,6 +265,7 @@ public class RegisterActivity extends AppCompatActivity {
                 // Change the activity to the login screen
                 Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity((intent));
+                finish();
             }
         };
 

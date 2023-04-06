@@ -23,7 +23,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -35,7 +34,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
-import com.parking.linkandpark.R;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -74,7 +72,7 @@ public class MapsLocationService extends Service implements LocationListener {
                 case "Driving":
                     // Get the polygon for the parking space being driven away from
                     Polygon my_parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(current_shared_spot));
-                    Polygon stopped_parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
+//                    Polygon stopped_parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
 
                     // Get the distance to polygon center to see if we are even close to our own parking space
                     double distance = last_known_location_runnable.distanceTo(getPolygonCenter(my_parking_space));
@@ -157,10 +155,7 @@ public class MapsLocationService extends Service implements LocationListener {
                                     Log.d(TAG, "Else printed");
                                 }
                             })
-                            .addOnFailureListener(t -> {
-                                Log.d(TAG, "FAILURE");
-
-                            });
+                            .addOnFailureListener(t -> Log.d(TAG, "FAILURE", t));
                     runnableRunning = false;
                     break;
                 default:

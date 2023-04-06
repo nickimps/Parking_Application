@@ -14,3 +14,7 @@
 .cxx
 local.properties
 /.idea/deploymentTargetDropDown.xml
+/app/release/app-release.aab
+/app/release/app-release.apk
+/app/release/output-metadata.json
+/.idea/statistic.xml

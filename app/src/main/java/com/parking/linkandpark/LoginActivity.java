@@ -1,6 +1,7 @@
 package com.parking.linkandpark;
 
 import static android.content.ContentValues.TAG;
+import static com.parking.linkandpark.MapsActivity.firestore;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -27,15 +28,10 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.parking.linkandpark.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -51,21 +47,19 @@ import javax.crypto.spec.SecretKeySpec;
 public class LoginActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_CODE = 0;
     private static final int BACKGROUND_LOCATION_PERMISSION_CODE = 2;
-    FirebaseFirestore firestore;
     private TextInputEditText usernameEditText, passwordEditText;
     private TextInputLayout usernameLayout, passwordLayout;
     //Fetch the stored information when the app is loaded, this function is called when the app is opened again
 
     //firebase authentication
-    private FirebaseAuth mAuth;
-    private FirebaseUser mCurrentUser;
+    public static FirebaseAuth mAuth;
+    public static FirebaseUser mCurrentUser;
 
     //Encryption and Decryption
     private static final String ALGORITHM = "Blowfish";
     private static final String MODE = "Blowfish/CBC/PKCS5Padding";
     private static final String IV = "abcdefgh";
     private static final String Key = "jnansdbhi1j23-0390fhia'p;qaenfpoa828";
-    private static String passTest = "";
     private static String decryptedPassword = "";
     private static String encryptedPassword = "";
 
@@ -73,44 +67,42 @@ public class LoginActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Get the stored information within the shared preference
-            SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
-
-            // Get stored username and password for the logged in user
-            String username = sharedPref.getString("username", null);
-            String password = sharedPref.getString("password", null);
-
-            //decrypts the password
-            try {
-                //decrypts the password
-                decryptedPassword = decrypt(password);
-            } catch (Exception e) {
-                //above action ran into error
-            }
-
-            // Bypass login if login details exist
-            if (username != null && password != null) {
-                // Database instance
-                firestore = FirebaseFirestore.getInstance();
-
-                // Perform query to get the user that has matching username and password so that we can auto login
-                firestore.collection("Users")
-                        .whereEqualTo("username", username)
-                        .whereEqualTo("password", password)
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                if (!task.getResult().isEmpty()) {
-                                    usernameEditText.setText(username);
-                                    passwordEditText.setText(decryptedPassword);
-                                }
-                            } else {
-                                Log.d(TAG, "Error getting documents: ", task.getException());
-                            }
-                        });
-            }
-        }
+        // DONT NEED THIS ANYMORE KEEPING JUST INCASE THOUGH
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//            // Get the stored information within the shared preference
+//            SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+//
+//            // Get stored username and password for the logged in user
+//            String username = sharedPref.getString("username", null);
+//            String password = sharedPref.getString("password", null);
+//
+//            //decrypts the password
+//            try {
+//                //decrypts the password
+//                decryptedPassword = decrypt(password);
+//            } catch (Exception e) {
+//                Log.e(TAG, "decrypt password:error", e);
+//            }
+//
+//            // Bypass login if login details exist
+//            if (username != null && password != null) {
+//                // Perform query to get the user that has matching username and password so that we can auto login
+//                firestore.collection("Users")
+//                        .whereEqualTo("username", username)
+//                        .whereEqualTo("password", password)
+//                        .get()
+//                        .addOnCompleteListener(task -> {
+//                            if (task.isSuccessful()) {
+//                                if (!task.getResult().isEmpty()) {
+//                                    usernameEditText.setText(username);
+//                                    passwordEditText.setText(decryptedPassword);
+//                                }
+//                            } else {
+//                                Log.d(TAG, "Error getting documents: ", task.getException());
+//                            }
+//                        });
+//            }
+//        }
     }
 
     // Saves the information when the app is closed, this function runs when the app is closed.
@@ -123,14 +115,13 @@ public class LoginActivity extends AppCompatActivity {
         // Create an editor that allows us to impute information into the shared preference
         SharedPreferences.Editor editor = sharedPref.edit();
 
-
         // Only save the text fields if there is information in them.
         if (!usernameEditText.getText().toString().isEmpty() && !passwordEditText.getText().toString().isEmpty()) {
             //encrypt password before storing
             try {
                 encryptedPassword = encrypt(passwordEditText.getText().toString().trim());
             } catch (Exception e) {
-                //above action ran into error
+                Log.e(TAG, "encrypt password:error", e);
             }
             // Store information from the text fields
             editor.putString("username", usernameEditText.getText().toString().trim());
@@ -147,18 +138,6 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        //Testing Encrypt and Decrypt
-        try {
-            passTest = "password123";
-            String encryptedPass = encrypt(passTest);
-            String decryptedPass = decrypt(encrypt(passTest));
-            System.out.println(passTest);
-            System.out.println(encryptedPass);
-            System.out.println(decryptedPass);
-        } catch (Exception e) {
-
-        }
 
         //Have user accept location permissions
         getAllPermissions();
@@ -231,24 +210,17 @@ public class LoginActivity extends AppCompatActivity {
         logButton.setOnClickListener(v -> login());
 
         //create an instance of the user authentication object
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
         mCurrentUser = mAuth.getCurrentUser();
-
-        //System.out.println(mAuth.getUid());
 
         //if auth user not signed in
         if(mCurrentUser == null){
-            mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if(task.isSuccessful()){
-                        System.out.println("Anonymously signed in");
-                    } else {
-                        System.out.println("Anonymous sign in failed");
-                    }
-                }
-            });
+            mAuth.signInAnonymously()
+                    .addOnCompleteListener(task -> {
+                        if(task.isSuccessful())
+                            Log.d(TAG, "Signed in anonymously");
+                        else
+                            Log.d(TAG, "Anonymous sign in failed");
+                    });
         }
 
     }
@@ -343,14 +315,11 @@ public class LoginActivity extends AppCompatActivity {
         String username = usernameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
-        // Database Instance
-        firestore = FirebaseFirestore.getInstance();
-
         //get the encryptedPassword
         try {
             encryptedPassword = encrypt(password);
         } catch (Exception e) {
-            //above action ran into error
+            Log.e(TAG, "encrypt password:error", e);
         }
 
         // Perform query to get the user that has matching username and password so that we can log in the user
@@ -363,23 +332,26 @@ public class LoginActivity extends AppCompatActivity {
                         if (!task.getResult().isEmpty()) {
                             findViewById(R.id.loginButton).setEnabled(true);
                             //create an instance of the user authentication object
-                            mAuth = FirebaseAuth.getInstance();
-                            FirebaseUser currentUser = mAuth.getCurrentUser();
                             mCurrentUser = mAuth.getCurrentUser();
 
                             //if auth user not signed in
                             if(mCurrentUser == null){
-                                mAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                        if(task.isSuccessful()){
-                                            System.out.println("Anonymously signed in");
-                                        } else {
-                                            System.out.println("Anonymous sign in failed");
-                                        }
-                                    }
-                                });
+                                mAuth.signInAnonymously()
+                                        .addOnCompleteListener(task1 -> {
+                                            if(task1.isSuccessful())
+                                                Log.d(TAG, "Signed in anonymously");
+                                            else
+                                                Log.d(TAG, "Anonymous sign in failed");
+                                        });
                             }
+
+                            // Add user information to local shared preferences
+                            SharedPreferences sharedPrefBack = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPrefBack.edit();
+                            editor.putString("username", username);
+                            editor.putString("password", encryptedPassword);
+                            editor.apply();
+
                             // Send the user to the maps activity
                             Intent intentToMap = new Intent(LoginActivity.this, MapsActivity.class);
                             startActivity((intentToMap));
@@ -428,7 +400,6 @@ public class LoginActivity extends AppCompatActivity {
                 // Go to register screen on click
                 Intent intent = new Intent(LoginActivity.this, eulaActivity.class);
                 startActivity((intent));
-                finish();
             }
         };
 

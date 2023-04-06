@@ -8,8 +8,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.parking.linkandpark.R;
-
 public class eulaActivity extends AppCompatActivity {
 
     @Override
@@ -56,7 +54,7 @@ public class eulaActivity extends AppCompatActivity {
                 "\n" +
                 "6. DISCLAIMER OF WARRANTIES\n" +
                 "THE APPLICATION IS PROVIDED \"AS IS\" AND \"AS AVAILABLE\" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT" +
-                " LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. COMPANY DOES NOT WARRANT THAT" +
+                " LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. COMPANY DOES NOT WARRANT THAT" +
                 " THE APPLICATION WILL MEET YOUR REQUIREMENTS, OR THAT THE OPERATION OF THE APPLICATION WILL BE UNINTERRUPTED OR ERROR-FREE. YOU ASSUME ALL" +
                 " RESPONSIBILITY FOR THE SELECTION OF THE APPLICATION TO ACHIEVE YOUR INTENDED RESULTS, AND FOR THE INSTALLATION, USE, AND RESULTS OBTAINED FROM" +
                 " THE APPLICATION.\n" +
@@ -110,8 +108,8 @@ public class eulaActivity extends AppCompatActivity {
         Button acceptButton = findViewById(R.id.agreeButton);
         acceptButton.setOnClickListener(view -> {
             Intent intent = new Intent(eulaActivity.this, RegisterActivity.class);
-//            Toast.makeText(getApplicationContext(), "User Agreement Accepted, Moving to Registration", Toast.LENGTH_SHORT).show();
             startActivity((intent));
+            finish();
         });
 
         //If the user does not accept terms and conditions, navigate them back to login screen and display popup
@@ -120,6 +118,7 @@ public class eulaActivity extends AppCompatActivity {
             Intent intent = new Intent(eulaActivity.this, LoginActivity.class);
             Toast.makeText(getApplicationContext(), "Must accept terms in order to register.", Toast.LENGTH_SHORT).show();
             startActivity((intent));
+            finish();
         });
 
     }
