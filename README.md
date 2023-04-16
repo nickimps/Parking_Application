@@ -1,4 +1,6 @@
-# Smart Parking Android Application
+$Department of Software Engineering - Lakehead University
+# Degree Project 
+# Smart Parking Android Application - Link & Park
 ## Project Members
 - Jimmy Tsang
 - Nicholas Imperius
@@ -31,10 +33,12 @@ This application will be technologically quite different from other parking appl
 </div>
 
 ## Getting Started
-1. Download the app onto your android phone or tablet
-2. Create an account or log in with an existing one
-3. Use the Google Maps screen to locate a preferred parking location
-4. Park and enjoy!
+1. Go to the .apk found within the repo
+2. Download the app onto your android phone or tablet
+3. Create an account or log in with an existing one
+4. Allow application to access your notifications and location
+5. Use the Google Maps screen to locate a preferred parking location
+6. Park and enjoy!
 
 ## Requirements
 - Android 7.1 or later
@@ -47,5 +51,6 @@ Documents related to the development of this project are listed below:
 - [Software Requirements Document](https://github.com/nickimps/Parking_Application/blob/master/Report%20Files/Software_Requirements_Document.pdf)
 - [Software Project Management Plan](https://github.com/nickimps/Parking_Application/blob/master/Report%20Files/Software_Project_Management_Plan_Document.pdf)
 - [Software Specifications Document](https://github.com/nickimps/Parking_Application/tree/master/Report%20Files/Software_Specifications_Document.pdf)
+- [Software Design Document]
 
 
