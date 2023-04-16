@@ -1,5 +1,5 @@
-$ Department of Software Engineering - Lakehead University
-# Degree Project 
+Department of Software Engineering - Lakehead University
+Degree Project 
 # Smart Parking Android Application - Link & Park
 ## Project Members
 - Jimmy Tsang
