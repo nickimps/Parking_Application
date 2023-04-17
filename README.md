@@ -51,6 +51,6 @@ Documents related to the development of this project are listed below:
 - [Software Requirements Document](https://github.com/nickimps/Parking_Application/blob/master/Report%20Files/Software_Requirements_Document.pdf)
 - [Software Project Management Plan](https://github.com/nickimps/Parking_Application/blob/master/Report%20Files/Software_Project_Management_Plan_Document.pdf)
 - [Software Specifications Document](https://github.com/nickimps/Parking_Application/tree/master/Report%20Files/Software_Specifications_Document.pdf)
-- [Software Design Document]
+- [Software Design Document](https://github.com/nickimps/Parking_Application/blob/master/Screen_Captures/Design_Document.pdf)
 
 
