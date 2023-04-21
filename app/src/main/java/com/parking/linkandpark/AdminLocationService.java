@@ -19,8 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
-import com.parking.linkandpark.R;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -74,9 +72,11 @@ public class AdminLocationService extends Service implements LocationListener {
 
                     Toast.makeText(this, "Tracking Started", Toast.LENGTH_SHORT).show();
 
+                    // Check location permissions
                     getLocation();
                     break;
                 case ACTION_STOP_FOREGROUND_SERVICE:
+                    // Stop the service
                     stopForegroundService();
                     break;
             }
@@ -142,6 +142,7 @@ public class AdminLocationService extends Service implements LocationListener {
         String speedString = String.format(Locale.CANADA, "%.6f m/s", speed);
         String movingStatus = "Stopped";
 
+        // Get status based on the speed
         if (speed <= 0.05)
             movingStatus = MapsLocationService.movingStatus;
         else if (speed > 0.05 && speed <= 2)
@@ -149,7 +150,8 @@ public class AdminLocationService extends Service implements LocationListener {
         else if (speed > 2)
             movingStatus = "Driving";
 
-
+        // If we are tracking, then we want to update the textfield with the speed, status and date
+        // so that this can be saved to a text file for tracking and analyzing later on.
         if (AdminActivity.tracking) {
             // Get the time
             String time = timeSDF.format(new Date());
@@ -158,10 +160,11 @@ public class AdminLocationService extends Service implements LocationListener {
             String textToAppend = time + " -- " + speedString + " -- " + movingStatus + "\n";
             AdminActivity.saveData += textToAppend;
 
+            // Checks if the screen is on
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
             boolean isScreenOn = pm.isInteractive();
-            System.out.println(isScreenOn + " -- " + textToAppend);
 
+            // We don't need to do things if the screen is off
             if (isScreenOn)
                 AdminActivity.consoleTextView.setText(textToAppend);
         }
@@ -184,12 +187,15 @@ public class AdminLocationService extends Service implements LocationListener {
      * Creates the notification to show the user that we are tracking their location in the background
      */
     private void createNotificationChannel() {
+        // Check the build version, some android versions do not need to do this, it is done automatically
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Build the service channel with the following ID
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
                     "Foreground Service Channel",
                     NotificationManager.IMPORTANCE_LOW
             );
+            // Create the channel
             serviceChannel.setShowBadge(false);
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(serviceChannel);

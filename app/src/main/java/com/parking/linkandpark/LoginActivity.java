@@ -1,9 +1,7 @@
 package com.parking.linkandpark;
 
-import static android.content.ContentValues.TAG;
 import static com.parking.linkandpark.MapsActivity.firestore;
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -27,6 +24,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -36,6 +34,7 @@ import com.google.firebase.auth.FirebaseUser;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -45,65 +44,17 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class LoginActivity extends AppCompatActivity {
-    private static final int LOCATION_PERMISSION_CODE = 0;
-    private static final int BACKGROUND_LOCATION_PERMISSION_CODE = 2;
+
+    private static final String TAG = "LoginActivity";
     private TextInputEditText usernameEditText, passwordEditText;
     private TextInputLayout usernameLayout, passwordLayout;
-    //Fetch the stored information when the app is loaded, this function is called when the app is opened again
-
-    //firebase authentication
     public static FirebaseAuth mAuth;
     public static FirebaseUser mCurrentUser;
-
-    //Encryption and Decryption
     private static final String ALGORITHM = "Blowfish";
     private static final String MODE = "Blowfish/CBC/PKCS5Padding";
     private static final String IV = "abcdefgh";
     private static final String Key = "jnansdbhi1j23-0390fhia'p;qaenfpoa828";
-    private static String decryptedPassword = "";
     private static String encryptedPassword = "";
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // DONT NEED THIS ANYMORE KEEPING JUST INCASE THOUGH
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            // Get the stored information within the shared preference
-//            SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
-//
-//            // Get stored username and password for the logged in user
-//            String username = sharedPref.getString("username", null);
-//            String password = sharedPref.getString("password", null);
-//
-//            //decrypts the password
-//            try {
-//                //decrypts the password
-//                decryptedPassword = decrypt(password);
-//            } catch (Exception e) {
-//                Log.e(TAG, "decrypt password:error", e);
-//            }
-//
-//            // Bypass login if login details exist
-//            if (username != null && password != null) {
-//                // Perform query to get the user that has matching username and password so that we can auto login
-//                firestore.collection("Users")
-//                        .whereEqualTo("username", username)
-//                        .whereEqualTo("password", password)
-//                        .get()
-//                        .addOnCompleteListener(task -> {
-//                            if (task.isSuccessful()) {
-//                                if (!task.getResult().isEmpty()) {
-//                                    usernameEditText.setText(username);
-//                                    passwordEditText.setText(decryptedPassword);
-//                                }
-//                            } else {
-//                                Log.d(TAG, "Error getting documents: ", task.getException());
-//                            }
-//                        });
-//            }
-//        }
-    }
 
     // Saves the information when the app is closed, this function runs when the app is closed.
     @Override
@@ -116,13 +67,14 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPref.edit();
 
         // Only save the text fields if there is information in them.
-        if (!usernameEditText.getText().toString().isEmpty() && !passwordEditText.getText().toString().isEmpty()) {
-            //encrypt password before storing
+        if (!Objects.requireNonNull(usernameEditText.getText()).toString().isEmpty() && !Objects.requireNonNull(passwordEditText.getText()).toString().isEmpty()) {
+            // Encrypt password before storing
             try {
                 encryptedPassword = encrypt(passwordEditText.getText().toString().trim());
             } catch (Exception e) {
                 Log.e(TAG, "encrypt password:error", e);
             }
+
             // Store information from the text fields
             editor.putString("username", usernameEditText.getText().toString().trim());
             editor.putString("password", encryptedPassword);
@@ -132,17 +84,18 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    //Runs when the app is created
+    /**
+     * Runs when the app is created
+     *
+     * @param savedInstanceState the instance state to be restored if needed
+     */
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        //Have user accept location permissions
-        getAllPermissions();
-
-        // REGISTER CLICKABLE TEXT
+        // Make the register text clickable and actually have functionality
         createClickableRegisterText();
 
         // Store the ids of the edit text fields
@@ -151,6 +104,7 @@ public class LoginActivity extends AppCompatActivity {
         usernameLayout = findViewById(R.id.usernameTextInputLayout);
         passwordLayout = findViewById(R.id.passwordTextInputLayout);
 
+        // Initialize the login button to disabled
         findViewById(R.id.loginButton).setEnabled(false);
 
         // Create listeners to remove error message on text fields
@@ -170,11 +124,12 @@ public class LoginActivity extends AppCompatActivity {
                     usernameLayout.setError(null);
 
                     // Enable or disable the button depending on if the password field has text
-                    findViewById(R.id.loginButton).setEnabled(!passwordEditText.getText().toString().isEmpty());
+                    findViewById(R.id.loginButton).setEnabled(!Objects.requireNonNull(passwordEditText.getText()).toString().isEmpty());
                 }
             }
         });
 
+        // Listener for the password too
         passwordEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
@@ -191,12 +146,12 @@ public class LoginActivity extends AppCompatActivity {
                     passwordLayout.setError(null);
 
                     // Disable or enable the login button if user name has no text
-                    findViewById(R.id.loginButton).setEnabled(!usernameEditText.getText().toString().isEmpty());
+                    findViewById(R.id.loginButton).setEnabled(!Objects.requireNonNull(usernameEditText.getText()).toString().isEmpty());
                 }
             }
         });
 
-        //Enable enter button to auto login on phone
+        // Enable enter button to auto login on phone keyboard
         passwordEditText.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_GO) {
                 login();
@@ -205,117 +160,49 @@ public class LoginActivity extends AppCompatActivity {
             return false;
         });
 
-        // LOGIN BUTTON
+        // LOGIN BUTTON - calls login function
         Button logButton = findViewById(R.id.loginButton);
         logButton.setOnClickListener(v -> login());
 
-        //create an instance of the user authentication object
+        // Ensure user can read from DB
         mCurrentUser = mAuth.getCurrentUser();
 
-        //if auth user not signed in
+        // If auth user not signed in
         if(mCurrentUser == null){
             mAuth.signInAnonymously()
-                    .addOnCompleteListener(task -> {
-                        if(task.isSuccessful())
+                    .addOnCompleteListener(task1 -> {
+                        if(task1.isSuccessful())
                             Log.d(TAG, "Signed in anonymously");
                         else
-                            Log.d(TAG, "Anonymous sign in failed");
+                            Log.e(TAG, "Anonymous sign in failed", task1.getException());
                     });
         }
-
     }
 
-    //CODE MODIFIED FROM: https://github.com/Everyday-Programmer/Encryption-Decryption-Android/blob/main/app/src/main/java/com/example/encryptiondecryption/EncryptDecrypt.java
-    //Create Encryption function
+    //Code Inspiration: https://github.com/Everyday-Programmer/Encryption-Decryption-Android/blob/main/app/src/main/java/com/example/encryptiondecryption/EncryptDecrypt.java
+    /**
+     * Create Encryption function
+     *
+     * @param value the value to be encrypted
+     * @return encrypted password
+     */
     public static String encrypt(String value) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(Key.getBytes(), ALGORITHM); //specifies algorithm using set key
-        Cipher cipher = Cipher.getInstance(MODE); //specifies the set mode of blowfish
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, new IvParameterSpec(IV.getBytes())); //sets it to encryption mode using initialization vector IV
-        byte[] values = cipher.doFinal(value.getBytes()); //value converted into byte array
-        return Base64.encodeToString(values, Base64.DEFAULT); //byte array is then encrypted and returned
+        SecretKeySpec secretKeySpec = new SecretKeySpec(Key.getBytes(), ALGORITHM);             // specifies algorithm using set key
+        Cipher cipher = Cipher.getInstance(MODE);                                               // specifies the set mode of blowfish
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, new IvParameterSpec(IV.getBytes()));    // sets it to encryption mode using initialization vector IV
+        byte[] values = cipher.doFinal(value.getBytes());                                       // value converted into byte array
+        return Base64.encodeToString(values, Base64.DEFAULT);                                   // byte array is then encrypted and returned
     }
 
-    //Create Decryption Function
-    public static String decrypt(String value) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        byte[] values = Base64.decode(value, Base64.DEFAULT); //creates byte array for the value
-        SecretKeySpec secretKeySpec = new SecretKeySpec(Key.getBytes(), ALGORITHM); //specifies algorithm using set key
-        Cipher cipher = Cipher.getInstance(MODE); //specifies the set mode of blowfish
-        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(IV.getBytes())); //sets it to decryption mode using initialization vector IV
-        return new String(cipher.doFinal(values)); //decrypts the info and returns it
-    }
-
-
-    private void getAllPermissions() {
-        if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Fine location has been accepted by user
-
-            // Need this for certain versions of android apparently
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-                if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                    askForBackgroundPermission();
-        }
-        else {
-            // Fine Location Permission is not granted so ask for permission
-            tellWhyWeNeedIt();
-        }
-    }
-
-    private void tellWhyWeNeedIt() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Permission Needed!")
-                    .setMessage("Location Permission Needed!")
-                    .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(LoginActivity.this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE))
-                    .setNegativeButton("CANCEL", (dialog, which) -> {
-                        // Permission is denied
-                    })
-                    .create().show();
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == LOCATION_PERMISSION_CODE) {
-            // User granted location permission
-            // Now check if android version >= 11, if >= 11 check for Background Location Permission
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-                    if (ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                        askForBackgroundPermission(); // Ask for Background Location Permission if background location not allowed yet
-        }
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    private void askForBackgroundPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Permission Needed!")
-                    .setMessage("Background Location Permission Needed!, please tap \"Allow all the time\" in the next screen")
-                    .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(LoginActivity.this,
-                            new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_PERMISSION_CODE))
-                    .setNegativeButton("CANCEL", (dialog, which) -> {
-                        // User declined for Background Location Permission.
-                    })
-                    .create().show();
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_PERMISSION_CODE);
-        }
-    }
-
+    /**
+     * Logs in user by getting username and password and querying database
+     */
     public void login() {
         // Get the text from the text fields
-        String username = usernameEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
+        String username = Objects.requireNonNull(usernameEditText.getText()).toString().trim();
+        String password = Objects.requireNonNull(passwordEditText.getText()).toString().trim();
 
-        //get the encryptedPassword
+        // Get the encrypted password
         try {
             encryptedPassword = encrypt(password);
         } catch (Exception e) {
@@ -329,21 +216,9 @@ public class LoginActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+                        // Check if we have a result from the query
                         if (!task.getResult().isEmpty()) {
                             findViewById(R.id.loginButton).setEnabled(true);
-                            //create an instance of the user authentication object
-                            mCurrentUser = mAuth.getCurrentUser();
-
-                            //if auth user not signed in
-                            if(mCurrentUser == null){
-                                mAuth.signInAnonymously()
-                                        .addOnCompleteListener(task1 -> {
-                                            if(task1.isSuccessful())
-                                                Log.d(TAG, "Signed in anonymously");
-                                            else
-                                                Log.d(TAG, "Anonymous sign in failed");
-                                        });
-                            }
 
                             // Add user information to local shared preferences
                             SharedPreferences sharedPrefBack = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
@@ -352,11 +227,26 @@ public class LoginActivity extends AppCompatActivity {
                             editor.putString("password", encryptedPassword);
                             editor.apply();
 
-                            // Send the user to the maps activity
-                            Intent intentToMap = new Intent(LoginActivity.this, MapsActivity.class);
-                            startActivity((intentToMap));
-                            finish();
-                            findViewById(R.id.loginButton).setEnabled(false);
+                            // Ask for permissions here before we move on
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                if (activityRecognitionPermissionApproved()) {
+                                    // Send the user to the maps activity
+                                    Intent intentToMap = new Intent(LoginActivity.this, MapsActivity.class);
+                                    startActivity((intentToMap));
+                                    finish();
+                                    findViewById(R.id.loginButton).setEnabled(false);
+
+                                } else {
+                                    Intent startIntent = new Intent(LoginActivity.this, PermissionRationalActivity.class);
+                                    startActivity(startIntent);
+                                }
+                            } else {
+                                // Send the user to the maps activity
+                                Intent intentToMap = new Intent(LoginActivity.this, MapsActivity.class);
+                                startActivity((intentToMap));
+                                finish();
+                                findViewById(R.id.loginButton).setEnabled(false);
+                            }
                         } else if (username.isEmpty() && password.isEmpty()) {
                             usernameLayout.setError("Required");
                             passwordLayout.setError("Required");
@@ -368,11 +258,22 @@ public class LoginActivity extends AppCompatActivity {
                             usernameLayout.setError(" ");
                             passwordLayout.setError("Username or password are incorrect");
                         }
-
                     } else {
-                        Log.d(TAG, "Error getting documents: ", task.getException());
+                        Log.e(TAG, "Login Error: ", task.getException());
+                        Toast.makeText(this, "Error logging in", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    /**
+     * On devices Android 10 and beyond (29+), you need to ask for the ACTIVITY_RECOGNITION via the
+     * run-time permissions.
+     */
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private boolean activityRecognitionPermissionApproved() {
+        return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                && PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                && PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
     /**

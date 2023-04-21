@@ -33,7 +33,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -56,15 +55,17 @@ public class MapsLocationService extends Service implements LocationListener {
     private static final int RUNNABLE_TIME = 8000;
     private static final int RUNNABLE_TIME_SHORT = 6000;
     private static final int NOTIFICATION_ID = 6;
-    private static final String CHANNEL_ID = "my_channel";
-    private static final String TAG = "MapsActivity";
+    public static final String CHANNEL_ID = "my_channel";
+    private static final String TAG = "MapsLocationService";
     public static String current_shared_spot;
     LocationManager mLocationManager;
     private static Location last_known_location_runnable;
     static boolean runnableRunning = false;
     public static String movingStatus;
     public static final Handler parkedHandler = new Handler();
-    public static final Runnable parkedRunnable = new Runnable() {  // This runnable will check if we are driving or walking after so many seconds after being parked.
+
+    // This runnable will check if we are driving or walking after so many seconds after being parked.
+    public static final Runnable parkedRunnable = new Runnable() {
         @Override
         public void run() {
             // do something depending on the status
@@ -72,7 +73,6 @@ public class MapsLocationService extends Service implements LocationListener {
                 case "Driving":
                     // Get the polygon for the parking space being driven away from
                     Polygon my_parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(current_shared_spot));
-//                    Polygon stopped_parking_space = parkingSpaces.get(parkingSpacesDocIDs.indexOf(parkedBestOption));
 
                     // Get the distance to polygon center to see if we are even close to our own parking space
                     double distance = last_known_location_runnable.distanceTo(getPolygonCenter(my_parking_space));
@@ -122,15 +122,13 @@ public class MapsLocationService extends Service implements LocationListener {
                                     } else {
                                         // Loop through and erase any parking spots the user may have already as we can't be parked in two spots at once
                                         for (QueryDocumentSnapshot document : task.getResult()) {
-                                            Log.d(TAG, "For " + document.getId());
                                             if (!document.getId().equals(parkedBestOption)) {
-                                                Log.d(TAG, "If " + document.getId());
                                                 firestore.collection("ParkingSpaces")
                                                         .document(document.getId())
                                                         .update("user", "")
                                                         .addOnCompleteListener(task_up -> {
                                                             if (task_up.isSuccessful()) {
-                                                                Log.d(TAG, "Cleared");
+                                                                Log.d(TAG, "Cleared " + document.getId());
                                                                 // Set the new parking space to be occupied by current user
                                                                 firestore.collection("ParkingSpaces").document(parkedBestOption)
                                                                         .update("user", username)
@@ -152,7 +150,7 @@ public class MapsLocationService extends Service implements LocationListener {
                                         }
                                     }
                                 } else {
-                                    Log.d(TAG, "Else printed");
+                                    Log.e(TAG, "Parking Spot Removal Task Unsuccessful");
                                 }
                             })
                             .addOnFailureListener(t -> Log.d(TAG, "FAILURE", t));
@@ -216,6 +214,7 @@ public class MapsLocationService extends Service implements LocationListener {
         if (intent != null) {
             String action = intent.getAction();
 
+            // Get start or stop action
             switch (action) {
                 case ACTION_START_FOREGROUND_SERVICE:
                     createNotificationChannel();
@@ -234,6 +233,7 @@ public class MapsLocationService extends Service implements LocationListener {
                         Toast.makeText(this, "Service Start Function", Toast.LENGTH_SHORT).show();
                     break;
                 case ACTION_STOP_FOREGROUND_SERVICE:
+                    // Stop the service
                     stopForegroundService();
                     break;
             }
@@ -276,6 +276,7 @@ public class MapsLocationService extends Service implements LocationListener {
 
     /**
      * Gets the center of a polygon
+     *
      * @param polygon The polygon to get the center of
      * @return the center LatLng of the polygon
      */
@@ -406,10 +407,10 @@ public class MapsLocationService extends Service implements LocationListener {
                 last_known_location_runnable = location;
 
             // Get the label based on the speed
-            if (speed <= 0.05) {
+            if (speed <= 0.065) {
                 if (!runnableRunning)
                     movingStatus = checkStop(location);
-            } else if (speed > 0.05 && speed <= 2) {
+            } else if (speed > 0.065 && speed <= 2) {
                 movingStatus = "Walking";
             } else if (speed > 2) {
                 movingStatus = "Driving";
@@ -432,6 +433,7 @@ public class MapsLocationService extends Service implements LocationListener {
                     public void onFinish() {animationInProgress = false;}
                 };
 
+                // Pause things if we are or are not moving
                 if(!animationInProgress) {
                     animationInProgress = true;
                     CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(mMap.getCameraPosition().zoom).build();
@@ -439,52 +441,6 @@ public class MapsLocationService extends Service implements LocationListener {
                     mMap.animateCamera(cameraUpdate, cancelableCallback);
                 }
             }
-//
-//            if (!geoFenceStatus) {
-//                String speed_text = "N/A";
-//                MapsActivity.speedAdminTextView.setText(speed_text);
-//                String moving_test = "Outside Geofence";
-//                MapsActivity.movingStatusTextView.setText(moving_test);
-//            }
-
-//            // Check if we are on campus boundaries to stop service or start it if we are back on ya know
-//            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-//            for (LatLng latLng : MapsActivity.campus.getPoints()) {
-//                builder.include(latLng);
-//            }
-//            LatLngBounds bounds = builder.build();
-//
-//            // Check if the user's location is inside the bounds of the polygon
-//            if (bounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
-//                if (MapsActivity.inPolygon) {
-//                    // Stop foreground tracking
-//                    Intent service_intent = new Intent(this, MapsLocationService.class);
-//                    service_intent.setAction(MapsLocationService.ACTION_STOP_FOREGROUND_SERVICE);
-//                    startService(service_intent);
-//
-//                    // Stop the runnable if there is one in progress
-//                    parkedHandler.removeCallbacks(parkedRunnable);
-//
-//                    // Toggle flag
-//                    MapsActivity.inPolygon = false;
-//
-//                    if(isAdmin)
-//                        Toast.makeText(this_context, "On Campus - service stopped", Toast.LENGTH_SHORT).show();
-//                }
-//            } else {
-//                if (!MapsActivity.inPolygon) {
-//                    // Start foreground tracking
-//                    Intent service_intent = new Intent(this, MapsLocationService.class);
-//                    service_intent.setAction(MapsLocationService.ACTION_START_FOREGROUND_SERVICE);
-//                    startService(service_intent);
-//
-//                    // Toggle flag
-//                    MapsActivity.inPolygon = true;
-//
-//                    if(isAdmin)
-//                        Toast.makeText(this_context, "In Parking Lot - service started", Toast.LENGTH_SHORT).show();
-//                }
-//            }
         }
     }
 
@@ -503,7 +459,9 @@ public class MapsLocationService extends Service implements LocationListener {
      * Creates the notification to show the user that we are tracking their location in the background
      */
     private void createNotificationChannel() {
+        // Check the build version, some android versions do not need to do this, it is done automatically
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Build the service channel with the following ID
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
                     "Foreground Service Channel",

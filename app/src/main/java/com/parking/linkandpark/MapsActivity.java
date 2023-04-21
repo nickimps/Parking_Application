@@ -5,6 +5,7 @@ import static com.parking.linkandpark.LoginActivity.mAuth;
 import static com.parking.linkandpark.LoginActivity.mCurrentUser;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -16,6 +17,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -66,13 +68,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @SuppressLint("StaticFieldLeak")
     public static Context this_context;
     public static Polygon campus;
-
     private ListenerRegistration modifyListener;
 
+    /**
+     * Only run this code when the app is resumed
+     */
     @Override
     protected void onResume() {
         super.onResume();
-        Log.v(TAG, "OnResume Called");
 
         // Show the button if they have a parked car
         firestore.collection("ParkingSpaces")
@@ -85,31 +88,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    /**
+     * Call superclass on activity stop
+     */
     @Override
     protected void onStop() {
         super.onStop();
-        Log.v(TAG, "OnStop Called");
     }
 
+    /**
+     * Remove modification of database listener when activity is paused
+     */
     @Override
     protected void onPause() {
         super.onPause();
-        Log.v(TAG, "OnPause Called");
-
         modifyListener.remove();
     }
 
+    /**
+     * On activity start, run these code sequences only
+     */
     @Override
     protected void onStart() {
         super.onStart();
-        Log.v(TAG, "OnStart Called");
+        Log.v(TAG, "onStart");
 
         // Get the stored information within the shared preference
         SharedPreferences sharedPref = getSharedPreferences("ParkingSharedPref", MODE_PRIVATE);
         // Get the username of the current logged in user
         username = sharedPref.getString("username", null);
-
-        Log.i(TAG, "onStart username: " + username);
 
         // Get ID if name TextView
         name = findViewById(R.id.welcomeText);
@@ -120,6 +127,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
+
+                        // Get the name of the user to display and check if they are admin
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             isAdmin = Boolean.TRUE.equals(document.getBoolean("isAdmin"));
                             String newName = "Welcome " + document.getString("name");
@@ -135,7 +144,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             findViewById(R.id.adminBannerCardView).setVisibility(View.GONE);
                         }
                     } else {
-                        Log.d(TAG, "Error getting documents: ", task.getException());
+                        Log.d(TAG, "Cant get user for admin check: ", task.getException());
                     }
                 });
 
@@ -144,6 +153,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .whereEqualTo("user", username)
                 .get()
                 .addOnCompleteListener(task -> {
+                    // If they exist, check if they have a parking space so we can have that shown
                     if (task.isSuccessful()) {
                         if (task.getResult().isEmpty())
                             current_shared_spot = "";
@@ -153,19 +163,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         current_shared_spot = "";
                     }
 
+                    // If no parking space, hide the show my car button
                     if (current_shared_spot.equals("")) {
                         findMyCarButton.setVisibility(View.INVISIBLE);
-
                     }
                 });
 
         // Create a listener to respond to database updates in real time
         modifyListener = firestore.collection("ParkingSpaces")
                 .addSnapshotListener((snapshots, error) -> {
-                    Log.d(TAG, "modifyListenerActivated");
-
                     if (error != null) {
-                        Log.e(TAG, "listen:error", error);
+                        Log.e(TAG, "listener:error", error);
                         return;
                     }
 
@@ -208,8 +216,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             } else
                                 stylePolygon(parkingSpaces.get(parkingSpacePolygonIndex), "Filled");
 
-                            Log.d(TAG, String.valueOf(parkingSpaces.get(parkingSpacePolygonIndex)));
-
                             if (isAdmin)
                                 Toast.makeText(this, "Updating", Toast.LENGTH_SHORT).show();
                             Log.i(TAG, "Updating parking space colouring");
@@ -226,7 +232,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v(TAG, "OnCreate Called");
+        Log.v(TAG, "onStart");
 
         // Get single instance onCreate - used throughout all activities
         firestore = FirebaseFirestore.getInstance();
@@ -240,7 +246,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         username = sharedPref.getString("username", null);
         String password = sharedPref.getString("password", null);
 
-        Log.i(TAG, "onCreate username: " + username);
+        Log.d(TAG, "shared pref: " + username + " " + password);
 
         // If the user is not logged in, go to login screen, otherwise go to maps activity like normal
         if (username == null || password == null) {
@@ -250,16 +256,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
             setContentView(binding.getRoot());
 
+            // Ask for permissions here before we move on
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (!activityRecognitionPermissionApproved()) {
+                    Intent startIntent = new Intent(MapsActivity.this, PermissionRationalActivity.class);
+                    startActivity(startIntent);
+                }
+            }
+
+            // Get current authorized user
             mCurrentUser = mAuth.getCurrentUser();
 
-            //if auth user not signed in
+            // If auth user not signed in
             if(mCurrentUser == null){
                 mAuth.signInAnonymously()
                         .addOnCompleteListener(task -> {
                             if(task.isSuccessful())
                                 Log.d(TAG, "Signed in anonymously");
                             else
-                                Log.d(TAG, "Anonymous sign in failed");
+                                Log.e(TAG, "Anonymous sign in failed", task.getException());
                         });
             }
 
@@ -309,7 +324,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        Log.v(TAG, "onMapReady Called");
         mMap = googleMap;
 
         // Move the camera to default position
@@ -336,6 +350,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setPadding(0, 255, 15, 0);
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_map));
 
+        // Permission check
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             mMap.setMyLocationEnabled(true);
 
@@ -371,7 +386,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 stylePolygon(polygon, "Filled");
                         }
                     } else {
-                        Log.d(TAG, "Error getting documents: ", task.getException());
+                        Log.e(TAG, "Error get parking spaces from DB: ", task.getException());
                     }
                 });
 
@@ -394,6 +409,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         stylePolygon(campus, "Sub Lot");
     }
 
+    /**
+     * Styles the parking space to our design specification
+     *
+     * @param polygon The parking space to style
+     * @param style The style to do
+     */
     private void stylePolygon(Polygon polygon, String style) {
         polygon.setStrokeWidth(3);
         switch (style) {
@@ -425,25 +446,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * @param radius the radius of the geofence
      */
     private void addGeofence(LatLng latLng, float radius) {
-        //trigger geofence when entering dwelling or exiting (maybe change)
-        //each geofence has a unique id
-        String GEOFENCE_ID = "SOME_GEOFENCE_ID";
+        // Trigger geofence when entering dwelling or exiting (maybe change)
+        // each geofence has a unique id
+        String GEOFENCE_ID = "GEOFENCE_ID";
+        @SuppressLint("VisibleForTests")
         Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
-        //If permissions are not given, request for access to location
+        // If permissions are not given, request for access to location
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         } else {
-            //Add geofence if permissions are accepted, add listeners to see if successfully created
+            // Add geofence if permissions are accepted, add listeners to see if successfully created
             geofencingClient.addGeofences(geofencingRequest, pendingIntent)
-                    .addOnSuccessListener(unused -> Log.d(TAG, "onSuccess: Geofence Added..."))
-                    .addOnFailureListener(e -> {
-                        String errorMessage = geofenceHelper.getErrorString(e);
-                        Log.d(TAG, "onFailure: " + errorMessage);
-                    });
+                    .addOnSuccessListener(unused -> Log.d(TAG, "Geofence Added..."))
+                    .addOnFailureListener(e -> Log.e(TAG, "geoFence:onFailure", e));
         }
+    }
+
+    /**
+     * On devices Android 10 and beyond (29+), you need to ask for the ACTIVITY_RECOGNITION via the
+     * run-time permissions.
+     */
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private boolean activityRecognitionPermissionApproved() {
+        return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                && PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                && PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
     }
 }
 
