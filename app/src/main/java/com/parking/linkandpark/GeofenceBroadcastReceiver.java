@@ -1,7 +1,6 @@
 package com.parking.linkandpark;
 
-import static android.content.ContentValues.TAG;
-
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,24 +12,28 @@ import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingEvent;
 
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
+
+    private static final String TAG = "GeoBrdcstReceiver";
     public static final String ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE";
     public static final String ACTION_STOP_FOREGROUND_SERVICE = "ACTION_STOP_FOREGROUND_SERVICE";
 
+    /**
+     * When the broadcast receiver is receiving, this function is called and it initializes or resets
+     * some variables depending on if it is an enter or exit.
+     * @param context The application context
+     * @param intent The current intent
+     */
+    @SuppressLint("VisibleForTests")
     @Override
     public void onReceive(Context context, Intent intent) {
         //This method is called when the BroadcastReceiver is receiving
 
-        // Add if to see what kinda of event actually happened
-        // to location permissions from precise to approximate.
-
-        //Grab the event that occurred
+        // Grab the event that occurred
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
 
-        //If there is an error, throw an error code and message
-        assert geofencingEvent != null;
+        // If there is an error, throw an error code and message
         if (geofencingEvent.hasError()) {
-            String errorMessage = GeofenceStatusCodes
-                    .getStatusCodeString(geofencingEvent.getErrorCode());
+            String errorMessage = GeofenceStatusCodes.getStatusCodeString(geofencingEvent.getErrorCode());
             Log.e(TAG, errorMessage);
             return;
         }
@@ -39,7 +42,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
 
         // Test that the reported transition was of interest.
-        //If they enter the geofence
+        // If they enter the geofence
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             if (MapsActivity.isAdmin)
                 Toast.makeText(context,"Entering Geofence",Toast.LENGTH_SHORT).show();
@@ -54,9 +57,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             //MapsActivity.follow = true;
             MapsActivity.inPolygon = false;
 
-        }
-        //If they leave the geofence
-        else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+        } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) { //If they leave the geofence
             if (MapsActivity.isAdmin)
                 Toast.makeText(context,"Leaving Geofence",Toast.LENGTH_SHORT).show();
 

@@ -4,9 +4,15 @@ import static android.content.ContentValues.TAG;
 import static com.parking.linkandpark.MapsActivity.firestore;
 import static com.parking.linkandpark.LoginActivity.mAuth;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -39,18 +45,20 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-
 public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText usernameEditText, passwordEditText, nameEditText, permitEditText;
     public TextInputLayout usernameLayout, passwordLayout, nameLayout;
     private FirebaseUser mCurrentUser;
-
-    //Encryption and Decryption
     private static final String ALGORITHM = "Blowfish";
     private static final String MODE = "Blowfish/CBC/PKCS5Padding";
     private static final String IV = "abcdefgh";
     private static final String Key = "jnansdbhi1j23-0390fhia'p;qaenfpoa828";
 
+    /**
+     * onCreate to initialize variables the activity information
+     *
+     * @param savedInstanceState The instance state to be loaded in
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +76,7 @@ public class RegisterActivity extends AppCompatActivity {
         passwordLayout = findViewById(R.id.regPasswordTextInputLayout);
         nameLayout = findViewById(R.id.regNameTextInputLayout);
 
-        // LOGIN CLICKABLE TEXT
+        // Create the login text to be clickable and have functionality
         createClickableLoginText();
 
         // Create listeners to remove error message on text fields
@@ -86,7 +94,7 @@ public class RegisterActivity extends AppCompatActivity {
                     findViewById(R.id.registerButton).setEnabled(false);
                 } else {
                     usernameLayout.setError(null);
-                    if (passwordEditText.getText().toString().isEmpty() || nameEditText.getText().toString().isEmpty())
+                    if (Objects.requireNonNull(passwordEditText.getText()).toString().isEmpty() || Objects.requireNonNull(nameEditText.getText()).toString().isEmpty())
                         findViewById(R.id.registerButton).setEnabled(false);
                     else
                         findViewById(R.id.registerButton).setEnabled(true);
@@ -94,6 +102,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        // Create listeners to remove error message on text fields
         passwordEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
@@ -108,7 +117,7 @@ public class RegisterActivity extends AppCompatActivity {
                     findViewById(R.id.registerButton).setEnabled(false);
                 } else {
                     passwordLayout.setError(null);
-                    if (usernameEditText.getText().toString().isEmpty() || nameEditText.getText().toString().isEmpty())
+                    if (Objects.requireNonNull(usernameEditText.getText()).toString().isEmpty() || Objects.requireNonNull(nameEditText.getText()).toString().isEmpty())
                         findViewById(R.id.registerButton).setEnabled(false);
                     else
                         findViewById(R.id.registerButton).setEnabled(true);
@@ -116,6 +125,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        // Create listeners to remove error message on text fields
         nameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
@@ -130,7 +140,7 @@ public class RegisterActivity extends AppCompatActivity {
                     findViewById(R.id.registerButton).setEnabled(false);
                 } else {
                     nameLayout.setError(null);
-                    if (usernameEditText.getText().toString().isEmpty() || passwordEditText.getText().toString().isEmpty())
+                    if (Objects.requireNonNull(usernameEditText.getText()).toString().isEmpty() || Objects.requireNonNull(passwordEditText.getText()).toString().isEmpty())
                         findViewById(R.id.registerButton).setEnabled(false);
                     else
                         findViewById(R.id.registerButton).setEnabled(true);
@@ -147,6 +157,7 @@ public class RegisterActivity extends AppCompatActivity {
             String name = Objects.requireNonNull(nameEditText.getText()).toString().trim();
             String permit = Objects.requireNonNull(permitEditText.getText()).toString().trim();
 
+            // This is for the requirements
             String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{4,}$";
             Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
             Matcher matcher = pattern.matcher(password);
@@ -194,14 +205,26 @@ public class RegisterActivity extends AppCompatActivity {
                                     });
                                 }
 
-
-                                //Change the activity to the maps activity screen
-                                Intent intent = new Intent(RegisterActivity.this, MapsActivity.class);
-                                startActivity((intent));
-                                finish();
-
-                                //Create message to let user know the creation was successful
+                                // Create message to let user know the creation was successful
                                 Toast.makeText(getApplicationContext(),"Account successfully created!",Toast.LENGTH_SHORT).show();
+
+                                // Ask for permissions here before we move on
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    if (activityRecognitionPermissionApproved()) {
+                                        // Send the user to the maps activity
+                                        Intent intentToMap = new Intent(RegisterActivity.this, MapsActivity.class);
+                                        startActivity((intentToMap));
+                                        finish();
+                                    } else {
+                                        Intent startIntent = new Intent(RegisterActivity.this, PermissionRationalActivity.class);
+                                        startActivity(startIntent);
+                                    }
+                                } else {
+                                    // Send the user to the maps activity
+                                    Intent intentToMap = new Intent(RegisterActivity.this, MapsActivity.class);
+                                    startActivity((intentToMap));
+                                    finish();
+                                }
                             } else if (!task.getResult().isEmpty()) {
                                 usernameLayout.setError("Username is taken");
                             } else if(username.isEmpty() && password.isEmpty() && name.isEmpty()) {
@@ -230,6 +253,17 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
+     * On devices Android 10 and beyond (29+), you need to ask for the ACTIVITY_RECOGNITION via the
+     * run-time permissions.
+     */
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private boolean activityRecognitionPermissionApproved() {
+        return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                && PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                && PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    /**
      * Create Encryption function
      */
     public static String encrypt(String value) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -244,7 +278,6 @@ public class RegisterActivity extends AppCompatActivity {
      * Create a clickable textview to bring the user to the register screen
      */
     public void createClickableLoginText() {
-
         // Get id of textview and save its default string
         TextView textView = findViewById(R.id.registerTextView);
         String text = "Already have an account? Login here";

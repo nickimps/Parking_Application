@@ -1,6 +1,5 @@
 package com.parking.linkandpark;
 
-import static android.content.ContentValues.TAG;
 import static com.parking.linkandpark.MapsActivity.firestore;
 import static com.parking.linkandpark.LoginActivity.mAuth;
 import android.content.Intent;
@@ -19,17 +18,27 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.Objects;
+
 public class InfoActivity extends AppCompatActivity {
+
+    private static final String TAG = "InfoActivity";
     Boolean isAdmin = false, permitChanged = false;
     TextInputEditText nameEditText, permitEditText;
     TextInputLayout nameLayout, permitLayout;
 
+    /**
+     * Default onCreate to initialize everything we need
+     *
+     * @param savedInstanceState The instance state if it was saved
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
 
-        getSupportActionBar().setTitle("Settings");
+        // Change the title of the action bar
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Settings");
 
         // Get the text fields ids
         nameEditText = findViewById(R.id.infoNameTextInputEditText);
@@ -37,6 +46,8 @@ public class InfoActivity extends AppCompatActivity {
         nameLayout = findViewById(R.id.infoNameTextInputLayout);
         permitLayout = findViewById(R.id.infoPermitTextInputLayout);
 
+        // Listener for the name textfield to enable or disable the update button if there is no
+        // text in the textfield
         nameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
@@ -46,17 +57,14 @@ public class InfoActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (editable.length() < 1) {
-                    if (permitEditText.getText().toString().isEmpty())
-                        findViewById(R.id.updateButton).setEnabled(false);
-                    else
-                        findViewById(R.id.updateButton).setEnabled(true);
-                } else {
-                        findViewById(R.id.updateButton).setEnabled(true);
-                }
+                if (editable.length() < 1)
+                    findViewById(R.id.updateButton).setEnabled(!Objects.requireNonNull(permitEditText.getText()).toString().isEmpty());
+                else
+                    findViewById(R.id.updateButton).setEnabled(true);
             }
         });
 
+        // Listener to enable or disable the update button if there was text or not
         permitEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
@@ -91,6 +99,10 @@ public class InfoActivity extends AppCompatActivity {
                                 // Set the hint for both the text fields
                                 nameLayout.setHint(document.getString("name"));
                                 String permitNum = document.getString("permit");
+
+                                // Get the permit number field if there is one, if not then
+                                // we want to leave it as an informative message
+                                assert permitNum != null;
                                 if (permitNum.isEmpty())
                                     permitLayout.setHint("Permit Number (Optional)");
                                 else
@@ -108,9 +120,11 @@ public class InfoActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
+                        // If the user is in the list, then we update the bool
+                        for (QueryDocumentSnapshot document : task.getResult())
                             isAdmin = document.getBoolean("isAdmin");
-                        }
+
+                        // If the user was admin, we want to change somethings otherwise we don't
                         if (Boolean.TRUE.equals(isAdmin))
                             findViewById(R.id.adminScreenButton).setVisibility(View.VISIBLE);
                         else
@@ -120,7 +134,7 @@ public class InfoActivity extends AppCompatActivity {
                     }
                 });
 
-        //Logout Button
+        // LOGOUT BUTTON
         Button logoutButton = findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(v -> {
             //Remove user information from local shared preferences
@@ -130,7 +144,7 @@ public class InfoActivity extends AppCompatActivity {
             editor.putString("password", null);
             editor.apply();
 
-            //put this in the logout section
+            // Sign out user
             mAuth.signOut();
 
             // Send the user to the login screen.
@@ -148,25 +162,24 @@ public class InfoActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            //If the user has entered something in the text field then add it to the update,
+                            // If the user has entered something in the text field then add it to the update,
                             // otherwise just keep what was already there in the database
                             String name, permit;
-                            if (nameEditText.getText().toString().isEmpty()) {
+                            if (Objects.requireNonNull(nameEditText.getText()).toString().isEmpty())
                                 name = document.getString("name");
-                            } else {
+                            else
                                 name = nameEditText.getText().toString().trim();
-                            }
 
-                            if (permitEditText.getText().toString().isEmpty()) {
+                            // Update the permit number if we need to
+                            if (Objects.requireNonNull(permitEditText.getText()).toString().isEmpty()) {
                                 String savedPermitNumber = document.getString("permit");
                                 if (permitChanged) {
                                     permit = "Permit Number (Optional)";
                                     permitChanged = false;
                                 } else
                                     permit = savedPermitNumber;
-                            } else {
+                            } else
                                 permit = permitEditText.getText().toString().trim();
-                            }
 
                             // Update the database for that user
                             firestore.collection("Users")

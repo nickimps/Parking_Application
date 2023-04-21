@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
-import com.parking.linkandpark.R;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
@@ -47,11 +46,17 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
     public static String saveData;
     private final SimpleDateFormat dayPlusTimeSDF = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z", Locale.CANADA);
 
+    /**
+     * onCreate function that initializes a lot of the text fields and buttons that are used in this activity
+     *
+     * @param savedInstanceState The saved instance state to be loaded
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
+        // Change the title of the action bar at the top of the screen
         Objects.requireNonNull(getSupportActionBar()).setTitle("Admin Portal");
 
         // Get the ids to access them
@@ -59,7 +64,6 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
         filenameEditText = findViewById(R.id.filenameTextInputEditText);
         consoleTextView = findViewById(R.id.consoleTextView);
         consoleTextView.setMovementMethod(new ScrollingMovementMethod());
-
 
         // Have location auto load when loading screen
         getLocation();
@@ -130,7 +134,8 @@ public class AdminActivity extends AppCompatActivity implements LocationListener
             }
         });
 
-
+        // Listener so that the button enables or disables based on if there is text in the
+        // textfield or not, error prevention
         filenameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {

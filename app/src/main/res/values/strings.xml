@@ -55,4 +55,16 @@
     <string name="recenter">Go To Car</string>
     <string name="meter_parking">Meter Parking</string>
     <string name="ev_parking">EV Parking</string>
+    <string name="activity_in_vehicle">In Vehicle</string>
+    <string name="activity_on_bicycle">On Bicycle</string>
+    <string name="activity_on_foot">On Foot</string>
+    <string name="activity_running">Running</string>
+    <string name="activity_still">Still</string>
+    <string name="activity_tilting">Tilting</string>
+    <string name="activity_walking">Walking</string>
+    <string name="activity_unknown">Unknown</string>
+    <string name="main_message_activity_permission_rational">View available parking spaces by letting us access your devices location and read your phone\'s activity transitions.</string>
+    <string name="details_message_activity_permission_rational">This app\'s experience requires access to your phone\'s activity transitions to accurately determine if you have parked in a parking space or not. Furthermore, in order to determine which parking space you have parked in, we require your precise location while in the foreground and background.</string>
+    <string name="no_thanks_activity_permission_rational">No Thanks</string>
+    <string name="continue_activity_permission_rational">Continue</string>
 </resources>
